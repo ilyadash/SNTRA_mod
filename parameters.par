@@ -1,0 +1,4 @@
+#это комментарий
+UseIncompleteCouples: all #определяет, что делать с состояниями, в которых есть либо pickup,либо stripping. Возможные значения: all - использовать все, pickup - только из pickup, stripping - только из stripping, no - использовать только те состояния, которые есть и в pickup,и в stripping
+UsedPenaltyFunctionComponents:  a_ij NPickupMax NStrippingMax EF_err Delta_err #компоненты штрафной функции
+SubShellsUsedForOccupancyFit: 1d5/2 2s1/2 1d3/2 #список подоболочек, которые используются для фита БКШ. Используются только состояния, которые есть и в pickup,и в stripping

@@ -1,0 +1,10 @@
+Author: Ve94   
+Nucleus: 28Si   
+Reaction:  (d.n)    
+Type: stripping   
+BA:  7.418    
+BA1:  7.567    
+E n l JP C2S
+0 2 0  0.5   0.59 
+ 1383.55  1 2  1.5   0.82 
+ 1953.91  1 2  2.5   0.12 
