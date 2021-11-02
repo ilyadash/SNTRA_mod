@@ -3,6 +3,7 @@
 #include <iostream>
 #include "Parser.cpp"
 using namespace std;
+
 class State //отдельное состояние, зарегистрированное в эксперименте
 {
 	public:
@@ -53,9 +54,7 @@ class SummarizedSpectroscopicState
 class SummarizedSpectroscopicData
 {
 	public:
-	
 	vector<SummarizedSpectroscopicState> States;
-	
 	void CreateJPList(State &s);
 	void Calculate(vector<State> &states);
 	SummarizedSpectroscopicState GetState(int n, int l, double JP);

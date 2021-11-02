@@ -1,4 +1,5 @@
 #include <cstring>
+//файл содержит функцию, которая переводит поданный полный момент J и чётность P в соответвующую поданной строке inpstr
 void StringToJP(string inpstr, double &J, int &P)
 {
 	J=0;

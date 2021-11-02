@@ -1,6 +1,7 @@
 #include <vector>
 #include <cmath>
 using namespace std;
+//файл содержит вспомогательные функции для работы с векторами
 int SearchInVector(vector<double> vec, double value)//Функция, возвращающая позицию искомого элемента в векторе. Возвращает -1, если элемент не найден
 {
 	int length=vec.size();
@@ -35,6 +36,7 @@ double GetMaximum(vector<double> v)
 	}
 	return maximum;
 }
+
 double GetMinimum(vector<double> v)
 {
 	if(v.size()==0)

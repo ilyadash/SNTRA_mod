@@ -7,12 +7,9 @@
 #include <sstream>
 #include <iostream>
 #include <fstream>
-
 //#include "ExtStrings.cpp"
-
 #include "PrimitiveShellModel.cpp"
-//root-зависимые библиотеки
-
+//root-зависимые библиотеки:
 #include <TGraph.h>
 #include <TFile.h>
 #include <TSystem.h>
@@ -149,15 +146,12 @@ void ReadFilesInDirectory(string PathToFiles,vector<Experiment> &Pickup,vector<E
 	}
 }
 
-void CalculatePenaltyFunction(vector<CoupleOfExperiments> &v)
+void CalculatePenaltyFunction(vector<CoupleOfExperiments> &v)//функция для расчёта штрафной функции
 {
 	float MaxEfError,MaxDeltaError;
-	int NumberOfPickupStatesMax, NumberOfStrippingStatesMax, AverageNumberOfCalculatedStates;
-	NumberOfPickupStatesMax=0;
-	NumberOfStrippingStatesMax=0;
-	AverageNumberOfCalculatedStates=0;
+	int NumberOfPickupStatesMax=0, NumberOfStrippingStatesMax=0, AverageNumberOfCalculatedStates=0;
 	for(int i=0;i<v.size();i++)
-	{
+	{//определяем в этом цикле максималные ошибки, кол-ва состояний, для дальнейшей оценки каждой пары относительно максимума
 		if(MaxEfError<v[i].Ef_error)
 		{
 			MaxEfError=v[i].Ef_error;
@@ -230,12 +224,12 @@ void CalculatePenaltyFunction(vector<CoupleOfExperiments> &v)
 ///кусок
 void CalculatePenaltyFunction_norm(vector<CoupleOfExperiments> &v)//функция для расчёта штрафной функции
 {
-	
 	float MaxEfError,MaxDeltaError;
 	int NumberOfPickupStatesMax, NumberOfStrippingStatesMax, AverageNumberOfCalculatedStates;
 	NumberOfPickupStatesMax=0;
 	NumberOfStrippingStatesMax=0;
 	AverageNumberOfCalculatedStates=0;
+	
 	for(int i=0;i<v.size();i++)
 	{	
 		v[i].PenaltyComponents.resize(0);
@@ -257,10 +251,9 @@ void CalculatePenaltyFunction_norm(vector<CoupleOfExperiments> &v)//функци
 		}
 		AverageNumberOfCalculatedStates+=v[i].SPE.size();
 	}
-	if(v.size()>0)
-	AverageNumberOfCalculatedStates=round(AverageNumberOfCalculatedStates/v.size());
-	else
-	return;
+
+	if(v.size()>0) AverageNumberOfCalculatedStates = round(AverageNumberOfCalculatedStates/v.size());
+	else return;
 	
 	for(unsigned int i=0;i<v.size();i++)
 	{
@@ -535,7 +528,7 @@ void PrintFitCalculationResult2(vector<CoupleOfExperiments> v,string OutputFileN
 ///конец кусок9 кода, добавленного для нормировки СС
 
 void ArrangeByPenalty(vector<CoupleOfExperiments> &v)
-{
+{//функция сортирует пары экспериментов в поданном векторе по убыванию соответсвующей штрафной функции
 	for(unsigned int i=0;i<v.size();i++)
 	{
 		int NumberOfExcanges=0;
@@ -556,7 +549,6 @@ void ArrangeByPenalty(vector<CoupleOfExperiments> &v)
 	}
 }
 
-//int main()
 void SNTRA_v2(string PathToFiles, string particle="", int ListFilesFlag=0)
 {
 	vector<Experiment> Pickup;
@@ -586,7 +578,7 @@ void SNTRA_v2(string PathToFiles, string particle="", int ListFilesFlag=0)
 		
 		////cout<<CE[i]<<"\n";
 	}
-	string OutputFileName;
+	string OutputFileName;//создаём строку с именем выходного файла для результата расчёта SNTRA до нормировки
 	///кусок11 кода, добавленного для нормировки СС
 	string OutputFileName2;//создаём строку с именем выходного файла для результата нормировки
 	string OutputFileName3;//создаём строку с именем второго выходного файла для результата нормировки
@@ -605,7 +597,7 @@ void SNTRA_v2(string PathToFiles, string particle="", int ListFilesFlag=0)
 	}
 	CalculatePenaltyFunction(CE);
 	ArrangeByPenalty(CE);
-	PrintCalculationResult(CE,OutputFileName);
+	PrintCalculationResult(CE,OutputFileName);//записывает результат ранжировки для пары экспериментов CE в выходные файлы .txt и .pdf
 	///кусок13 кода, добавленного для нормировки СС
 	PrintFitCalculationResult(CE,OutputFileName2);//записывает результат нормировки для пары экспериментов CE в выходные файлы .txt и .pdf
 	CalculatePenaltyFunction_norm(CE);//применяем функцию для вычисления штрафной функции
@@ -614,7 +606,7 @@ void SNTRA_v2(string PathToFiles, string particle="", int ListFilesFlag=0)
 	///конец кусок13 кода, добавленного для нормировки СС
 }
 
-int main(int argc, char** argv)
+int main(int argc, char** argv)//главная функция, принимает аргументы из терминала при вызове SNTRA пользователем
 {
 	string path=argv[1];
 	string ext=argv[2];

@@ -116,7 +116,6 @@ vector<int> StringLToInt(string L_string)
 	return result;
 }
 
-
 void GetAZ(string nucleus, int &Z, int &A)
 {
 	string mass;
@@ -168,6 +167,7 @@ void GetAZ(string nucleus, int &Z, int &A)
 		}
 	}
 }
+
 double GetNuclearMass(string nucleus)
 {
 	int A,Z;
@@ -183,6 +183,7 @@ double GetNuclearMass(string nucleus)
 		}
 	}
 }
+
 double GetNuclearMass(int Z, int A)
 {
 	ifstream MassFile(sprintf("audi/z%03d",Z).c_str());
@@ -200,6 +201,7 @@ double GetNuclearMass(int Z, int A)
 		}
 	}
 }
+
 double GetSeparationEnergy(string nucleus, string particle="n")
 {
 	double nucleus_mass, particle_mass, product_mass;
