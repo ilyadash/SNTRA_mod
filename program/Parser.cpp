@@ -200,6 +200,8 @@ double GetNuclearMass(int Z, int A)
 			return atof(GetField(str,3).c_str())*u;
 		}
 	}
+	cout<<"Error: double GetNuclearMass(int Z, int A) cannot return nuclear mass, returns 0! \n"; 
+	return 0;
 }
 
 double GetSeparationEnergy(string nucleus, string particle="n")

@@ -70,6 +70,8 @@ unsigned char StateParameters::GetColor()
 	{
 		return 4;
 	}
+	cout<<"Error: StateParameters::GetColor() cannot return color for this couple_flag returns black!"<<endl;
+	return 0;
 }
 bool StateParameters::CompareQN(StateParameters &s)
 {
@@ -213,7 +215,7 @@ bool parameters::CheckOccupancy(StateParameters &s)
 	}
 	return false;
 }
-string parameters::PrintUsedSubShells()
+void parameters::PrintUsedSubShells()
 {
 	stringstream s;
 	for(unsigned int i=0;i<SubShellsUsedForOccupancyFit.size();i++)
@@ -248,6 +250,7 @@ string parameters::GetComponentName(unsigned int iterator)
 	}
 	return "unknown";
 }
+
 int Experiment::GetColor(int L, float JP)
 {
 	if(L==2)
@@ -256,50 +259,51 @@ int Experiment::GetColor(int L, float JP)
 		{
 			return kGreen+2;
 		}
-		if(abs(JP)==1.5)
+		else if(abs(JP)==1.5)
 		{
 			return kGreen+1;
 		}
 	}
-	if(L==0)
+	else if(L==0)
 	{
 		return kGreen; 
 	}
-	if(L==3)
+	else if(L==3)
 	{
 		if(abs(JP)==3.5)
 		{
 			return kBlue+2;
 		}
-		if(abs(JP)==2.5)
+		else if(abs(JP)==2.5)
 		{
 			return kBlue-2;
 		}
 	}
-	if(L==1)
+	else if(L==1)
 	{
 		if(abs(JP)==1.5)
 		{
 			return kRed-6;
 		}
-		if(abs(JP)==0.5)
+		else if(abs(JP)==0.5)
 		{
 			return kRed-7;
 		} 
 	}
-	if(L==4)
+	else if(L==4)
 	{
 		if(abs(JP)==4.5)
 		{
 			return kRed-10;
 		}
-		if(abs(JP)==3.5)
+		else if(abs(JP)==3.5)
 		{
 			return kRed-9;
 		}
 	}
+	cout<<"Error: Experiment::GetColor cannot return color for this L, JP, returns black!"<<endl;
+	return kBlack;
 }
-
 Experiment::Experiment()
 {
 	E_iterator=0; n_iterator=1; L_iterator=2; JP_iterator=3; SF_iterator=4;
@@ -310,10 +314,12 @@ string Experiment::GetType()
 	{
 		return "stripping";
 	}
-	if(type==0)
+	else if(type==0)
 	{
 		return "pickup";
 	}
+	cout<<"Error: string Experiment::GetType() cannot get reaction type!"<<"\n";
+	return "error";
 }
 void Experiment::ReadInputFile(string filename)//просто чтение файла с данными. Сначала поиск ключевых слов, если их нет, то попытка считать строку как состояние, наблюдаемое в эксперименте
 {
@@ -444,7 +450,6 @@ void Experiment::ReadInputFile(string filename)//просто чтение фа�
 		}
 	}
 }
-
 void Experiment::ProcessExperimentalData()//надо будет добавить перебор n и j
 {
 	SSD.Calculate(States);
@@ -644,7 +649,7 @@ void CoupleOfExperiments::GenerateCommonNJPList()
 	}
 }
 void CoupleOfExperiments::CalcSPE_and_OCC(TCanvas *cc1, TCanvas *cc3)
-{
+{cout<<"CoupleOfExperiments::CalcSPE_and_OCC has started!"<<endl;
 	//cout<<"\n Generate \n";
 	GenerateCommonNJPList();
 	//cout<<"\n Generated \n";
@@ -659,7 +664,7 @@ void CoupleOfExperiments::CalcSPE_and_OCC(TCanvas *cc1, TCanvas *cc3)
 		{
 			double E_pickup=-Pickup.BA-C_pickup;//Диплом Марковой М.Л., ф-ла 4
 			double E_stripping=-Stripping.BA1+C_stripping;//Диплом Марковой М.Л., ф-ла 5
-			//cout<<"E_pickup="<<E_pickup<<" E_stripping="<<E_stripping<<"\n"; 
+			cout<<"E_pickup="<<E_pickup<<" E_stripping="<<E_stripping<<"\n"; 
 			double SPE_tmp=(Pickup.GetSumSF(SP[i])*E_pickup+Stripping.GetSumSF(SP[i])*E_stripping)/(Pickup.GetSumSF(SP[i])+Stripping.GetSumSF(SP[i]));
 			cout<<NLJToString(SP[i].n,SP[i].l,SP[i].JP)<<" pickup_sum: "<<Pickup.GetSumSF(SP[i])<<" stripping_sum:"<<Stripping.GetSumSF(SP[i])<<"\n";
 			cout<<NLJToString(SP[i].n,SP[i].l,SP[i].JP)<<" pickup_c: "<<C_pickup<<" stripping_c:"<<C_stripping<<"\n";

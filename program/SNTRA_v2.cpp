@@ -26,7 +26,7 @@ TCanvas *cc2=new TCanvas("cc2","cc2");//сделаем второй холст �
 TCanvas *cc3=new TCanvas("cc3","cc3");//сделаем третий холст для результатов применения нормировки
 
 vector<string> ListFiles(string mask)
-{
+{cout<<"vector<string> ListFiles(string mask) has started!"<<"\n";
 	vector<string> FileNames;
 	string s;
 	FILE* fp;
@@ -45,10 +45,11 @@ vector<string> ListFiles(string mask)
 		//cout<<s<<"\n";
 	}
 	return FileNames;
+	cout<<"vector<string> ListFiles(string mask) has ended!"<<"\n";
 }
 
-vector<string> ListFiles(string dirname, string ext) 
-{
+vector<string> ListFiles(string dirname, string ext) //функция ... , выводит названия входных файлов в терминал
+{cout<<"vector<string> ListFiles(string dirname, string ext)  has started!"<<"\n";
 	TSystemDirectory dir(dirname.c_str(), dirname.c_str()); 
 	TList *files = dir.GetListOfFiles(); 
 	vector<string> result;
@@ -66,11 +67,13 @@ vector<string> ListFiles(string dirname, string ext)
 			} 
 		} 
 	}
-	return result; 
+	cout<<"vector<string> ListFiles(string dirname, string ext) has ended!"<<"\n";
+	return result;
 }
 
-vector<CoupleOfExperiments> CreateCouplesOfExperiments(vector<Experiment> &Pickup,vector<Experiment> &Stripping,parameters &par)
-{
+vector<CoupleOfExperiments> CreateCouplesOfExperiments(vector<Experiment> &Pickup, vector<Experiment> &Stripping, parameters &par)//функция создаёт вектор всех вариантов пар экспириментов срыв-подхват (вектор объектов CoupleOfExperiments);
+{//функции на вход подаются вектор всех экспериментов срыва и вектор всех экспериментов подхвата (их адреса?)
+	cout<<"CreateCouplesOfExperiments has started!"<<endl;
 	vector<CoupleOfExperiments> result;
 	for(unsigned int i=0;i<Pickup.size();i++)
 	{
@@ -83,11 +86,12 @@ vector<CoupleOfExperiments> CreateCouplesOfExperiments(vector<Experiment> &Picku
 			result.push_back(CE);
 		}
 	}
-	return result;
-}
+	return result;//возвращаем результирующий вектор пар
+	cout<<"CreateCouplesOfExperiments has ended!"<<endl;
+}//конец функции vector<CoupleOfExperiments> CreateCouplesOfExperiments
 
-void ReadFilesInDirectory(string PathToFiles,vector<Experiment> &Pickup,vector<Experiment> &Stripping,string particle, int ListFilesFlag=0)
-{
+void ReadFilesInDirectory(string PathToFiles, vector<Experiment> &Pickup, vector<Experiment> &Stripping, string particle, int ListFilesFlag=0)
+{cout<<"void ReadFilesInDirectory has started!"<<"\n";
 	vector<string> FileNames;
 	if(ListFilesFlag==0)
 	{
@@ -144,10 +148,11 @@ void ReadFilesInDirectory(string PathToFiles,vector<Experiment> &Pickup,vector<E
 			SplitExperiments(Stripping);	
 		}
 	}
+	cout<<"void ReadFilesInDirectory has ended!"<<"\n";
 }
 
 void CalculatePenaltyFunction(vector<CoupleOfExperiments> &v)//функция для расчёта штрафной функции
-{
+{cout<<"void CalculatePenaltyFunction has started!"<<"\n";
 	float MaxEfError,MaxDeltaError;
 	int NumberOfPickupStatesMax=0, NumberOfStrippingStatesMax=0, AverageNumberOfCalculatedStates=0;
 	for(int i=0;i<v.size();i++)
@@ -220,16 +225,13 @@ void CalculatePenaltyFunction(vector<CoupleOfExperiments> &v)//функция д
 		v[i].penalty=v[i].penalty/v[i].PenaltyComponents.size();
 	}
 	
-}
+}//конец void CalculatePenaltyFunction
 ///кусок
 void CalculatePenaltyFunction_norm(vector<CoupleOfExperiments> &v)//функция для расчёта штрафной функции
-{
+{cout<<"void CalculatePenaltyFunction_norm has started!"<<"\n";
 	float MaxEfError,MaxDeltaError;
-	int NumberOfPickupStatesMax, NumberOfStrippingStatesMax, AverageNumberOfCalculatedStates;
-	NumberOfPickupStatesMax=0;
-	NumberOfStrippingStatesMax=0;
-	AverageNumberOfCalculatedStates=0;
-	
+	int NumberOfPickupStatesMax=0, NumberOfStrippingStatesMax=0, AverageNumberOfCalculatedStates=0;
+
 	for(int i=0;i<v.size();i++)
 	{	
 		v[i].PenaltyComponents.resize(0);
@@ -299,44 +301,25 @@ void CalculatePenaltyFunction_norm(vector<CoupleOfExperiments> &v)//функци
 		v[i].penalty=v[i].penalty/v[i].PenaltyComponents.size();
 	}
 	
-	/*for(int i=0;i<v.size();i++)
-	{
-		v[i].PenaltyComponents.resize(v[i].par.UsedPenaltyFunctionComponents.size();
-		v[i].PenaltyComponents[0]=(abs(1-Average(v[i].ParticlesAndHolesSum_norm)));
-		v[i].PenaltyComponents[1]=(1-((float)v[i].Pickup.size()/NumberOfPickupStatesMax));
-		v[i].PenaltyComponents[2]=(1-((float)v[i].Stripping.size()/NumberOfStrippingStatesMax));
-		if((MaxEfError!=0)&&(MaxDeltaError!=0))
-		{
-			v[i].PenaltyComponents[3]=(v[i].Ef_error_norm/MaxEfError);
-			v[i].PenaltyComponents[4]=(v[i].Delta_error_norm/MaxDeltaError);
-		}
-		//cout<<v[i].Pickup.reference<<" "<<v[i].Stripping.reference<<"\n";
-		for(unsigned int j=0;j<v[i].PenaltyComponents.size();j++)
-		{
-			//cout<<"p["<<j<<"]="<<v[i].PenaltyComponents[j]<<" "<<Average(v[i].ParticlesAndHolesSum)<<"\n";
-			v[i].penalty+=v[i].PenaltyComponents[j];
-		}
-		v[i].penalty=v[i].penalty/v[i].PenaltyComponents.size();
-	}*/
-	
 }//конец void CalculatePenaltyFunction_norm
 ///конец куска
-void PrintCalculationResult(vector<CoupleOfExperiments> v,string OutputFileName)
-{
+void PrintCalculationResult(vector<CoupleOfExperiments> v, string OutputFileName)
+{//на вход подаётся вектор пар экспериментов (вектор объектов CoupleOfExperiments) и название выходных файлов .pdf .txt OutputFileName
+	cout<<"void PrintCalculationResult has started!"<<"\n";
 	ofstream OutputTextFile((OutputFileName+".txt").c_str());
 	cc1->Print((OutputFileName+".pdf[").c_str(),"pdf");
-	for(unsigned int i=0;i<v.size();i++)
+	for(unsigned int i=0;i<v.size();i++)//для каждой пары экспериментов во входном векторе v
 	{
 		SpectroscopicFactorHistogram HistPickup=v[i].Pickup.BuildSpectroscopicFactorHistogram();
 		SpectroscopicFactorHistogram HistStrip=v[i].Stripping.BuildSpectroscopicFactorHistogram();
-		cc1->Clear();
-		cc1->Divide(3,2);
+		cc1->Clear();//Delete all pad primitives
+		cc1->Divide(3,2);//разделить Pad на 3 независимые области по вертикали и на 2 по горизонтали (всего 6 областей)
 		
-		cc1->cd(1);
+		cc1->cd(1);//переходим к Pad1
 		//gPad->SetLogy(1);
-		HistPickup.PrintSpectroscopicFactorHistogram();
+		HistPickup.PrintSpectroscopicFactorHistogram();//рисуем гистограмму для эксперимента подхвата
 		
-		cc1->cd(2);
+		cc1->cd(2);//переходим к Pad2
 		TMultiGraph mgr;
 		v[i].occupancies.SetTitle("Occupancy;E,keV;v^2");
 		mgr.Add(&v[i].Pickup_occupancies);
@@ -351,14 +334,14 @@ void PrintCalculationResult(vector<CoupleOfExperiments> v,string OutputFileName)
 		gPad->SetLogy(1);
 		PenaltyComponents.Draw();
 		
-		cc1->cd(4);
+		cc1->cd(4);//переходим к Pad4
 		//gPad->SetLogy(1);
-		HistStrip.PrintSpectroscopicFactorHistogram();
+		HistStrip.PrintSpectroscopicFactorHistogram();//рисуем гистограмму для эксперимента срыва
 		string TextOutput=v[i].ResultsInTextForm(1);
 		stringstream s(TextOutput);
-		OutputTextFile<<TextOutput<<"\n";
+		OutputTextFile<<TextOutput<<"\n";//записывем в текстовый файл результаты расчёта
 		
-		cc1->cd(5);
+		cc1->cd(5);//переходим к Pad5
 		TGraph* gr=new TGraph();//"h1","Calculated shell scheme;1 ;E, keV",10,0,1);
 		gr->SetPoint(0,0,0);
 		gr->SetMinimum(GetMinimum(v[i].SPE)-1000);
@@ -376,7 +359,7 @@ void PrintCalculationResult(vector<CoupleOfExperiments> v,string OutputFileName)
 			txt.DrawText(0.8,v[i].SPE[j], NLJToString(v[i].SP_centroids[j].n,v[i].SP_centroids[j].l,v[i].SP_centroids[j].JP).c_str());
 		}
 		
-		cc1->cd(6);
+		cc1->cd(6);//переходим к Pad6
 		///
 		//v[i].DrawResultsInTextForm());
 		v[i].DrawResultsInTextForm(v[i].ResultsInTextForm());
@@ -386,10 +369,11 @@ void PrintCalculationResult(vector<CoupleOfExperiments> v,string OutputFileName)
 		
 	}
 	cc1->Print((OutputFileName+".pdf]").c_str(),"pdf");
+	cout<<"void PrintCalculationResult has ended!"<<"\n";
 }
 
 ///кусок9 кода, добавленного для нормировки СС 
-void PrintFitCalculationResult(vector<CoupleOfExperiments> v,string OutputFileName)//функция записывает результаты нормировки в выходные файлы .txt и .pdf
+void PrintFitCalculationResult(vector<CoupleOfExperiments> v, string OutputFileName)//функция записывает результаты нормировки в выходные файлы .txt и .pdf
 {//на вход подаётся вектор пар экспериментов (вектор объектов CoupleOfExperiments) и название выходных файлов .pdf .txt OutputFileName
 	ofstream OutputTextFile((OutputFileName+".txt").c_str());//создаём .txt файл с выходными данными
 	cc2->Print((OutputFileName+".pdf[").c_str(),"pdf");//создаём .pdf файл с выходными данными, который сейчас будем наполнять графиками и текстом
@@ -452,7 +436,7 @@ void PrintFitCalculationResult(vector<CoupleOfExperiments> v,string OutputFileNa
 	cc2->Print((OutputFileName+".pdf]").c_str(),"pdf");//сохраняем всё в .pdf файл (в третий раз?)
 }
 
-void PrintFitCalculationResult2(vector<CoupleOfExperiments> v,string OutputFileName)//функция записывает результаты нормировки в выходные файлы .txt и .pdf
+void PrintFitCalculationResult2(vector<CoupleOfExperiments> v, string OutputFileName)//функция записывает результаты нормировки в выходные файлы .txt и .pdf
 {//на вход подаётся вектор пар экспериментов (вектор объектов CoupleOfExperiments) и название выходных файлов .pdf .txt OutputFileName
 	ofstream OutputTextFile((OutputFileName+".txt").c_str());//создаём .txt файл с выходными данными
 	cc3->Print((OutputFileName+".pdf[").c_str(),"pdf");//создаём .pdf файл с выходными данными, который сейчас будем наполнять графиками и текстом
@@ -527,32 +511,33 @@ void PrintFitCalculationResult2(vector<CoupleOfExperiments> v,string OutputFileN
 }
 ///конец кусок9 кода, добавленного для нормировки СС
 
-void ArrangeByPenalty(vector<CoupleOfExperiments> &v)
-{//функция сортирует пары экспериментов в поданном векторе по убыванию соответсвующей штрафной функции
-	for(unsigned int i=0;i<v.size();i++)
+///перебор по возрастанию штрафной функции не изменялся, хотя мог быть изменён для ранжирования по успешности нормировки СС:
+void ArrangeByPenalty(vector<CoupleOfExperiments> &v)//функция меняяет соседние в векторе пары экспериментов, до тех пор, пока они не будут отранжированы по возрастанию функции ошибок
+{//функция сортирует пары экспериментов в поданном векторе по убыванию соответсвующей штрафной функции//двойной перебор нужен чтобы сравнить каждый элемент вектора с каждым, происходит сортировка по значению штрафной функции
+	for(unsigned int i=0;i<v.size();i++)//для каждого элемента i массива
 	{
-		int NumberOfExcanges=0;
-		for(unsigned int j=0;j<v.size()-i-1;j++)
+		int NumberOfExcanges=0;//переменная для числа перестановок
+		for(unsigned int j=0;j<v.size()-i-1;j++)//для каждого элемента массива j, который имеет номер в векторе меньше i
 		{
-			if(v[j].penalty>v[j+1].penalty)
-			{
-				CoupleOfExperiments tmp=v[j];
-				v[j]=v[j+1];
-				v[j+1]=tmp;
-				NumberOfExcanges++;
+			if(v[j].penalty>v[j+1].penalty)//если функция ошибок пары экспериментов j больше, чем у пары j+1
+			{//стандартные действия для смены мест двух соседних эелементов массива/вектора
+				CoupleOfExperiments tmp=v[j];//создаём буферную пару для перемещения пар j и j+1, равную паре j, чтобы её сохранить
+				v[j]=v[j+1];//сохраняем в j пару j+1
+				v[j+1]=tmp;//сохраняем в j+1 буфер, который равен паре j
+				NumberOfExcanges++;//считаем число перестановок, увеличивая каждый раз NumberOfExcanges на 1
 			}
 		}
-		if(NumberOfExcanges==0)
+		if(NumberOfExcanges==0)//если не было совершенно перестановок, NumberOfExcanges осталось равной 0
 		{
-			return;
+			return;//то функция просто ничего не делает
 		}
 	}
-}
+}//конец void ArrangeByPenalty
 
 void SNTRA_v2(string PathToFiles, string particle="", int ListFilesFlag=0)
-{
-	vector<Experiment> Pickup;
-	vector<Experiment> Stripping;
+{cout<<"void SNTRA_v2 has started!"<<"\n";
+	vector<Experiment> Pickup;//создаём вектор всех экспериментов подхвата
+	vector<Experiment> Stripping;//создаём вектор всех экспериментов срыва
 	
 	ReadFilesInDirectory(PathToFiles,Pickup,Stripping,particle,ListFilesFlag);
 	parameters par;
@@ -562,20 +547,18 @@ void SNTRA_v2(string PathToFiles, string particle="", int ListFilesFlag=0)
 	par.ReadParameters(ParFileName+"parameters.par");
 	vector<CoupleOfExperiments> CE=CreateCouplesOfExperiments(Pickup,Stripping,par);
 	//TCanvas *cc1=new TCanvas("cc1","cc1");
-	for(unsigned int i=0;i<CE.size();i++)
+	for(unsigned int i=0;i<CE.size();i++)//для каждой пары срыв-подхват в векторе CE
 	{
-		CE[i].CalcSPE_and_OCC(cc1, cc3);
+		CE[i].CalcSPE_and_OCC(cc1, cc3);//применяем метод для расчёта одночастичной энергии и нормированной заселённости на подоболочке для пары экпериментов 
 		///кусок10 кода, добавленного для нормировки СС
 		//CE[i].solveLinear_mod();//применяем метод для расчёта фита через МНК
 		//CE[i].CalcSPE_and_OCC_norm(cc3);//применяем метод для расчёта одночастичной энергии и нормированной заселённости на подоболочке для пары экпериментов после нормировки
 		///конец кусок10 кода, добавленного для нормировки СС
 		//cout<<CE[i].SPE.size()<<" "<<CE[i].EJP.size()<<" "<<CE[i].n.size()<<"\n";
-		
 		for(int j=0;j<CE[i].SPE.size();j++)
 		{
 			//cout<<CE[i].SPE[j]<<" "<<CE[i].n[j]<<" "<<CE[i].EJP[j]<<"\n"; 
 		}
-		
 		////cout<<CE[i]<<"\n";
 	}
 	string OutputFileName;//создаём строку с именем выходного файла для результата расчёта SNTRA до нормировки
@@ -583,20 +566,20 @@ void SNTRA_v2(string PathToFiles, string particle="", int ListFilesFlag=0)
 	string OutputFileName2;//создаём строку с именем выходного файла для результата нормировки
 	string OutputFileName3;//создаём строку с именем второго выходного файла для результата нормировки
 	///конец кусок11 кода, добавленного для нормировки СС
-	if((Pickup.size()>0)&&(Stripping.size()>0))
-	{
-		OutputFileName=Pickup[0].Nucleus+"_"+Pickup[0].particle;	
+	if((Pickup.size()>0)&&(Stripping.size()>0))//если есть хоть 1 эксперимент срыва и хоть 1 эксперимент подхвата, то
+	{//задаём имя выходного pdf файла в строку OutputFileName
+		OutputFileName=Pickup[0].Nucleus+"_"+Pickup[0].particle;//OutputFileName равен название ядра _ налетающий нуклон
 		///кусок12 кода, добавленного для нормировки СС
 		OutputFileName2=OutputFileName+"_norm";//OutputFileName2 равен название ядра _ налетающий нуклон_norm
 		OutputFileName3=OutputFileName+"_norm2";//OutputFileName3 равен название ядра _ налетающий нуклон_norm2
-		///конец кусок12 кода, добавленного для нормировки СС	
-	}
-	else
+		///конец кусок12 кода, добавленного для нормировки СС
+	}//получаем для название типа "32S_neutron" для pdf и txt файлов
+	else//иначе
 	{
-		return ;
+		return ;//заканчиваем нашу функцию SNTRA_v2 здесь
 	}
-	CalculatePenaltyFunction(CE);
-	ArrangeByPenalty(CE);
+	CalculatePenaltyFunction(CE);//применяем функцию для вычисления штрафной функции
+	ArrangeByPenalty(CE);//применяем функцию для сортировки нашего вывода по возрастанию значения штрафной функции
 	PrintCalculationResult(CE,OutputFileName);//записывает результат ранжировки для пары экспериментов CE в выходные файлы .txt и .pdf
 	///кусок13 кода, добавленного для нормировки СС
 	PrintFitCalculationResult(CE,OutputFileName2);//записывает результат нормировки для пары экспериментов CE в выходные файлы .txt и .pdf
@@ -604,12 +587,13 @@ void SNTRA_v2(string PathToFiles, string particle="", int ListFilesFlag=0)
 	ArrangeByPenalty(CE);//применяем функцию для сортировки нашего вывода по возрастанию значения штрафной функции
 	PrintFitCalculationResult2(CE,OutputFileName3);//записывает результат воздействия нормировки для пары экспериментов CE в выходные файлы .txt и .pdf
 	///конец кусок13 кода, добавленного для нормировки СС
-}
+	cout<<"void SNTRA_v2 has ended!"<<"\n";
+}//конец функции void SNTRA_v2
 
 int main(int argc, char** argv)//главная функция, принимает аргументы из терминала при вызове SNTRA пользователем
-{
-	string path=argv[1];
-	string ext=argv[2];
-	cout<<path+" "+ext<<"\n";
-	SNTRA_v2(path+" "+ext,"",1);
+{//argc (argument count) и argv (argument vector) - число переданных строк в main через argv и массив переданных в main строк
+	string path=argv[1];//так как при запуске SNTRA, например: ./SNTRA ../34S_Neutron/ txt, мы передаём ей директори с входными файлами и тип файлов
+	string ext=argv[2];//то очевидно мы сохраняем тоже самое в path и ext, соответственно
+	cout<<"Got path to input files: "<<path+" "+ext<<"\n";//выводим путь к директории входных файлов и их расширение (.txt) (см. при запуске SNTRA в терминале это первая строка)
+	SNTRA_v2(path+" "+ext,"",1);//вызываем нашу функцию SNTRA_v2, передавая ей путь ко входным файлам, их расширение и ListFilesFlag=1
 }

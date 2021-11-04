@@ -43,6 +43,8 @@ string GetFileType(string line)
 		}
 	
 	}
+	cout<<"Error: string GetFileType(string line) cannot intended string, returns 'error'!"<<endl;
+	return "error";
 }
 
 float GetEnergyFromFileName(string line)

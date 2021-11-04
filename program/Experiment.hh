@@ -43,7 +43,7 @@ class parameters
 	void ReadParameters(string filename);
 	bool CheckStateParameters(StateParameters &s);
 	bool CheckOccupancy(StateParameters &s);
-	string PrintUsedSubShells();
+	void PrintUsedSubShells();
 };
 
 class Experiment
