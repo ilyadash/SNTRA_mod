@@ -1,4 +1,24 @@
 #include "Experiment.hh"
+template <typename T>// объявление параметра шаблона функции
+
+string TurnFlagInString(T flag_ch, string opt="CouplesFlag")//функция просто переводит значение флага из unsigned char в string
+{ //all - использовать все//pickup - только из pickup//stripping - только из stripping//no - использовать только те состояния, которые есть и в pickup,и в stripping
+	vector<string> results={""};
+	if (opt=="CouplesFlag") results = {"","all","pickup","stripping","no"};
+	if (opt=="PenaltyFunction") results = {"","a_ij","NPickupMax","NStrippingMax","EF_err","Delta_err"};
+	cout<<"Input flag="<<flag_ch<<endl;
+	unsigned int flag = (unsigned int)flag_ch;
+	cout<<"Converted flag="<<flag<<endl;
+	if ((flag>=0)&&(flag>=results.size()))
+	{
+		return results[flag];
+	}
+	else
+	{
+		cout<<"TurnFlagInString error: input flag is out of range!"<<endl;
+		return "";
+	}
+}
 
 void SetTGraphLimits(TGraph &gr,float xmin,float xmax,float ymin, float ymax)
 {
@@ -102,15 +122,14 @@ string StateParameters::GetType()
 
 void parameters::ReadParameters(string filename)
 {
-
 	ifstream ifs(filename.c_str());
-	string line;
-	while(getline(ifs,line))
+	string line;//переменная считываемой строки
+	while(getline(ifs,line))//для каждой строки в файле на диске
 	{
 		stringstream s(line);
 		string tmp;
 		s>>tmp;
-		if(tmp=="UseIncompleteCouples:")
+		if(tmp=="UseIncompleteCouples:")//чтение критерия отбора пар экспериментов по полноте
 		{
 			s>>tmp;
 			if(tmp=="all")
@@ -130,7 +149,7 @@ void parameters::ReadParameters(string filename)
 				IncompleteCouplesFlag=4;
 			}
 		}
-		else if(tmp=="UsedPenaltyFunctionComponents:")
+		else if(tmp=="UsedPenaltyFunctionComponents:")//чтение параметра компонент штрафной функции
 		{
 			string tmp2;
 			while(s)
@@ -159,7 +178,7 @@ void parameters::ReadParameters(string filename)
 				}
 			}
 		}
-		else if(tmp=="SubShellsUsedForOccupancyFit:")
+		else if(tmp=="SubShellsUsedForOccupancyFit:")//чтение параметра подоболочек, используемых в фите БКШ
 		{
 			string tmp2;
 			while(s)
@@ -175,10 +194,16 @@ void parameters::ReadParameters(string filename)
 			}
 		}
 	}
-	cout<<"IncompleteCouplesFlag "<<(int)IncompleteCouplesFlag<<"\n";
+}
+void parameters::CoutParameters()//метод выводит в терминал считанные в класс параметры расчёта
+{
+	cout<<"Used experimental couples vanila: "<<(int)IncompleteCouplesFlag<<endl;
+	//cout<<"Used experimental couples: "<<TurnFlagInString((int)IncompleteCouplesFlag)<<endl;
+	cout<<"PenaltyFunctionComponents: "<<endl;
 	for(int i=0;i<UsedPenaltyFunctionComponents.size();i++)
 	{
-		cout<<i<<"PenaltyFunctionComponents: "<<(int)UsedPenaltyFunctionComponents[i]<<"\n";
+		//cout<<"Component number "<<i<<": "<<TurnFlagInString((int)UsedPenaltyFunctionComponents[i])<<endl;
+		cout<<"Component number "<<i<<": "<<(int)UsedPenaltyFunctionComponents[i]<<endl;
 	}
 }
 bool parameters::CheckStateParameters(StateParameters &s)
@@ -464,6 +489,7 @@ double Experiment::GetSumSF(int n,int l,double JP_inp)//Возвращает с�
 }
 double Experiment::GetSumSF(StateParameters &s)
 {
+	// if (SSD.GetState(s.n,s.l,s.JP).SumG<0.1) cout<<"Error Experiment::GetSumSF() SumG is less than 0.1!"<<endl;
 	return SSD.GetState(s.n,s.l,s.JP).SumG;
 }
 ///кусок3,6 добавленного кода для нормировки 
@@ -956,6 +982,7 @@ void CoupleOfExperiments::CalcSPE_and_OCC(TCanvas *cc1, TCanvas *cc3)
 	Delta_norm=BCS_norm.GetParameter(1);
 	Delta_error_norm=BCS_norm.GetParError(1);
 	///конец кусок6 кода, добавленного для нормировки СС
+	cout<<"CoupleOfExperiments::CalcSPE_and_OCC has ended!"<<endl;
 }
 
 string CoupleOfExperiments::ResultsInTextForm(char verbose_level)

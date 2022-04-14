@@ -77,10 +77,10 @@ vector<CoupleOfExperiments> CreateCouplesOfExperiments(vector<Experiment> &Picku
 	vector<CoupleOfExperiments> result;
 	for(unsigned int i=0;i<Pickup.size();i++)
 	{
-		//cout<<i<<" pickup "<<Pickup[i].reference<<"\n";
+		cout<<"Got number "<<i+1<<" pickup "<<Pickup[i].reference<<"\n";
 		for(unsigned int j=0;j<Stripping.size();j++)
 		{
-			//cout<<j<<" stripping "<<Stripping[j].reference<<"\n";
+			cout<<"Got number "<<j+1<<" stripping "<<Stripping[j].reference<<"\n";
 			CoupleOfExperiments CE(Pickup[i],Stripping[j]);
 			CE.par=par;
 			result.push_back(CE);
@@ -539,12 +539,13 @@ void SNTRA_v2(string PathToFiles, string particle="", int ListFilesFlag=0)
 	vector<Experiment> Pickup;//создаём вектор всех экспериментов подхвата
 	vector<Experiment> Stripping;//создаём вектор всех экспериментов срыва
 	
-	ReadFilesInDirectory(PathToFiles,Pickup,Stripping,particle,ListFilesFlag);
+	ReadFilesInDirectory(PathToFiles,Pickup,Stripping,particle,ListFilesFlag);//считаем поготовленные файлы данных с диска
 	parameters par;
 	stringstream s1(PathToFiles);
 	string ParFileName;
 	s1>>ParFileName;
-	par.ReadParameters(ParFileName+"parameters.par");
+	par.ReadParameters(ParFileName+"parameters.par");//считаем пользовательские параметры из файла parameters.par на диске
+	par.CoutParameters();//выведем считанные параметры в терминал
 	vector<CoupleOfExperiments> CE=CreateCouplesOfExperiments(Pickup,Stripping,par);
 	//TCanvas *cc1=new TCanvas("cc1","cc1");
 	for(unsigned int i=0;i<CE.size();i++)//для каждой пары срыв-подхват в векторе CE

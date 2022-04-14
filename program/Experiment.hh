@@ -33,14 +33,15 @@ class StateParameters
 	string GetType();
 };
 
-class parameters
+class parameters//класс пользовательских параметров расчёта
 {
 	public:
-	unsigned char IncompleteCouplesFlag;//all=1, pickup only=2, stripping only=3, no=4
+	unsigned char IncompleteCouplesFlag;//all=1, pickup only=2, stripping only=3, no=4//флаг использования пар экпериментов разных типов
 	vector<StateParameters> SubShellsUsedForOccupancyFit;
 	vector<unsigned char> UsedPenaltyFunctionComponents;
 	string GetComponentName(unsigned int iterator);
-	void ReadParameters(string filename);
+	void ReadParameters(string filename);//метод считывает параметры из файла на диске
+	void CoutParameters();//метод выводит в терминал считанные в класс параметры расчёта
 	bool CheckStateParameters(StateParameters &s);
 	bool CheckOccupancy(StateParameters &s);
 	void PrintUsedSubShells();
@@ -153,8 +154,6 @@ void SplitExperiments(vector<Experiment> &Experiments)
 		}
 	}
 }
-
-
 
 class CoupleOfExperiments
 {
