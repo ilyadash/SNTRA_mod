@@ -49,13 +49,14 @@ vector<string> ListFiles(string mask)
 }
 
 vector<string> ListFiles(string dirname, string ext) //функция ... , выводит названия входных файлов в терминал
-{cout<<"vector<string> ListFiles(string dirname, string ext)  has started!"<<"\n";
+{cout<<"vector<string> ListFiles("<<dirname<<", "<<ext<<")  has started!"<<"\n";
 	TSystemDirectory dir(dirname.c_str(), dirname.c_str()); 
 	TList *files = dir.GetListOfFiles(); 
 	vector<string> result;
 	if(files) 
 	{
-		TSystemFile *file; TString fname; 
+		TSystemFile *file; 
+		TString fname; 
 		TIter next(files);
 		while((file=(TSystemFile*)next()))
 		{
@@ -66,6 +67,10 @@ vector<string> ListFiles(string dirname, string ext) //функция ... , вы
 				cout<<(string)fname<<"\n";
 			} 
 		} 
+	}
+	else
+	{
+		cout<<" *** Error! ListFiles(): TList *files = dir.GetListOfFiles() returned false!"<<endl;
 	}
 	cout<<"vector<string> ListFiles(string dirname, string ext) has ended!"<<"\n";
 	return result;
@@ -91,7 +96,7 @@ vector<CoupleOfExperiments> CreateCouplesOfExperiments(vector<Experiment> &Picku
 }//конец функции vector<CoupleOfExperiments> CreateCouplesOfExperiments
 
 void ReadFilesInDirectory(string PathToFiles, vector<Experiment> &Pickup, vector<Experiment> &Stripping, string particle, int ListFilesFlag=0)
-{cout<<"void ReadFilesInDirectory has started!"<<"\n";
+{cout<<"void ReadFilesInDirectory(...) has started!"<<"\n";
 	vector<string> FileNames;
 	if(ListFilesFlag==0)
 	{
@@ -322,12 +327,13 @@ void PrintCalculationResult(vector<CoupleOfExperiments> v, string OutputFileName
 		cc1->cd(2);//переходим к Pad2
 		TMultiGraph mgr;
 		v[i].occupancies.SetTitle("Occupancy;E,keV;v^2");
+		mgr.SetTitle("Occupancy;E, keV;v^{2}");
 		mgr.Add(&v[i].Pickup_occupancies);
 		mgr.Add(&v[i].Stripping_occupancies);
 		mgr.Add(&v[i].Both_occupancies);
 		mgr.Draw("ap");
-		v[i].occupancies.Draw("p");
-		v[i].BCS.Draw("l same");
+		v[i].occupancies.Draw("p same");//отрисуем заселённости, которые использовались в фите БКШ поверх остальных (выделим их крестами)
+		v[i].BCS.Draw("l same");//отрисуем кривую фита БКШ на том же Pad
 		
 		cc1->cd(3);
 		TH1F PenaltyComponents=v[i].BuildPenaltyComponentsHistogram();
@@ -343,6 +349,7 @@ void PrintCalculationResult(vector<CoupleOfExperiments> v, string OutputFileName
 		
 		cc1->cd(5);//переходим к Pad5
 		TGraph* gr=new TGraph();//"h1","Calculated shell scheme;1 ;E, keV",10,0,1);
+		gr->SetTitle("Calculated shell scheme;  ;E, keV");
 		gr->SetPoint(0,0,0);
 		gr->SetMinimum(GetMinimum(v[i].SPE)-1000);
 		gr->SetMaximum(GetMaximum(v[i].SPE)+1000);
@@ -354,9 +361,12 @@ void PrintCalculationResult(vector<CoupleOfExperiments> v, string OutputFileName
 			TText txt;
 			int color=v[i].SP_centroids[j].GetColor();
 			line.SetLineColor(color);
-			line.DrawLine(0.1,v[i].SPE[j],0.7,v[i].SPE[j]);
-			txt.SetTextColor(color);
-			txt.DrawText(0.8,v[i].SPE[j], NLJToString(v[i].SP_centroids[j].n,v[i].SP_centroids[j].l,v[i].SP_centroids[j].JP).c_str());
+			if(v[i].SP_centroids[j].GetToBeDrawnFlag()==1)
+			{
+				line.DrawLine(0.1,v[i].SPE[j],0.7,v[i].SPE[j]);
+				txt.SetTextColor(color);
+				txt.DrawText(0.8,v[i].SPE[j], NLJToString(v[i].SP_centroids[j].n,v[i].SP_centroids[j].l,v[i].SP_centroids[j].JP).c_str());
+			}
 		}
 		
 		cc1->cd(6);//переходим к Pad6
@@ -534,8 +544,8 @@ void ArrangeByPenalty(vector<CoupleOfExperiments> &v)//функция меняя
 	}
 }//конец void ArrangeByPenalty
 
-void SNTRA_v2(string PathToFiles, string particle="", int ListFilesFlag=0)
-{cout<<"void SNTRA_v2 has started!"<<"\n";
+void SNTRA(string PathToFiles, string particle="", int ListFilesFlag=0)
+{cout<<"void SNTRA has started!"<<"\n";
 	vector<Experiment> Pickup;//создаём вектор всех экспериментов подхвата
 	vector<Experiment> Stripping;//создаём вектор всех экспериментов срыва
 	
@@ -588,13 +598,13 @@ void SNTRA_v2(string PathToFiles, string particle="", int ListFilesFlag=0)
 	ArrangeByPenalty(CE);//применяем функцию для сортировки нашего вывода по возрастанию значения штрафной функции
 	PrintFitCalculationResult2(CE,OutputFileName3);//записывает результат воздействия нормировки для пары экспериментов CE в выходные файлы .txt и .pdf
 	///конец кусок13 кода, добавленного для нормировки СС
-	cout<<"void SNTRA_v2 has ended!"<<"\n";
-}//конец функции void SNTRA_v2
+	cout<<"void SNTRA has ended!"<<"\n";
+}//конец функции void SNTRA
 
 int main(int argc, char** argv)//главная функция, принимает аргументы из терминала при вызове SNTRA пользователем
 {//argc (argument count) и argv (argument vector) - число переданных строк в main через argv и массив переданных в main строк
 	string path=argv[1];//так как при запуске SNTRA, например: ./SNTRA ../34S_Neutron/ txt, мы передаём ей директори с входными файлами и тип файлов
 	string ext=argv[2];//то очевидно мы сохраняем тоже самое в path и ext, соответственно
 	cout<<"Got path to input files: "<<path+" "+ext<<"\n";//выводим путь к директории входных файлов и их расширение (.txt) (см. при запуске SNTRA в терминале это первая строка)
-	SNTRA_v2(path+" "+ext,"",1);//вызываем нашу функцию SNTRA_v2, передавая ей путь ко входным файлам, их расширение и ListFilesFlag=1
+	SNTRA(path+" "+ext,"",1);//вызываем нашу функцию SNTRA, передавая ей путь ко входным файлам, их расширение и ListFilesFlag=1
 }

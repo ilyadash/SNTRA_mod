@@ -52,13 +52,16 @@ void SpectroscopicFactorHistogram::PrintSpectroscopicFactorHistogram()
 
 StateParameters::StateParameters()
 {
-	
+	ToBeDrawn=1;
 }
-StateParameters::StateParameters(int n,int l,double JP,string c_flag)
+
+StateParameters::StateParameters(int n,int l,double JP,string c_flag, bool to_be_drawn)
 {
 	this->n=n;
 	this->l=l;
 	this->JP=JP;
+	ToBeDrawn=to_be_drawn;
+	//получим флаг принадлежности состояния эксперименат срыв и/или подхвата
 	if(c_flag=="pickup")
 	{
 		couple_flag=1;
@@ -73,9 +76,10 @@ StateParameters::StateParameters(int n,int l,double JP,string c_flag)
 	}
 	else
 	{
-		couple_flag=0;
+		couple_flag=0;//неопределённое состояние флага
 	}
 }
+
 unsigned char StateParameters::GetColor()
 {
 	if(couple_flag==3)
@@ -93,6 +97,14 @@ unsigned char StateParameters::GetColor()
 	cout<<"Error: StateParameters::GetColor() cannot return color for this couple_flag returns black!"<<endl;
 	return 0;
 }
+
+void StateParameters::GetQN(int &n_out, int &l_out, double &JP_out)
+{
+	n_out=this->n;
+	l_out=this->l;
+	JP_out=this->JP;
+}
+
 bool StateParameters::CompareQN(StateParameters &s)
 {
 	if((n==s.n)&&(l==s.l)&&(JP==s.JP))
@@ -104,6 +116,36 @@ bool StateParameters::CompareQN(StateParameters &s)
 		return false;
 	}
 }
+
+bool StateParameters::CheckIfIncludedIn(vector<StateParameters> SubShellsVec)
+{
+	for(unsigned int i=0;i<SubShellsVec.size();i++)
+	{
+		if((n==SubShellsVec[i].n)&&(l==SubShellsVec[i].l)&&(JP==SubShellsVec[i].JP))
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+bool StateParameters::GetToBeDrawnFlag()
+{
+	return ToBeDrawn;
+}
+void StateParameters::SetToBeDrawnFlag(bool flag)
+{
+	this->ToBeDrawn=flag;
+}
+unsigned char StateParameters::GetCoupleFlag()
+{
+	return couple_flag;
+}
+void StateParameters::SetCoupleFlag(unsigned char flag)
+{
+	this->couple_flag=flag;
+}
+
 string StateParameters::GetType()
 {
 	if(couple_flag==3)
@@ -193,8 +235,25 @@ void parameters::ReadParameters(string filename)
 				}
 			}
 		}
+		else if(tmp=="SubShellsUsedInDrawing:")//чтение параметра подоболочек, используемых в отрисовке на холсте
+		{
+			LimitedSubShellsUsedInDrawing=1;
+			string tmp2;
+			while(s)
+			{
+				s>>tmp2;
+				int n,l;
+				float JP;
+				if(StringToNLJ(tmp2,n,l,JP))
+				{
+					StateParameters sp(n,l,JP,"both");
+					SubShellsUsedInDrawing.push_back(sp);
+				}
+			}
+		}
 	}
 }
+
 void parameters::CoutParameters()//метод выводит в терминал считанные в класс параметры расчёта
 {
 	cout<<"Used experimental couples vanila: "<<(int)IncompleteCouplesFlag<<endl;
@@ -206,6 +265,7 @@ void parameters::CoutParameters()//метод выводит в терминал
 		cout<<"Component number "<<i<<": "<<(int)UsedPenaltyFunctionComponents[i]<<endl;
 	}
 }
+
 bool parameters::CheckStateParameters(StateParameters &s)
 {
 	if((IncompleteCouplesFlag==1)&&(s.couple_flag==1||s.couple_flag==2||s.couple_flag==3))
@@ -229,6 +289,7 @@ bool parameters::CheckStateParameters(StateParameters &s)
 		return false;
 	}
 }
+
 bool parameters::CheckOccupancy(StateParameters &s)
 {
 	for(unsigned int i=0;i<SubShellsUsedForOccupancyFit.size();i++)
@@ -240,6 +301,7 @@ bool parameters::CheckOccupancy(StateParameters &s)
 	}
 	return false;
 }
+
 void parameters::PrintUsedSubShells()
 {
 	stringstream s;
@@ -248,6 +310,7 @@ void parameters::PrintUsedSubShells()
 		s<<"s:"<<SubShellsUsedForOccupancyFit[i].n<<"("<<SubShellsUsedForOccupancyFit[i].l<<")"<<SubShellsUsedForOccupancyFit[i].JP<<" ";
 	}
 }
+
 string parameters::GetComponentName(unsigned int iterator)
 {
 	if(iterator<UsedPenaltyFunctionComponents.size())
@@ -329,10 +392,12 @@ int Experiment::GetColor(int L, float JP)
 	cout<<"Error: Experiment::GetColor cannot return color for this L, JP, returns black!"<<endl;
 	return kBlack;
 }
+
 Experiment::Experiment()
 {
 	E_iterator=0; n_iterator=1; L_iterator=2; JP_iterator=3; SF_iterator=4;
 }
+
 string Experiment::GetType()
 {
 	if(type==1)
@@ -346,6 +411,7 @@ string Experiment::GetType()
 	cout<<"Error: string Experiment::GetType() cannot get reaction type!"<<"\n";
 	return "error";
 }
+
 void Experiment::ReadInputFile(string filename)//просто чтение файла с данными. Сначала поиск ключевых слов, если их нет, то попытка считать строку как состояние, наблюдаемое в эксперименте
 {
 	ifstream ifs(filename.c_str());
@@ -475,18 +541,22 @@ void Experiment::ReadInputFile(string filename)//просто чтение фа�
 		}
 	}
 }
+
 void Experiment::ProcessExperimentalData()//надо будет добавить перебор n и j
 {
 	SSD.Calculate(States);
 }	
+
 double Experiment::GetCentroid(int n,int l,double JP_inp)//Возвращает центроид для данных JP
 {
 	return SSD.GetState(n,l,JP_inp).C;
 }
+
 double Experiment::GetSumSF(int n,int l,double JP_inp)//Возвращает сумму СФ для данных JP
 {
 	return SSD.GetState(n,l,JP_inp).SumG;
 }
+
 double Experiment::GetSumSF(StateParameters &s)
 {
 	// if (SSD.GetState(s.n,s.l,s.JP).SumG<0.1) cout<<"Error Experiment::GetSumSF() SumG is less than 0.1!"<<endl;
@@ -497,6 +567,7 @@ double Experiment::GetErSumSF(int n,int l,double JP_inp)//Возвращает �
 {
 	return SSD.GetState(n,l,JP_inp).er_SumG;
 }
+
 double Experiment::GetErSumSF(StateParameters &s)
 {
 	return SSD.GetState(s.n,s.l,s.JP).er_SumG;
@@ -506,18 +577,22 @@ double Experiment::GetCentroid(StateParameters &s)
 {
 	return SSD.GetState(s.n,s.l,s.JP).C;
 }
+
 int Experiment::GetNlevels()//возвращает число уровней, для которых вычислены центроиды
 {
 	return SSD.size();
 }
+
 int Experiment::size()//возвращает число состояний, зарегистрированных в эксперименте
 {
 	return States.size();
 }
+
 int Experiment::SSSsize()
 {
 	return SSD.size();
 }
+
 SummarizedSpectroscopicState&  Experiment::operator [] (int index)
 {
 	if(index<SSD.States.size())
@@ -532,6 +607,7 @@ SummarizedSpectroscopicState&  Experiment::operator [] (int index)
 	}
 }
 //vector<TH1F> BuildSpectroscopicFactorHistogram(float &maximum)
+
 SpectroscopicFactorHistogram  Experiment::BuildSpectroscopicFactorHistogram()
 {
 	SpectroscopicFactorHistogram SFHistograms;
@@ -631,11 +707,13 @@ TH1F CoupleOfExperiments::BuildPenaltyComponentsHistogram()
 	penalty=PenaltyFormula->Eval(0);
 }
 */
+
 CoupleOfExperiments::CoupleOfExperiments(Experiment &InpPickup,Experiment &InpStripping)//конструктор, аргументы которого представляют из себя эксперименты по подхвату и срыву
 {
 	Pickup=InpPickup;
 	Stripping=InpStripping;
 }
+
 void CoupleOfExperiments::GenerateCommonNJPList()
 {
 	for(int i=0;i<Pickup.SSSsize();i++)
@@ -646,6 +724,11 @@ void CoupleOfExperiments::GenerateCommonNJPList()
 			if(Pickup[i].Compare(Stripping[j]))
 			{
 				StateParameters s(Pickup[i].n,Pickup[i].L,Pickup[i].JP,"both");
+				if (par.LimitedSubShellsUsedInDrawing==1)//если пользователь указывал в файле параметров подоболочки для отрисовки
+				{
+					if(s.CheckIfIncludedIn(par.SubShellsUsedInDrawing)) s.SetToBeDrawnFlag(1);//средни указанных для отрисовки есть данное состояние, то выставим ему флаг, что его нужно отрисовывать
+					else  s.SetToBeDrawnFlag(0);//иначе укажем флаг, что отрисовывать не надо
+				}
 				SP.push_back(s);
 				flag=1;
 			}
@@ -653,6 +736,11 @@ void CoupleOfExperiments::GenerateCommonNJPList()
 		if((flag==0)&&((par.IncompleteCouplesFlag==2)||(par.IncompleteCouplesFlag==1)))
 		{
 			StateParameters s(Pickup[i].n,Pickup[i].L,Pickup[i].JP,"pickup");
+			if (par.LimitedSubShellsUsedInDrawing==1)//если пользователь указывал в файле параметров подоболочки для отрисовки
+			{
+				if(s.CheckIfIncludedIn(par.SubShellsUsedInDrawing)) s.SetToBeDrawnFlag(1);//средни указанных для отрисовки есть данное состояние, то выставим ему флаг, что его нужно отрисовывать
+				else  s.SetToBeDrawnFlag(0);//иначе укажем флаг, что отрисовывать не надо
+			}
 			SP.push_back(s);
 		}
 		
@@ -670,11 +758,16 @@ void CoupleOfExperiments::GenerateCommonNJPList()
 		if((flag==0)&&((par.IncompleteCouplesFlag==3)||(par.IncompleteCouplesFlag==1)))
 		{
 			StateParameters s(Stripping[i].n,Stripping[i].L,Stripping[i].JP,"stripping");
+			if (par.LimitedSubShellsUsedInDrawing==1)//если пользователь указывал в файле параметров подоболочки для отрисовки
+			{
+				if(s.CheckIfIncludedIn(par.SubShellsUsedInDrawing)) s.SetToBeDrawnFlag(1);//средни указанных для отрисовки есть данное состояние, то выставим ему флаг, что его нужно отрисовывать
+				else  s.SetToBeDrawnFlag(0);//иначе укажем флаг, что отрисовывать не надо
+			}
 			SP.push_back(s);
 		}		
 	}
 }
-void CoupleOfExperiments::CalcSPE_and_OCC(TCanvas *cc1, TCanvas *cc3)
+void CoupleOfExperiments::CalcSPE_and_OCC(TCanvas *cc1, TCanvas *cc3)//функция рассчитывает одночастичную энергию, формирует графики для отрисовки и т.д.
 {cout<<"CoupleOfExperiments::CalcSPE_and_OCC has started!"<<endl;
 	//cout<<"\n Generate \n";
 	GenerateCommonNJPList();
@@ -690,10 +783,10 @@ void CoupleOfExperiments::CalcSPE_and_OCC(TCanvas *cc1, TCanvas *cc3)
 		{
 			double E_pickup=-Pickup.BA-C_pickup;//Диплом Марковой М.Л., ф-ла 4
 			double E_stripping=-Stripping.BA1+C_stripping;//Диплом Марковой М.Л., ф-ла 5
-			cout<<"E_pickup="<<E_pickup<<" E_stripping="<<E_stripping<<"\n"; 
+			//cout<<"E_pickup="<<E_pickup<<" E_stripping="<<E_stripping<<"\n"; 
 			double SPE_tmp=(Pickup.GetSumSF(SP[i])*E_pickup+Stripping.GetSumSF(SP[i])*E_stripping)/(Pickup.GetSumSF(SP[i])+Stripping.GetSumSF(SP[i]));
-			cout<<NLJToString(SP[i].n,SP[i].l,SP[i].JP)<<" pickup_sum: "<<Pickup.GetSumSF(SP[i])<<" stripping_sum:"<<Stripping.GetSumSF(SP[i])<<"\n";
-			cout<<NLJToString(SP[i].n,SP[i].l,SP[i].JP)<<" pickup_c: "<<C_pickup<<" stripping_c:"<<C_stripping<<"\n";
+			//cout<<NLJToString(SP[i].n,SP[i].l,SP[i].JP)<<" pickup_sum: "<<Pickup.GetSumSF(SP[i])<<" stripping_sum:"<<Stripping.GetSumSF(SP[i])<<"\n";
+			//cout<<NLJToString(SP[i].n,SP[i].l,SP[i].JP)<<" pickup_c: "<<C_pickup<<" stripping_c:"<<C_stripping<<"\n";
 			SPE.push_back(SPE_tmp);//Диплом Марковой М.Л., ф-ла 17
 			double OCC_tmp=(Pickup.GetSumSF(SP[i])-Stripping.GetSumSF(SP[i])+2*abs(SP[i].JP)+1)/(2*(2*abs(SP[i].JP)+1));
 			OCC.push_back(OCC_tmp);//Диплом Марковой М.Л., ф-ла 18
@@ -708,6 +801,7 @@ void CoupleOfExperiments::CalcSPE_and_OCC(TCanvas *cc1, TCanvas *cc3)
 		}
 		else
 		{
+			cout<<"C_stripping or C_pickup is incorrect! Add SPE = 0 and OCC = 0!\n"; 
 			SPE.push_back(0);
 			OCC.push_back(0);
 		}
@@ -721,15 +815,15 @@ void CoupleOfExperiments::CalcSPE_and_OCC(TCanvas *cc1, TCanvas *cc3)
 	{
 		if(SP_centroids[i].GetType()=="pickup")
 		{
-			Pickup_occupancies.SetPoint(Pickup_occupancies.GetN(),SPE[i],OCC[i]);
+			if (SP[i].GetToBeDrawnFlag()) Pickup_occupancies.SetPoint(Pickup_occupancies.GetN(),SPE[i],OCC[i]);
 		}
 		else if(SP_centroids[i].GetType()=="stripping")
 		{
-			Stripping_occupancies.SetPoint(Stripping_occupancies.GetN(),SPE[i],OCC[i]);
+			if (SP[i].GetToBeDrawnFlag()) Stripping_occupancies.SetPoint(Stripping_occupancies.GetN(),SPE[i],OCC[i]);
 		}
 		else if(SP_centroids[i].GetType()=="both")
 		{
-			Both_occupancies.SetPoint(Both_occupancies.GetN(),SPE[i],OCC[i]);
+			if (SP[i].GetToBeDrawnFlag()) Both_occupancies.SetPoint(Both_occupancies.GetN(),SPE[i],OCC[i]);
 		}
 		if(min_E>SPE[i])
 		{
@@ -799,7 +893,7 @@ void CoupleOfExperiments::CalcSPE_and_OCC(TCanvas *cc1, TCanvas *cc3)
 	//int p_size = OccupanciesForNormFit.size();//число фитируемых точек совпадает с числом учитываемых подоболочек
 	if ((p_size < 2) || (p_size>SP.size()))//но если точек оказалось меньше двух или точек полагается больше, чем есть подоболочек
 	{
-		cout << "Wrong number of NORM. FIT points!!!";
+		cout << "Note: Wrong number of NORM. FIT points! Fit will not be performed";
 		return;
 	}//то возьмём число точек равным числу подооболочек во входных данных
 	//cout << "Got number of points: " << size << endl;
@@ -1007,7 +1101,7 @@ string CoupleOfExperiments::ResultsInTextForm(char verbose_level)
 	s<<"SPE,keV nlj OCC #frac{G^{+}+G^{-}}{2J+1}\n";
 	for(unsigned int i=0;i<SPE.size();i++)
 	{
-		s<<SPE[i]<<" "<<NLJToString(SP_centroids[i].n,SP_centroids[i].l,SP_centroids[i].JP)<<" "<<OCC[i]<<" "<<ParticlesAndHolesSum[i]<<"\n";
+		if (SP_centroids[i].GetToBeDrawnFlag()) s<<SPE[i]<<" "<<NLJToString(SP_centroids[i].n,SP_centroids[i].l,SP_centroids[i].JP)<<" "<<OCC[i]<<" "<<ParticlesAndHolesSum[i]<<"\n";
 	}
 	return s.str();
 }

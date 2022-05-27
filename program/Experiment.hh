@@ -6,12 +6,12 @@
 #include <TMultiGraph.h>
 #include <TLatex.h>
 #include <TCanvas.h>
-#define G_CUT 0.8
+#define G_CUT 0.8 //значение для ???
 using namespace std;
 class SpectroscopicFactorHistogram
-{
+{//класс гистограмм спектроскопических сил (?)
 	public:
-	vector<TH1F> Histograms;
+	vector<TH1F> Histograms;//
 	vector<int> n;
 	vector<int> L;
 	vector<float> JP;
@@ -20,35 +20,46 @@ class SpectroscopicFactorHistogram
 	TLegend* Legend;//хорошие разработчики, сделали "=" protected...
 	void PrintSpectroscopicFactorHistogram();
 };
-class StateParameters
+
+class StateParameters//класс парасметров состояний, измеренных в эксперименте
 {
 	public:
 	double JP;
 	int n,l;
-	unsigned char couple_flag;//couple_flag показывает, есть ли в "паре" pickup или stripping: 1: pickup only, 2:stripping only, 3:pickup and stripping, 0-undefined
+	unsigned char couple_flag;//couple_flag показывает, есть ли в "паре" экспериментов pickup или stripping: 1: pickup only, 2:stripping only, 3:pickup and stripping, 0-undefined
 	StateParameters();
-	StateParameters(int n,int l,double JP,string c_flag);
+	StateParameters(int n, int l, double JP, string c_flag, bool to_be_drawn=1);
 	unsigned char GetColor();
-	bool CompareQN(StateParameters &s);
+	void GetQN(int &n_out, int &l_out, double &JP_out);
+	bool CompareQN(StateParameters &s);//CompareQN=CompareQauntumNumbers, функция сравнивает значения квантовых чисел двух подоболочек (сравнение равенства подоболочек)
+	bool ToBeDrawn;//флаг отрисовки на холсте
+	bool CheckIfIncludedIn(vector<StateParameters> SubShellsVec);//функция проверяет, встречается ли хоть 1 раз в поданном векторе это состояние
 	string GetType();
+	bool GetToBeDrawnFlag();
+	void SetToBeDrawnFlag(bool flag);
+	unsigned char GetCoupleFlag();
+	void SetCoupleFlag(unsigned char flag);
 };
 
 class parameters//класс пользовательских параметров расчёта
 {
 	public:
-	unsigned char IncompleteCouplesFlag;//all=1, pickup only=2, stripping only=3, no=4//флаг использования пар экпериментов разных типов
-	vector<StateParameters> SubShellsUsedForOccupancyFit;
+	unsigned char IncompleteCouplesFlag;//all=1, pickup only=2, stripping only=3, no=4//флаг использования пар экпериментов разных типов для расчёта
+	bool LimitedSubShellsUsedInDrawing=0;//флаг отрисовки только выбранных пользователем в параметрах подоболочек
+	vector<StateParameters> SubShellsUsedInAllCalculations;
+	vector<StateParameters> SubShellsUsedForOccupancyFit;// подоболочки, которые используются в фите БКШ
+	vector<StateParameters> SubShellsUsedInDrawing;//подоболочки, которые должны отрисовываться на холсте (в энергетическом спектре, в фите БКШ)
 	vector<unsigned char> UsedPenaltyFunctionComponents;
 	string GetComponentName(unsigned int iterator);
 	void ReadParameters(string filename);//метод считывает параметры из файла на диске
 	void CoutParameters();//метод выводит в терминал считанные в класс параметры расчёта
-	bool CheckStateParameters(StateParameters &s);
-	bool CheckOccupancy(StateParameters &s);
+	bool CheckStateParameters(StateParameters &s);// ?
+	bool CheckOccupancy(StateParameters &s);// ?
 	void PrintUsedSubShells();
 };
 
 class Experiment
-{
+{//класс набора экспериментальных данных из одной работы (?)
 	public:
 	string reference;
 	string reaction;
@@ -160,9 +171,9 @@ class CoupleOfExperiments
 	public:
 	Experiment Pickup;
 	Experiment Stripping;
-	parameters par;
+	parameters par;//считанные пользовательские параметры
 	vector<StateParameters> SP;
-	vector<StateParameters> SP_centroids;
+	vector<StateParameters> SP_centroids;//состояния, для которых были вычеслены центроиды C_nlm
 	vector<double> SPE;//одночастичные энергии
 	vector<double> OCC;//квадраты заселенностей
 	vector<double> ParticlesAndHolesSum;
@@ -229,7 +240,7 @@ class CoupleOfExperiments
 	double Delta_error_max;	
 	double penalty;
 	
-	TGraph occupancies;
+	TGraph occupancies;//график заселённостей состояний от энергии, использованных для фита БКШ
 	TGraph Pickup_occupancies;
 	TGraph Stripping_occupancies;
 	TGraph Both_occupancies;;
