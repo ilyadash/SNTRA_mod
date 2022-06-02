@@ -1,7 +1,8 @@
 #это комментарий
-UseIncompleteCouples: all #определяет, что делать с состояниями, в которых есть либо pickup,либо stripping. Возможные значения: all - использовать все, pickup - только из pickup, stripping - только из stripping, no - использовать только те состояния, которые есть и в pickup,и в stripping
+UseIncompleteCouples: all #all - использовать все
 UsedPenaltyFunctionComponents:  a_ij NPickupMax NStrippingMax EF_err Delta_err NumberOfParticlesInUsedShell #компоненты штрафной функции
 Weights: 1 0.1 0.1 1 1 1 1 #веса слагаемых штрафной функции
+SubShellsUsedInDrawing: 1d5/2 2s1/2 1d3/2 1f7/2
 SubShellsUsedForOccupancyFit: 1d5/2 2s1/2 1d3/2 #список подоболочек, которые используются для фита БКШ. Используются только состояния, которые есть и в pickup,и в stripping, сумма по этим оболочкам используется для нормировки
 SubShellsUsedForPenaltyFunction: 1d5/2 2s1/2 1d3/2 #список подоболочек, которые используются для расчета штрафной функции
 NParticles: 6 #число частиц на подоболочках, для которых считается штрафная функция

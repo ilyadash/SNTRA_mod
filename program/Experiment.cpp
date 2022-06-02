@@ -162,6 +162,12 @@ string StateParameters::GetType()
 	}
 }
 
+TString StateParameters::GetNLJ()
+{
+	TString result=TString::Format("%s",NLJToString(n,l,JP));
+	return result;
+}
+
 void parameters::ReadParameters(string filename)
 {
 	ifstream ifs(filename.c_str());
@@ -249,6 +255,10 @@ void parameters::ReadParameters(string filename)
 					StateParameters sp(n,l,JP,"both");
 					SubShellsUsedInDrawing.push_back(sp);
 				}
+			}
+			for(unsigned int i=0;i<SubShellsUsedInDrawing.size();i++)
+			{
+				cout<<SubShellsUsedInDrawing[i].GetNLJ()<<" will be drawn"<<endl;
 			}
 		}
 	}

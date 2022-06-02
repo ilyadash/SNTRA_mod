@@ -39,6 +39,7 @@ class StateParameters//класс парасметров состояний, и�
 	void SetToBeDrawnFlag(bool flag);
 	unsigned char GetCoupleFlag();
 	void SetCoupleFlag(unsigned char flag);
+	TString GetNLJ();
 };
 
 class parameters//класс пользовательских параметров расчёта
