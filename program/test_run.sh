@@ -1,4 +1,4 @@
 #!/bin/bash
 clear
 ./compile.sh
-./SNTRA ../28Si/Neutron/ txt
+./SNTRA ../TT/28Si/Neutron/ txt
