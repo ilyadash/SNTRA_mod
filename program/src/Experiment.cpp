@@ -164,8 +164,7 @@ string StateParameters::GetType()
 
 TString StateParameters::GetNLJ()
 {
-	TString result=TString::Format("%s",NLJToString(n,l,JP));
-	return result;
+	return NLJToString(n,l,JP);
 }
 
 void parameters::ReadParameters(string filename)

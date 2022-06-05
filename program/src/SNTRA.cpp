@@ -13,17 +13,17 @@
 #include <TGraph.h>
 #include <TFile.h>
 #include <TSystem.h>
-#include <TSystem.h>
 #include <TSystemDirectory.h>
 #include <TSystemFile.h>
 #include <TLine.h>
 #include <TMultiGraph.h>
 
 using namespace std;
-
+//глобальные переменные:
 TCanvas *cc1=new TCanvas("cc1","cc1");//TCanvas - класс cern_root (холст, где всё отрисовывается), первый - для результатов расчёта без нормировки
 TCanvas *cc2=new TCanvas("cc2","cc2");//сделаем второй холст для результатов нормировки
 TCanvas *cc3=new TCanvas("cc3","cc3");//сделаем третий холст для результатов применения нормировки
+TString output_dir="output";
 
 vector<string> ListFiles(string mask)
 {cout<<"vector<string> ListFiles(string mask) has started!"<<"\n";
@@ -309,8 +309,10 @@ void CalculatePenaltyFunction_norm(vector<CoupleOfExperiments> &v)//функци
 }//конец void CalculatePenaltyFunction_norm
 ///конец куска
 void PrintCalculationResult(vector<CoupleOfExperiments> v, string OutputFileName)
-{//на вход подаётся вектор пар экспериментов (вектор объектов CoupleOfExperiments) и название выходных файлов .pdf .txt OutputFileName
+{//на вход подаётся вектор пар экспериментов (вектор объектов CoupleOfExperiments)
+	//и название выходных файлов .pdf .txt OutputFileName
 	cout<<"void PrintCalculationResult has started!"<<"\n";
+	OutputFileName=string(output_dir)+"/"+OutputFileName;
 	ofstream OutputTextFile((OutputFileName+".txt").c_str());
 	cc1->Print((OutputFileName+".pdf[").c_str(),"pdf");
 	for(unsigned int i=0;i<v.size();i++)//для каждой пары экспериментов во входном векторе v
@@ -384,7 +386,9 @@ void PrintCalculationResult(vector<CoupleOfExperiments> v, string OutputFileName
 
 ///кусок9 кода, добавленного для нормировки СС 
 void PrintFitCalculationResult(vector<CoupleOfExperiments> v, string OutputFileName)//функция записывает результаты нормировки в выходные файлы .txt и .pdf
-{//на вход подаётся вектор пар экспериментов (вектор объектов CoupleOfExperiments) и название выходных файлов .pdf .txt OutputFileName
+{//на вход подаётся вектор пар экспериментов (вектор объектов CoupleOfExperiments)
+	//и название выходных файлов .pdf .txt OutputFileName
+	OutputFileName=string(output_dir)+"/"+OutputFileName;
 	ofstream OutputTextFile((OutputFileName+".txt").c_str());//создаём .txt файл с выходными данными
 	cc2->Print((OutputFileName+".pdf[").c_str(),"pdf");//создаём .pdf файл с выходными данными, который сейчас будем наполнять графиками и текстом
 	for(unsigned int i=0;i<v.size();i++)//для каждой пары экспериментов во входном векторе v
@@ -446,8 +450,11 @@ void PrintFitCalculationResult(vector<CoupleOfExperiments> v, string OutputFileN
 	cc2->Print((OutputFileName+".pdf]").c_str(),"pdf");//сохраняем всё в .pdf файл (в третий раз?)
 }
 
-void PrintFitCalculationResult2(vector<CoupleOfExperiments> v, string OutputFileName)//функция записывает результаты нормировки в выходные файлы .txt и .pdf
-{//на вход подаётся вектор пар экспериментов (вектор объектов CoupleOfExperiments) и название выходных файлов .pdf .txt OutputFileName
+void PrintFitCalculationResult2(vector<CoupleOfExperiments> v, string OutputFileName)
+{//функция записывает результаты нормировки в выходные файлы .txt и .pdf
+	//на вход подаётся вектор пар экспериментов (вектор объектов CoupleOfExperiments)
+	//и название выходных файлов .pdf .txt OutputFileName
+	OutputFileName=string(output_dir)+"/"+OutputFileName;
 	ofstream OutputTextFile((OutputFileName+".txt").c_str());//создаём .txt файл с выходными данными
 	cc3->Print((OutputFileName+".pdf[").c_str(),"pdf");//создаём .pdf файл с выходными данными, который сейчас будем наполнять графиками и текстом
 	for(unsigned int i=0;i<v.size();i++)//для каждой пары экспериментов во входном векторе v
@@ -544,7 +551,7 @@ void ArrangeByPenalty(vector<CoupleOfExperiments> &v)//функция меняя
 	}
 }//конец void ArrangeByPenalty
 
-void SNTRA(string PathToFiles, string particle="", int ListFilesFlag=0)
+void SNTRA(string PathToFiles, string particle="", int ListFilesFlag=0, string output_dir_path)
 {cout<<"void SNTRA has started!"<<"\n";
 	vector<Experiment> Pickup;//создаём вектор всех экспериментов подхвата
 	vector<Experiment> Stripping;//создаём вектор всех экспериментов срыва
@@ -603,8 +610,14 @@ void SNTRA(string PathToFiles, string particle="", int ListFilesFlag=0)
 
 int main(int argc, char** argv)//главная функция, принимает аргументы из терминала при вызове SNTRA пользователем
 {//argc (argument count) и argv (argument vector) - число переданных строк в main через argv и массив переданных в main строк
-	string path=argv[1];//так как при запуске SNTRA, например: ./SNTRA ../34S_Neutron/ txt, мы передаём ей директори с входными файлами и тип файлов
+	TString output_dir_cmd=TString::Format("mkdir -v %s",output_dir.Data());
+	gSystem->Exec(output_dir_cmd.Data());
+	string path=argv[1];//так как при запуске SNTRA, например: ./SNTRA ../34S_Neutron/ txt,
+	//мы передаём ей директори с входными файлами и тип файлов
 	string ext=argv[2];//то очевидно мы сохраняем тоже самое в path и ext, соответственно
-	cout<<"Got path to input files: "<<path+" "+ext<<"\n";//выводим путь к директории входных файлов и их расширение (.txt) (см. при запуске SNTRA в терминале это первая строка)
-	SNTRA(path+" "+ext,"",1);//вызываем нашу функцию SNTRA, передавая ей путь ко входным файлам, их расширение и ListFilesFlag=1
+	cout<<"Got path to input files: "<<path+" "+ext<<"\n";//выводим путь к директории входных файлов
+	//и их расширение (.txt) (см. при запуске SNTRA в терминале это первая строка)
+	cout<<"Got path to output files: "<<output_dir<<"\n";
+	SNTRA(path+" "+ext,"",1, output_dir);//вызываем нашу функцию SNTRA, передавая ей путь ко входным файлам,
+	//их расширение и ListFilesFlag=1
 }
