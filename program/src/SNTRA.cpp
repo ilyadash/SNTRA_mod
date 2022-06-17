@@ -23,7 +23,7 @@ using namespace std;
 TCanvas *cc1=new TCanvas("cc1","cc1");//TCanvas - класс cern_root (холст, где всё отрисовывается), первый - для результатов расчёта без нормировки
 TCanvas *cc2=new TCanvas("cc2","cc2");//сделаем второй холст для результатов нормировки
 TCanvas *cc3=new TCanvas("cc3","cc3");//сделаем третий холст для результатов применения нормировки
-TString output_dir="output";
+//TString output_dir="output";
 
 vector<string> ListFiles(string mask)
 {cout<<"vector<string> ListFiles(string mask) has started!"<<"\n";
@@ -308,7 +308,7 @@ void CalculatePenaltyFunction_norm(vector<CoupleOfExperiments> &v)//функци
 	
 }//конец void CalculatePenaltyFunction_norm
 ///конец куска
-void PrintCalculationResult(vector<CoupleOfExperiments> v, string OutputFileName)
+void PrintCalculationResult(vector<CoupleOfExperiments> v, string OutputFileName, string output_dir="output")
 {//на вход подаётся вектор пар экспериментов (вектор объектов CoupleOfExperiments)
 	//и название выходных файлов .pdf .txt OutputFileName
 	cout<<"void PrintCalculationResult has started!"<<"\n";
@@ -385,7 +385,7 @@ void PrintCalculationResult(vector<CoupleOfExperiments> v, string OutputFileName
 }
 
 ///кусок9 кода, добавленного для нормировки СС 
-void PrintFitCalculationResult(vector<CoupleOfExperiments> v, string OutputFileName)//функция записывает результаты нормировки в выходные файлы .txt и .pdf
+void PrintFitCalculationResult(vector<CoupleOfExperiments> v, string OutputFileName, string output_dir="output")//функция записывает результаты нормировки в выходные файлы .txt и .pdf
 {//на вход подаётся вектор пар экспериментов (вектор объектов CoupleOfExperiments)
 	//и название выходных файлов .pdf .txt OutputFileName
 	OutputFileName=string(output_dir)+"/"+OutputFileName;
@@ -450,7 +450,7 @@ void PrintFitCalculationResult(vector<CoupleOfExperiments> v, string OutputFileN
 	cc2->Print((OutputFileName+".pdf]").c_str(),"pdf");//сохраняем всё в .pdf файл (в третий раз?)
 }
 
-void PrintFitCalculationResult2(vector<CoupleOfExperiments> v, string OutputFileName)
+void PrintFitCalculationResult2(vector<CoupleOfExperiments> v, string OutputFileName, string output_dir="output")
 {//функция записывает результаты нормировки в выходные файлы .txt и .pdf
 	//на вход подаётся вектор пар экспериментов (вектор объектов CoupleOfExperiments)
 	//и название выходных файлов .pdf .txt OutputFileName
@@ -551,7 +551,7 @@ void ArrangeByPenalty(vector<CoupleOfExperiments> &v)//функция меняя
 	}
 }//конец void ArrangeByPenalty
 
-void SNTRA(string PathToFiles, string particle="", int ListFilesFlag=0, string output_dir_path)
+void SNTRA(string PathToFiles, string particle="", int ListFilesFlag=0, string output_dir_path="output")
 {cout<<"void SNTRA has started!"<<"\n";
 	vector<Experiment> Pickup;//создаём вектор всех экспериментов подхвата
 	vector<Experiment> Stripping;//создаём вектор всех экспериментов срыва
@@ -598,18 +598,20 @@ void SNTRA(string PathToFiles, string particle="", int ListFilesFlag=0, string o
 	}
 	CalculatePenaltyFunction(CE);//применяем функцию для вычисления штрафной функции
 	ArrangeByPenalty(CE);//применяем функцию для сортировки нашего вывода по возрастанию значения штрафной функции
-	PrintCalculationResult(CE,OutputFileName);//записывает результат ранжировки для пары экспериментов CE в выходные файлы .txt и .pdf
+	PrintCalculationResult(CE,OutputFileName,output_dir_path);//записывает результат ранжировки для пары экспериментов CE в выходные файлы .txt и .pdf
 	///кусок13 кода, добавленного для нормировки СС
-	PrintFitCalculationResult(CE,OutputFileName2);//записывает результат нормировки для пары экспериментов CE в выходные файлы .txt и .pdf
+	PrintFitCalculationResult(CE,OutputFileName2,output_dir_path);//записывает результат нормировки для пары экспериментов CE в выходные файлы .txt и .pdf
 	CalculatePenaltyFunction_norm(CE);//применяем функцию для вычисления штрафной функции
 	ArrangeByPenalty(CE);//применяем функцию для сортировки нашего вывода по возрастанию значения штрафной функции
-	PrintFitCalculationResult2(CE,OutputFileName3);//записывает результат воздействия нормировки для пары экспериментов CE в выходные файлы .txt и .pdf
+	PrintFitCalculationResult2(CE,OutputFileName3,output_dir_path);//записывает результат воздействия нормировки для пары экспериментов CE в выходные файлы .txt и .pdf
 	///конец кусок13 кода, добавленного для нормировки СС
 	cout<<"void SNTRA has ended!"<<"\n";
 }//конец функции void SNTRA
 
 int main(int argc, char** argv)//главная функция, принимает аргументы из терминала при вызове SNTRA пользователем
 {//argc (argument count) и argv (argument vector) - число переданных строк в main через argv и массив переданных в main строк
+	TString output_dir=argv[3];
+	if(output_dir=="") output_dir="output"; 
 	TString output_dir_cmd=TString::Format("mkdir -v %s",output_dir.Data());
 	gSystem->Exec(output_dir_cmd.Data());
 	string path=argv[1];//так как при запуске SNTRA, например: ./SNTRA ../34S_Neutron/ txt,
@@ -618,6 +620,6 @@ int main(int argc, char** argv)//главная функция, принимае
 	cout<<"Got path to input files: "<<path+" "+ext<<"\n";//выводим путь к директории входных файлов
 	//и их расширение (.txt) (см. при запуске SNTRA в терминале это первая строка)
 	cout<<"Got path to output files: "<<output_dir<<"\n";
-	SNTRA(path+" "+ext,"",1, output_dir);//вызываем нашу функцию SNTRA, передавая ей путь ко входным файлам,
+	SNTRA(path+" "+ext,"",1, string(output_dir));//вызываем нашу функцию SNTRA, передавая ей путь ко входным файлам,
 	//их расширение и ListFilesFlag=1
 }
