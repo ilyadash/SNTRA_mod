@@ -580,21 +580,17 @@ void SNTRA(string PathToFiles, string particle="", int ListFilesFlag=0, string o
 		////cout<<CE[i]<<"\n";
 	}
 	string OutputFileName;//создаём строку с именем выходного файла для результата расчёта SNTRA до нормировки
-	///кусок11 кода, добавленного для нормировки СС
 	string OutputFileName2;//создаём строку с именем выходного файла для результата нормировки
 	string OutputFileName3;//создаём строку с именем второго выходного файла для результата нормировки
-	///конец кусок11 кода, добавленного для нормировки СС
 	if((Pickup.size()>0)&&(Stripping.size()>0))//если есть хоть 1 эксперимент срыва и хоть 1 эксперимент подхвата, то
 	{//задаём имя выходного pdf файла в строку OutputFileName
 		OutputFileName=Pickup[0].Nucleus+"_"+Pickup[0].particle;//OutputFileName равен название ядра _ налетающий нуклон
-		///кусок12 кода, добавленного для нормировки СС
 		OutputFileName2=OutputFileName+"_norm";//OutputFileName2 равен название ядра _ налетающий нуклон_norm
 		OutputFileName3=OutputFileName+"_norm2";//OutputFileName3 равен название ядра _ налетающий нуклон_norm2
-		///конец кусок12 кода, добавленного для нормировки СС
 	}//получаем для название типа "32S_neutron" для pdf и txt файлов
 	else//иначе
 	{
-		return ;//заканчиваем нашу функцию SNTRA_v2 здесь
+		return ;//заканчиваем нашу функцию SNTRA здесь
 	}
 	CalculatePenaltyFunction(CE);//применяем функцию для вычисления штрафной функции
 	ArrangeByPenalty(CE);//применяем функцию для сортировки нашего вывода по возрастанию значения штрафной функции

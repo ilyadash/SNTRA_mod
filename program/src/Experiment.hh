@@ -87,10 +87,8 @@ class Experiment
 	void ProcessExperimentalData();//надо будет добавить перебор n и j
 	double GetCentroid(int n,int l,double JP_inp);//Возвращает центроид для данных JP
 	double GetSumSF(int n,int l,double JP_inp);//Возвращает сумму СФ для данных JP	
-	///кусок3,6 добавленного кода для нормировки 
 	double GetErSumSF(int n,int l,double JP_inp);//Возвращает ошибку суммы СФ для данных n,l,JP
-	double GetErSumSF(StateParameters &s);
-	///конец кусок3,6 добавленного кода для нормировки 
+	double GetErSumSF(StateParameters &s); 
 	double GetCentroid(StateParameters &s);//Возвращает центроид для данных StateParameters
 	double GetSumSF(StateParameters &s);//Возвращает сумму СФ для данных StateParameters
 	
@@ -168,77 +166,38 @@ void SplitExperiments(vector<Experiment> &Experiments)
 }
 
 class CoupleOfExperiments
-{
+{//класс пары комплиментарных экспермиентов срыва-подхвата
 	public:
-	Experiment Pickup;
-	Experiment Stripping;
+	Experiment Pickup;//эксперимент подхвата
+	Experiment Stripping;//эксперимент срыва
 	parameters par;//считанные пользовательские параметры
-	vector<StateParameters> SP;
+	vector<StateParameters> SP;//
 	vector<StateParameters> SP_centroids;//состояния, для которых были вычеслены центроиды C_nlm
 	vector<double> SPE;//одночастичные энергии
 	vector<double> OCC;//квадраты заселенностей
-	vector<double> ParticlesAndHolesSum;
-	vector<double> PenaltyComponents;
-	int Pickup_size;
-	int Stripping_size;
+	vector<double> ParticlesAndHolesSum;//
+	vector<double> PenaltyComponents;//
+	int Pickup_size;//
+	int Stripping_size;//
 	
-	///кусок5 добавленного кода для нормировки 
-	///сохраним как можно больше вещей в переменные класса, чтобы потом передать функции построения выходного файла
-	vector<double> Gp_c;//вектор спектроскопических сил срыва подоболочек для расчёта нормированных Gp_norm_c
-	vector<double> Gm_c;//вектор спектроскопических сил подхвата подоболочек для расчёта нормированных Gm_norm_c
+	vector<double> Gp_c;//вектор спектроскопических сил срыва подоболочек 
+	vector<double> Gm_c;//вектор спектроскопических сил подхвата подоболочек 
 	vector<double> er_Gp_c;//вектор ошибок спектроскопических сил срыва подоболочек для расчёта нормированных Gp_norm_c
 	vector<double> er_Gm_c;//вектор ошибок спектроскопических сил подхвата подоболочек для расчёта нормированных Gm_norm_c
 	vector<double> Gp_alt_c;//вектор спектроскопических сил  подоболочек для расчёта через МНК, делённых на 2j+1 (они должны быть близки к 1)
 	vector<double> Gm_alt_c;//вектор спектроскопических сил подоболочек для расчёта через МНК, делённых на 2j+1 (они должны быть близки к 1)
 	vector<double> er_Gp_alt_c;//вектор ошибок спектроскопических сил подоболочек для расчёта через МНК, делённых на 2j+1
 	vector<double> er_Gm_alt_c;//вектор ошибок спектроскопических сил подоболочек для расчёта через МНК, делённых на 2j+1 
-	double fit_a;//сохраняем в объекте класса подобранный 1-ый параметр прямой y = a + b * x
-	double fit_b;//сохраняем в объекте класса подобранный 2-ой параметр прямой y = a + b * x
-	double er_fit_a;//сохраняем в объекте класса ошибку подобранного 1-го параметра прямой y = a + b * x
-	double er_fit_b;//сохраняем в объекте класса ошибку подобранного 2-го параметра прямой y = a + b * x
-	double n_p = 1.;//значение нормировочного коэффициента n+ для данной пары экспериментов
-	double n_m = 1.;//значение нормировочного коэффициента n- для данной пары экспериментов
-	double er_n_p;//значение ошибки нормировочного коэффициента n+ для данной пары экспериментов
-	double er_n_m;//значение ошибки нормировочного коэффициента n- для данной пары экспериментов
-	vector<double> Gp_norm_c;//вектор нормированных спектроскопических сил  подоболочек  
-	vector<double> Gm_norm_c;//вектор нормированных спектроскопических сил подоболочек
 	
-	TGraphErrors points_G;//объект points_G класса TGraphErrors, точки G до нормировки для посторения нормировочного фита этой пары экспериментов
-	TGraphErrors points_G_norm;//объект points_G_norm класса TGraphErrors, точки G после нормировки для посторения нормировочного фита этой пары экспериментов
-	TF1 FIT;
-	///второй фит:
-	TF1 FIT2;//объект FIT класса TF1, он нужен для построения фита
-	TF1 FIT3;
+	TGraphErrors points_G;//объект points_G класса TGraphErrors, точки G+- (спектроскопических сил) в графике
+	int p_size=0;//кол-во точек в графиках ,которые должны использоваться в нормировке
 	
-	vector<double> SPE_norm;//вектор вычисленных одночастичных энергий для каждой подоболочки
-	vector<double> OCC_norm;//вектор вычисленных квадратов заселенностей для каждой подоболочки
-	vector<double> ParticlesAndHolesSum_norm;
-	
-	TGraph occupancies_norm;//объект occupancies класса TGraph, это график ддля точек заселённости v^2 для БКШ после нормировки
-	TGraph Pickup_norm_occupancies;
-	TGraph Stripping_norm_occupancies;
-	TGraph Both_norm_occupancies;
-	TF1 BCS_norm;//объект BCS класса TF1, A TF1 object is a 1-Dim function - график для кривой линии БКШ фита после нормировки
-	
-	double Ef_norm;//энергия Ферми, получаемая в фите БКШ
-	double Delta_norm;//\Delta^2//дельта в квадрате, получаемая в фите БКШ
-	double Ef_error_norm;//ошибка энергии Ферми, получаемая в фите БКШ
-	double Delta_error_norm;//ошибка дельты в квадрате, получаемая в фите БКШ
-	double Ef_error_max_norm;//максимальная ошибка энергии Ферми, получаемая в фите БКШ
-	double Delta_error_max_norm;//максимальная ошибка дельты в квадрате, получаемая в фите БКШ
-	//double penalty_norm;//переменная значений функции ошибок?
-	
-	//void CalcSPE_and_OCC_norm(TCanvas *cc1, TCanvas *cc3);
-	string FitResultsInTextForm(char verbose_level=0);
-	string FitResultsInTextForm2(char verbose_level=0);
-	///конец кусок5 добавленного кода для нормировки
-
-	double Ef;
-	double Delta;//\Delta^2
-	double Ef_error;
-	double Delta_error;
-	double Ef_error_max;
-	double Delta_error_max;	
+	double Ef;//энергия Ферми, получаемая в фите БКШ
+	double Delta;//\Delta^2//дельта в квадрате, получаемая в фите БКШ
+	double Ef_error;//ошибка энергии Ферми, получаемая в фите БКШ
+	double Delta_error;//ошибка дельты в квадрате, получаемая в фите БКШ
+	double Ef_error_max;//максимальная ошибка энергии Ферми, получаемая в фите БКШ
+	double Delta_error_max;	//максимальная ошибка дельты в квадрате, получаемая в фите БКШ
 	double penalty;
 	
 	TGraph occupancies;//график заселённостей состояний от энергии, использованных для фита БКШ
@@ -246,14 +205,33 @@ class CoupleOfExperiments
 	TGraph Stripping_occupancies;
 	TGraph Both_occupancies;;
 	
-	TF1 BCS;
-	string PenaltyFunction;
+	TF1 BCS;//фит заселённостей в зависисмости от энергии (фит БКШ)
+	string PenaltyFunction;//
 	TH1F BuildPenaltyComponentsHistogram();
 	CoupleOfExperiments(Experiment &InpPickup,Experiment &InpStripping);//конструктор, аргументы которого представляют из себя эксперименты по подхвату и срыву
 	void GenerateCommonNJPList();
-	///
 	void CalcSPE_and_OCC(TCanvas *cc1, TCanvas *cc3);
-	///
+	void ClearCalcResults();
 	string ResultsInTextForm(char verbose_level=0);
 	void DrawResultsInTextForm(string str);
+};
+
+class NormalisedCoupleOfExperiments: public CoupleOfExperiments
+{//класс пары комплиментарных экспермиентов срыва-подхвата, которые будут/уже пронормированы
+	//нужен для полиморфизма методов
+	public:
+	double fit_a;//сохраняем в объекте класса подобранный 1-ый параметр прямой y = a + b * x
+	double fit_b;//сохраняем в объекте класса подобранный 2-ой параметр прямой y = a + b * x
+	double er_fit_a;//сохраняем в объекте класса ошибку подобранного 1-го параметра прямой y = a + b * x
+	double er_fit_b;//сохраняем в объекте класса ошибку подобранного 2-го параметра прямой y = a + b * x
+	double n_p = 1.;//значение нормировочного коэффициента n+ для данной пары экспериментов
+	double n_m = 1.;//значение нормировочного коэффициента n- для данной пары экспериментов
+	double er_n_p=0;//значение ошибки нормировочного коэффициента n+ для данной пары экспериментов
+	double er_n_m=0;//значение ошибки нормировочного коэффициента n- для данной пары экспериментов
+	
+	TF1 FIT,FIT2,FIT3;//прямые фитов, использованные в процессе нормировки (для отрисовки в файле нормировки)
+	void InduceNormalisation();//функция, которая нормализует данную пару экспериментов, обновляя значения аргументов
+	void ReCalcSPE_and_OCC();
+	string FitResultsInTextForm(char verbose_level=0);
+	string FitResultsInTextForm2(char verbose_level=0);
 };

@@ -776,8 +776,10 @@ void CoupleOfExperiments::GenerateCommonNJPList()
 		}		
 	}
 }
-void CoupleOfExperiments::CalcSPE_and_OCC(TCanvas *cc1, TCanvas *cc3)//функция рассчитывает одночастичную энергию, формирует графики для отрисовки и т.д.
-{cout<<"CoupleOfExperiments::CalcSPE_and_OCC has started!"<<endl;
+
+void CoupleOfExperiments::CalcSPE_and_OCC(TCanvas *cc1, TCanvas *cc3)//функция рассчитывает одночастичную энергию, 
+{//формирует графики для отрисовки и т.д.
+	cout<<"CoupleOfExperiments::CalcSPE_and_OCC has started!"<<endl;
 	//cout<<"\n Generate \n";
 	GenerateCommonNJPList();
 	//cout<<"\n Generated \n";
@@ -794,14 +796,13 @@ void CoupleOfExperiments::CalcSPE_and_OCC(TCanvas *cc1, TCanvas *cc3)//функ�
 			double E_stripping=-Stripping.BA1+C_stripping;//Диплом Марковой М.Л., ф-ла 5
 			//cout<<"E_pickup="<<E_pickup<<" E_stripping="<<E_stripping<<"\n"; 
 			double SPE_tmp=(Pickup.GetSumSF(SP[i])*E_pickup+Stripping.GetSumSF(SP[i])*E_stripping)/(Pickup.GetSumSF(SP[i])+Stripping.GetSumSF(SP[i]));
+			double OCC_tmp=(Pickup.GetSumSF(SP[i])-Stripping.GetSumSF(SP[i])+2*abs(SP[i].JP)+1)/(2*(2*abs(SP[i].JP)+1));
 			//cout<<NLJToString(SP[i].n,SP[i].l,SP[i].JP)<<" pickup_sum: "<<Pickup.GetSumSF(SP[i])<<" stripping_sum:"<<Stripping.GetSumSF(SP[i])<<"\n";
 			//cout<<NLJToString(SP[i].n,SP[i].l,SP[i].JP)<<" pickup_c: "<<C_pickup<<" stripping_c:"<<C_stripping<<"\n";
 			SPE.push_back(SPE_tmp);//Диплом Марковой М.Л., ф-ла 17
-			double OCC_tmp=(Pickup.GetSumSF(SP[i])-Stripping.GetSumSF(SP[i])+2*abs(SP[i].JP)+1)/(2*(2*abs(SP[i].JP)+1));
 			OCC.push_back(OCC_tmp);//Диплом Марковой М.Л., ф-ла 18
 			ParticlesAndHolesSum.push_back((Pickup.GetSumSF(SP[i])+Stripping.GetSumSF(SP[i]))/(2*abs(SP[i].JP)+1));
 			SP_centroids.push_back(SP[i]);
-			
 			if(par.CheckOccupancy(SP[i]))
 			{
 				OccupanciesForBCSFit.push_back(OCC_tmp);//отдельные векторы заселенностей для аппроксимации БКШ
@@ -858,24 +859,18 @@ void CoupleOfExperiments::CalcSPE_and_OCC(TCanvas *cc1, TCanvas *cc3)//функ�
 	Stripping_occupancies.SetMarkerColor(2);
 	SetTGraphLimits(Both_occupancies,min_E,max_E,min_OCC,max_OCC);
 	Both_occupancies.SetMarkerColor(1);
-	occupancies.Draw("AP");	
+	//occupancies.Draw("AP");	
 	occupancies.SetMarkerStyle(28);
 	occupancies.SetMarkerSize(2);
 	occupancies.Fit(&BCS,"M");
-	BCS.Draw("l same");
+	//BCS.Draw("l same");
 	
-	cc1->Print("BCS.pdf","pdf");
+	//cc1->Print("BCS.pdf","pdf");//напечатать отдельный файл с фитом БКШ (?)
 	Ef=BCS.GetParameter(0);
 	Ef_error=BCS.GetParError(0);
 	Delta=BCS.GetParameter(1);
 	Delta_error=BCS.GetParError(1);
-	
-	///кусок6 добавленного кода для нормировки СС
-	///здесь происходит подготовительная работа для реализации фитирования:
-	
-	vector<double> OccupanciesForNormFit;//отдельный вектор заселённостей для аппроксимации нормировки (пока совпадают с набором для аппроксимации БКШ)
-	vector<double> EnergiesForNormFit;//отдельный вектор энергий для аппроксимации нормировки (пока совпадают с набором для аппроксимации БКШ)
-	int p_size=0;
+	cout<<"CoupleOfExperiments::CalcSPE_and_OCC has ended!"<<endl;
 	
 	for(int i=0;i<SP.size();i++)//цикл for; для каждой подоболочки:
 	{
@@ -893,199 +888,28 @@ void CoupleOfExperiments::CalcSPE_and_OCC(TCanvas *cc1, TCanvas *cc3)//функ�
 		er_Gm_alt_c.push_back(Pickup.GetErSumSF(SP[i])/(2*abs(SP[i].JP)+1));//формируем вектор из делённых на (2j+1) сумм СС подхвата для каждой подоболочки
 		
 		if(par.CheckOccupancy(SP[i]))///здесь можно заменить на отдельную функцию проверки подоболочки на принадлежность к списку для участия в фите нормировки
-		{p_size++;}
+		{
+			p_size++;
+		}
 	}
-	///подготовительная работа для реализации фитирования закончена, теперь фитируем:
-	//cout << "||||||| solveLinear_mod started working!" << endl;//оглашает, что эта подпрограмма начала работать
-	//cout << "Perform the fit  y = a + b * x in Minuit" << endl;//оглашает с помощью какой Root штуки берём фит (Minuit)
-	//int size = SP.size();//число G нормированных на 2j+1 в векторе (т.е. число подоболочек)
-	//int p_size = OccupanciesForNormFit.size();//число фитируемых точек совпадает с числом учитываемых подоболочек
-	if ((p_size < 2) || (p_size>SP.size()))//но если точек оказалось меньше двух или точек полагается больше, чем есть подоболочек
-	{
-		cout << "Note: Wrong number of NORM. FIT points! Fit will not be performed";
-		return;
-	}//то возьмём число точек равным числу подооболочек во входных данных
-	//cout << "Got number of points: " << size << endl;
-	const Int_t nrVar  = 2;//число параметров в функции
+}
 
-	//массивы с координатами точек:
-	Double_t x[p_size], x2[p_size];//x координаты точек 
-	Double_t y[p_size], y2[p_size];//y координаты точек 
-	Double_t xe[p_size], xe2[p_size];//ошибки по x 
-	Double_t ye[p_size], ye2[p_size];//ошибки по y
-   
-	//cout << "||||||| List of points:" << endl;
-   
-	for(int i=0;i<SP.size();i++)//цикл для заполнения координат точек и их ошибок
-	{//cout << "Point number " << i << ":" << endl;
-		if(par.CheckOccupancy(SP[i]))
-		{
-			x[i] = Gm_alt_c[i]; 
-			cout << "x[" << i << "] = " << x[i] << endl;
-			y[i] = Gp_alt_c[i];
-			cout << "y[" << i << "] = " << y[i] << endl;
-			xe[i] = er_Gm_alt_c[i]; 
-			cout << "xe[" << i << "] = " << xe[i] << endl;
-			ye[i] = er_Gp_alt_c[i];
-			cout << "ye[" << i << "] = " << ye[i] << endl;
-		}
-	}
-	///Вариант с усреднением двух фитов:
-	//cout << "|||||| Fiting by Minuit through TGraph:" << endl;//огласим, что используем для фита
-	TGraphErrors *gr1 = new TGraphErrors(p_size,x,y,0,ye);
-	TGraphErrors *gr2 = new TGraphErrors(p_size,y,x,0,xe);//A TGraphErrors is a TGraph with error bars. 
-	//В аргументах: чило точек, координаты точек по х, координаты точек по у, ошибки точек по х, ошибки точек по у
-	//если передавать ошибки по x, то фит сработает неправильно, поэтому обнуляем их (очень жаль, но пока не решено)
-	TF1 *f1 = new TF1("f1","pol1");//A TF1 object is a 1-Dim function, f1 - её название, тип pol1 - линейная функция: y=a*x+b, определяем ей от 0 до максимального G^- + 0.1
-	TF1 *f2 = new TF1("f2","pol1");
-	//A TF1 object is a 1-Dim function defined between a lower and upper limit.
-	gr1->Fit("f1");//фитируем; если с параметром Q: Fit("FIT","Q"); - quiet, отключить вывод параметров фита
-	gr2->Fit("f2");
-	fit_a = f1->GetParameter(0);//возвращаем подобранный 1-ый параметр прямой 1-го фита
-	fit_b = f1->GetParameter(1);//возвращаем подобранный 2-ой параметр прямой 2-го фита
-	double fit_a2 = f2->GetParameter(0);
-	double fit_b2 = f2->GetParameter(1);
-	er_fit_a = f1->GetParError(0);//возвращаем ошибку подобранного 1-го параметра прямой 
-	er_fit_b = f1->GetParError(1);//возвращаем ошибку подобранного 2-го параметра прямой 
-	double er_fit_a2 = f2->GetParError(0);
-	double er_fit_b2 = f2->GetParError(1);
-	cout << "n+ = " << 1/fit_a << " and " << -fit_b2/fit_a2 << endl;
-	cout << "n- = " << 1/fit_a2 << " and " << -fit_b/fit_a << endl;
-	n_p = (1/fit_a-fit_b2/fit_a2)/2;//находим первый нормировочный параметр n+ через среднее двух фитов
-	n_m = (1/fit_a2-fit_b/fit_a)/2;//находим второй нормировочный параметр n- через среднее двух фитов
-		
-	if ((n_p < 0.5) || (n_m < 0.5) || (isnan(n_p)) || (isnan(n_m)))//если фит вышел плохой, то n+ и n- не имеют смысла, 
-	{n_p = 1.; n_m =1.;}//так что приравниваем их к 1
-		
-	er_n_p = 1/2*sqrt((er_fit_a/(fit_a*fit_a))*(er_fit_a/(fit_a*fit_a))+(er_fit_b2/fit_a2)*(er_fit_b2/fit_a2)+(fit_b2/(fit_a2*fit_a2)*er_fit_a2)*(fit_b2/(fit_a2*fit_a2)*er_fit_a2));//находим ошибку первого нормировочного параметра n+ 
-	er_n_m = 1/2*sqrt((er_fit_b/fit_a)*(er_fit_b/fit_a)+(fit_b/(fit_a*fit_a)*er_fit_a)*(fit_b/(fit_a*fit_a)*er_fit_a)+er_fit_a2/(fit_a2*fit_a2)*er_fit_a2/(fit_a2*fit_a2));//находим ошибку второго нормировочного параметр n- 
-	cout << "n+ = " << n_p << "+/-" << er_n_p << endl;//выводим первый нормировочный параметр n+ 
-	cout << "n- = " << n_m << "+/-" << er_n_m << endl;//выводим второй нормировочный параметр n-
-	//fit_a = 1/n_p;//переопределяем парметры прямой, чтобы при выводе прямой фита учитывалось усреднение по обоим фитам
-	//fit_b = -n_m/n_p;
-	er_fit_a = er_n_p/(n_p*n_p);//
-	er_fit_b = sqrt((er_n_p/n_p)*(er_n_p/n_p)+(er_n_m*n_m/n_p/n_p)*(er_n_m*n_m/n_p/n_p));
-		
-	for(int j=0;j<p_size;j++)//цикл для заполнения векторов новых координат для нормированных сил
-	{
-		x2[j] = Gm_alt_c[j]*n_m; 
-		y2[j] = Gp_alt_c[j]*n_p;
-		xe2[j] = er_Gm_alt_c[j]*n_m; 
-		ye2[j] = er_Gp_alt_c[j]*n_p;
-	}
-	for(int j=0;j<SP.size();j++)//цикл для заполнения векторов новых, нормированных СС
-	{
-		Gp_norm_c.push_back(n_p*Gp_c[j]);//вычисляем вектор новых, нормированных СС для срыва
-		cout << "G+_norm[" << j << "] = " << Gp_norm_c[j] << endl;
-		Gm_norm_c.push_back(n_m*Gm_c[j]);//вычисляем вектор новых, нормированных СС для подхвата
-		cout << "G-_norm[" << j << "] = " << Gm_norm_c[j] << endl;
-	}
-	//cout << "I finished Gp_norm and Gm_norm!!! Now solveLinear_mod() ends!!!" << endl;
-	points_G=TGraphErrors(p_size,x,y,0,ye);//создаём график точек, которые мы фитировали
-	points_G_norm=TGraphErrors(p_size,x2,y2,0,ye2);//создаём график точек, которые мы получили из фита
-	FIT=TF1("FIT","pol1",0,GetMaximum(Gm_alt_c)+1);//создаём линию для изображения фита
-	FIT.SetParameter(0,fit_a);//устанавливаем свободный член прямой, которую будем строить
-	FIT.SetParameter(1,fit_b);//устанавливаем коэффициента наклона прямой, которую будем строить
-	///вторая линия фита:
-	FIT2=TF1("FIT","pol1",0,GetMaximum(Gm_alt_c)+1);//создаём линию для изображения фита
-	FIT2.SetParameter(0,-fit_a2/fit_b2);//устанавливаем свободный член прямой, которую будем строить
-	FIT2.SetParameter(1,1/fit_b2);//устанавливаем коэффициента наклона прямой, которую будем строить
-	///третья линия фита:
-	FIT3=TF1("FIT","pol1",0,GetMaximum(Gm_alt_c)+1);//создаём линию для изображения фита
-	FIT3.SetParameter(0,1/n_p);//устанавливаем свободный член прямой, которую будем строить
-	FIT3.SetParameter(1,-n_m/n_p);//устанавливаем коэффициента наклона прямой, которую будем строить
+void CoupleOfExperiments::ClearCalcResults()
+{
+	//очищаем аттрибуты объекта - вектора вычисленных величин:
+	SPE.resize(0);
+	OCC.resize(0);
+	ParticlesAndHolesSum.resize(0);
+	SP_centroids.resize(0);
+	OccupanciesForBCSFit.resize(0);//отдельные векторы заселенностей для аппроксимации БКШ
+	EnergiesForBCSFit.resize(0);
 	
-	///применяем расчитанные коэффициенты нормировки n_m, n_p:
-	for(int i=0;i<SP.size();i++)//цикл for; для каждой подоболочки:
-	{
-		double C_pickup=Pickup.GetCentroid(SP[i]);//записываем значение центроида для эксперимента по подхвату в переменную C_pickup
-		double C_stripping=Stripping.GetCentroid(SP[i]);//записываем значение центроида для эксперимента по срыву в переменную C_stripping	
-			
-		if((C_stripping!=-1)&&(C_pickup!=-1)&&(!isnan(C_stripping))&&(!isnan(C_pickup)))//индусский fix, потом проверить, что генерирует nan
-		{
-			double E_pickup=-Pickup.BA-C_pickup;//Диплом Марковой М.Л., ф-ла 4//вычисление "одночастичной" для подхвата с использованием энергии отрыва нуклона
-			double E_stripping=-Stripping.BA1+C_stripping;//Диплом Марковой М.Л., ф-ла 5//вычисление "одночастичной" для срыва с использованием энергии отрыва нуклона
-				
-			double SPE_tmp=(Pickup.GetSumSF(SP[i])*E_pickup*n_m+Stripping.GetSumSF(SP[i])*E_stripping*n_p)/(Pickup.GetSumSF(SP[i])*n_m+Stripping.GetSumSF(SP[i])*n_p);//Диплом Марковой М.Л., ф-ла 17 //вычисление одночастичной энергии после нормировки
-			SPE_norm.push_back(SPE_tmp);//добавляем в вектор вычисленную одночастичную энергию после нормировки для каждой подоболочки
-
-			//cout << "n_m still = "<< n_m << "n_p still = " << n_p << endl;
-			double OCC_tmp=(Pickup.GetSumSF(SP[i])*n_m-Stripping.GetSumSF(SP[i])*n_p+2*abs(SP[i].JP)+1)/(2*(2*abs(SP[i].JP)+1));//Диплом Марковой М.Л., ф-ла 18 //это v^2_{nlj} после нормировки
-			OCC_norm.push_back(OCC_tmp);
-				
-			ParticlesAndHolesSum_norm.push_back((n_m*Pickup.GetSumSF(SP[i])+n_p*Stripping.GetSumSF(SP[i]))/(2*abs(SP[i].JP)+1));
-			//cout << "SPE_tmp_norm = "<< SPE_tmp << " OCC_tmp_norm =" << OCC_tmp << endl;
-			//cout << "Alternative: OCC_tmp_norm = " << 1-n_p*Stripping.GetSumSF(SP[i])/(2*abs(SP[i].JP)+1) << endl;
-				
-			if(par.CheckOccupancy(SP[i]))
-			{
-				OccupanciesForNormFit.push_back(OCC_tmp);//отдельные векторы заселенностей для аппроксимации БКШ
-				EnergiesForNormFit.push_back(SPE_tmp);
-			}
-		}
-		else//если проверка на существование центроидов у экспериментов (индусский fix) не вернёт истину, то
-		{
-			SPE_norm.push_back(0);//добавляем в вектор одночастичных энергий 0, вместо рассчитанного значения
-			OCC_norm.push_back(0);//добавляем в вектор заселённостей 0, вместо рассчитанного значения
-		}
-	}//конец цикла for
-
-	occupancies_norm=TGraph(OccupanciesForNormFit.size(),&EnergiesForNormFit[0],&OccupanciesForNormFit[0]);
-	BCS_norm=TF1("BCS_norm","0.5*(1-(x-[0])/(sqrt((x-[0])^2+[1]^2)))",-50000,0);
-	BCS_norm.SetParameter(0,-8000);
-	BCS_norm.SetParameter(1,15000);
-	float min_E_norm,max_E_norm,min_OCC_norm,max_OCC_norm;
-	for(unsigned int i=0;i<OCC_norm.size();i++)
-	{
-		if(SP_centroids[i].GetType()=="pickup")
-		{
-			Pickup_norm_occupancies.SetPoint(Pickup_norm_occupancies.GetN(),SPE_norm[i],OCC_norm[i]);
-		}
-		else if(SP_centroids[i].GetType()=="stripping")
-		{
-			Stripping_norm_occupancies.SetPoint(Stripping_norm_occupancies.GetN(),SPE_norm[i],OCC_norm[i]);
-		}
-		else if(SP_centroids[i].GetType()=="both")
-		{
-			Both_norm_occupancies.SetPoint(Both_norm_occupancies.GetN(),SPE_norm[i],OCC_norm[i]);
-		}
-		if(min_E_norm>SPE_norm[i])
-		{
-			min_E_norm=SPE_norm[i];
-		}
-		if(max_E_norm<SPE_norm[i])
-		{
-			max_E_norm=SPE_norm[i];
-		}
-		if(min_OCC_norm>OCC_norm[i])
-		{
-			min_OCC_norm=OCC_norm[i];
-		}
-		if(max_OCC_norm<OCC_norm[i])
-		{
-			max_OCC_norm=OCC_norm[i];
-		}
-	}
+	//заменяем графики заселённостей на пустые:
+	occupancies=TGraph();//график заселённостей состояний от энергии, использованных для фита БКШ
+	Pickup_occupancies=TGraph();
+	Stripping_occupancies=TGraph();
+	Both_occupancies=TGraph();
 	
-	SetTGraphLimits(Pickup_norm_occupancies,min_E_norm,max_E_norm,min_OCC_norm,max_OCC_norm);
-	Pickup_norm_occupancies.SetMarkerColor(4);
-	SetTGraphLimits(Stripping_norm_occupancies,min_E_norm,max_E_norm,min_OCC_norm,max_OCC_norm);
-	Stripping_norm_occupancies.SetMarkerColor(2);
-	SetTGraphLimits(Both_norm_occupancies,min_E_norm,max_E_norm,min_OCC_norm,max_OCC_norm);
-	Both_norm_occupancies.SetMarkerColor(1);
-	occupancies_norm.Draw("AP");	
-	occupancies_norm.SetMarkerStyle(28);
-	occupancies_norm.SetMarkerSize(2);
-	occupancies_norm.Fit(&BCS_norm,"M");
-	BCS_norm.Draw("l same");
-	
-	cc3->Print("BCS_norm.pdf","pdf");
-	Ef_norm=BCS_norm.GetParameter(0);
-	Ef_error_norm=BCS_norm.GetParError(0);
-	Delta_norm=BCS_norm.GetParameter(1);
-	Delta_error_norm=BCS_norm.GetParError(1);
-	///конец кусок6 кода, добавленного для нормировки СС
-	cout<<"CoupleOfExperiments::CalcSPE_and_OCC has ended!"<<endl;
 }
 
 string CoupleOfExperiments::ResultsInTextForm(char verbose_level)
@@ -1132,8 +956,208 @@ void CoupleOfExperiments::DrawResultsInTextForm(string str)
 	}
 }
 
-///кусок7 кода, добавленного для нормировки СС
-string CoupleOfExperiments::FitResultsInTextForm(char verbose_level)//функция записывает в строку результаты нормировки и принятые параметры (строка оказывается слева внизу каждого выходного pdf файла)
+void NormalisedCoupleOfExperiments::InduceNormalisation()
+{
+	cout<<"NormalisedCoupleOfExperiments::InduceNormalisation() has started!"<<endl;
+	///подготовительная работа для реализации фитирования закончена, теперь фитируем:
+	vector<double> OccupanciesForNormFit;//отдельный вектор заселённостей для аппроксимации нормировки (пока совпадают с набором для аппроксимации БКШ)
+	vector<double> EnergiesForNormFit;//отдельный вектор энергий для аппроксимации нормировки (пока совпадают с набором для аппроксимации БКШ)
+	//cout << "||||||| solveLinear_mod started working!" << endl;//оглашает, что эта подпрограмма начала работать
+	//cout << "Perform the fit  y = a + b * x in Minuit" << endl;//оглашает с помощью какой Root штуки берём фит (Minuit)
+	//int size = SP.size();//число G нормированных на 2j+1 в векторе (т.е. число подоболочек)
+	//int p_size = OccupanciesForNormFit.size();//число фитируемых точек совпадает с числом учитываемых подоболочек
+	if ((p_size < 2) || (p_size>SP.size()))//но если точек оказалось меньше двух или точек полагается больше, чем есть подоболочек
+	{
+		cout << "Note: Wrong number of NORM. FIT points! Fit will not be performed";
+		return;
+	}//то возьмём число точек равным числу подооболочек во входных данных
+	//cout << "Got number of points: " << size << endl;
+	const Int_t nrVar  = 2;//число параметров в функции
+
+	//массивы с координатами точек:
+	Double_t x[p_size], x2[p_size];//x координаты точек 
+	Double_t y[p_size], y2[p_size];//y координаты точек 
+	Double_t xe[p_size], xe2[p_size];//ошибки по x 
+	Double_t ye[p_size], ye2[p_size];//ошибки по y
+   
+	//cout << "||||||| List of points:" << endl;
+   
+	for(int i=0;i<SP.size();i++)//цикл для заполнения координат точек и их ошибок
+	{//cout << "Point number " << i << ":" << endl;
+		if(par.CheckOccupancy(SP[i]))
+		{
+			x[i] = Gm_alt_c[i]; 
+			//cout << "x[" << i << "] = " << x[i] << endl;
+			y[i] = Gp_alt_c[i];
+			//cout << "y[" << i << "] = " << y[i] << endl;
+			xe[i] = er_Gm_alt_c[i]; 
+			//cout << "xe[" << i << "] = " << xe[i] << endl;
+			ye[i] = er_Gp_alt_c[i];
+			//cout << "ye[" << i << "] = " << ye[i] << endl;
+		}
+	}
+	///Вариант с усреднением двух фитов:
+	//cout << "|||||| Fiting by Minuit through TGraph:" << endl;//огласим, что используем для фита
+	TGraphErrors *gr1 = new TGraphErrors(p_size,x,y,0,ye);
+	TGraphErrors *gr2 = new TGraphErrors(p_size,y,x,0,xe);//A TGraphErrors is a TGraph with error bars. 
+	//В аргументах: чило точек, координаты точек по х, координаты точек по у, ошибки точек по х, ошибки точек по у
+	//если передавать ошибки по x, то фит сработает неправильно, поэтому обнуляем их (очень жаль, но пока не решено)
+	TF1 *f1 = new TF1("f1","pol1");//A TF1 object is a 1-Dim function, f1 - её название, тип pol1 - линейная функция: y=a*x+b, определяем ей от 0 до максимального G^- + 0.1
+	TF1 *f2 = new TF1("f2","pol1");
+	//A TF1 object is a 1-Dim function defined between a lower and upper limit.
+	gr1->Fit("f1");//фитируем; если с параметром Q: Fit("FIT","Q"); - quiet, отключить вывод параметров фита
+	gr2->Fit("f2");
+	fit_a = f1->GetParameter(0);//возвращаем подобранный 1-ый параметр прямой 1-го фита
+	fit_b = f1->GetParameter(1);//возвращаем подобранный 2-ой параметр прямой 2-го фита
+	double fit_a2 = f2->GetParameter(0);
+	double fit_b2 = f2->GetParameter(1);
+	er_fit_a = f1->GetParError(0);//возвращаем ошибку подобранного 1-го параметра прямой 
+	er_fit_b = f1->GetParError(1);//возвращаем ошибку подобранного 2-го параметра прямой 
+	double er_fit_a2 = f2->GetParError(0);
+	double er_fit_b2 = f2->GetParError(1);
+	cout << "n+ = " << 1/fit_a << " and " << -fit_b2/fit_a2 << endl;
+	cout << "n- = " << 1/fit_a2 << " and " << -fit_b/fit_a << endl;
+	n_p = (1/fit_a-fit_b2/fit_a2)/2;//находим первый нормировочный параметр n+ через среднее двух фитов
+	n_m = (1/fit_a2-fit_b/fit_a)/2;//находим второй нормировочный параметр n- через среднее двух фитов
+		
+	if ((n_p < 0.5) || (n_m < 0.5) || (isnan(n_p)) || (isnan(n_m)))//если фит вышел плохой, то n+ и n- не имеют смысла, 
+	{//так что приравниваем их к 1
+		n_p = 1.; 
+		n_m =1.;
+	}
+		
+	er_n_p = 1/2*sqrt((er_fit_a/(fit_a*fit_a))*(er_fit_a/(fit_a*fit_a))+(er_fit_b2/fit_a2)*(er_fit_b2/fit_a2)+(fit_b2/(fit_a2*fit_a2)*er_fit_a2)*(fit_b2/(fit_a2*fit_a2)*er_fit_a2));//находим ошибку первого нормировочного параметра n+ 
+	er_n_m = 1/2*sqrt((er_fit_b/fit_a)*(er_fit_b/fit_a)+(fit_b/(fit_a*fit_a)*er_fit_a)*(fit_b/(fit_a*fit_a)*er_fit_a)+er_fit_a2/(fit_a2*fit_a2)*er_fit_a2/(fit_a2*fit_a2));//находим ошибку второго нормировочного параметр n- 
+	cout << "n+ = " << n_p << "+/-" << er_n_p << endl;//выводим первый нормировочный параметр n+ 
+	cout << "n- = " << n_m << "+/-" << er_n_m << endl;//выводим второй нормировочный параметр n-
+	er_fit_a = er_n_p/(n_p*n_p);//
+	er_fit_b = sqrt((er_n_p/n_p)*(er_n_p/n_p)+(er_n_m*n_m/n_p/n_p)*(er_n_m*n_m/n_p/n_p));
+		
+	for(int j=0;j<p_size;j++)//цикл для заполнения векторов новых координат для нормированных сил
+	{
+		x2[j] = Gm_alt_c[j]*n_m; 
+		y2[j] = Gp_alt_c[j]*n_p;
+		xe2[j] = er_Gm_alt_c[j]*n_m; 
+		ye2[j] = er_Gp_alt_c[j]*n_p;
+	}
+	for(int j=0;j<SP.size();j++)//цикл для заполнения векторов новых, нормированных СС
+	{
+		Gp_c[j]=n_p*Gp_c[j];//вычисляем вектор новых, нормированных СС для срыва
+		cout << "G+_norm[" << j << "] = " << Gp_c[j] << endl;
+		Gm_c[j]=n_m*Gm_c[j];//вычисляем вектор новых, нормированных СС для подхвата
+		cout << "G-_norm[" << j << "] = " << Gm_c[j] << endl;
+	}
+	//cout << "I finished Gp_norm and Gm_norm!!! Now solveLinear_mod() ends!!!" << endl;
+	points_G=TGraphErrors(p_size,x,y,0,ye);//создаём график точек, которые мы фитировали
+	points_G_norm=TGraphErrors(p_size,x2,y2,0,ye2);//создаём график точек, которые мы получили из фита
+	FIT=TF1("FIT","pol1",0,GetMaximum(Gm_alt_c)+1);//создаём линию для изображения фита
+	FIT.SetParameter(0,fit_a);//устанавливаем свободный член прямой, которую будем строить
+	FIT.SetParameter(1,fit_b);//устанавливаем коэффициента наклона прямой, которую будем строить
+	///вторая линия фита:
+	FIT2=TF1("FIT","pol1",0,GetMaximum(Gm_alt_c)+1);//создаём линию для изображения фита
+	FIT2.SetParameter(0,-fit_a2/fit_b2);//устанавливаем свободный член прямой, которую будем строить
+	FIT2.SetParameter(1,1/fit_b2);//устанавливаем коэффициента наклона прямой, которую будем строить
+	///третья линия фита:
+	FIT3=TF1("FIT","pol1",0,GetMaximum(Gm_alt_c)+1);//создаём линию для изображения фита
+	FIT3.SetParameter(0,1/n_p);//устанавливаем свободный член прямой, которую будем строить
+	FIT3.SetParameter(1,-n_m/n_p);//устанавливаем коэффициента наклона прямой, которую будем строить
+}
+
+void NormalisedCoupleOfExperiments::ReCalcSPE_and_OCC()
+{
+	cout<<"NormalisedCoupleOfExperiments::ReCalcSPE_and_OCC has started!"<<endl;
+	GenerateCommonNJPList();
+	vector<double> OccupanciesForBCSFit;//отдельные векторы заселенностей для аппроксимации БКШ
+	vector<double> EnergiesForBCSFit;
+	///применяем расчитанные коэффициенты нормировки n_m, n_p:
+	this->ClearCalcResults();
+	//рассчитываем величины и заполняем вектора заново:
+	for(int i=0;i<SP.size();i++)//цикл for; для каждой подоболочки:
+	{
+		double C_pickup=Pickup.GetCentroid(SP[i]);//записываем значение центроида для эксперимента по подхвату в переменную C_pickup
+		double C_stripping=Stripping.GetCentroid(SP[i]);//записываем значение центроида для эксперимента по срыву в переменную C_stripping	
+			
+		if((C_stripping!=-1)&&(C_pickup!=-1)&&(!isnan(C_stripping))&&(!isnan(C_pickup)))//индусский fix, потом проверить, что генерирует nan
+		{
+			double E_pickup=-Pickup.BA-C_pickup;//Диплом Марковой М.Л., ф-ла 4//вычисление "одночастичной" для подхвата с использованием энергии отрыва нуклона
+			double E_stripping=-Stripping.BA1+C_stripping;//Диплом Марковой М.Л., ф-ла 5//вычисление "одночастичной" для срыва с использованием энергии отрыва нуклона
+			double SPE_tmp=(Pickup.GetSumSF(SP[i])*E_pickup*n_m+Stripping.GetSumSF(SP[i])*E_stripping*n_p)/(Pickup.GetSumSF(SP[i])*n_m+Stripping.GetSumSF(SP[i])*n_p);//Диплом Марковой М.Л., ф-ла 17 //вычисление одночастичной энергии после нормировки
+			double OCC_tmp=(Pickup.GetSumSF(SP[i])*n_m-Stripping.GetSumSF(SP[i])*n_p+2*abs(SP[i].JP)+1)/(2*(2*abs(SP[i].JP)+1));//Диплом Марковой М.Л., ф-ла 18 //это v^2_{nlj} после нормировки	
+			ParticlesAndHolesSum.push_back((n_m*Pickup.GetSumSF(SP[i])+n_p*Stripping.GetSumSF(SP[i]))/(2*abs(SP[i].JP)+1));
+				
+			SPE.push_back(SPE_tmp);//Диплом Марковой М.Л., ф-ла 17
+			OCC.push_back(OCC_tmp);//Диплом Марковой М.Л., ф-ла 18
+			SP_centroids.push_back(SP[i]);
+			if(par.CheckOccupancy(SP[i]))
+			{
+				OccupanciesForBCSFit.push_back(OCC_tmp);//отдельные векторы заселенностей для аппроксимации БКШ
+				EnergiesForBCSFit.push_back(SPE_tmp);
+			}
+		}
+		else//если проверка на существование центроидов у экспериментов (индусский fix) не вернёт истину, то
+		{
+			SPE.push_back(0);//добавляем в вектор одночастичных энергий 0, вместо рассчитанного значения
+			OCC.push_back(0);//добавляем в вектор заселённостей 0, вместо рассчитанного значения
+		}
+	}//конец цикла for
+
+	occupancies=TGraph(OccupanciesForNormFit.size(),&EnergiesForNormFit[0],&OccupanciesForNormFit[0]);
+	BCS=TF1("BCS_norm","0.5*(1-(x-[0])/(sqrt((x-[0])^2+[1]^2)))",-50000,0);
+	BCS.SetParameter(0,-8000);
+	BCS.SetParameter(1,15000);
+	float min_E,max_E,min_OCC,max_OCC;
+	for(unsigned int i=0;i<OCC_norm.size();i++)
+	{
+		if(SP_centroids[i].GetType()=="pickup")
+		{
+			Pickup_occupancies.SetPoint(Pickup_occupancies.GetN(),SPE[i],OCC[i]);
+		}
+		else if(SP_centroids[i].GetType()=="stripping")
+		{
+			Stripping_occupancies.SetPoint(tripping_occupancies.GetN(),SPE[i],OCC[i]);
+		}
+		else if(SP_centroids[i].GetType()=="both")
+		{
+			Both_occupancies.SetPoint(Both_occupancies.GetN(),SPE[i],OCC[i]);
+		}
+		if(min_E>SPE[i])
+		{
+			min_E=SPE[i];
+		}
+		if(max_E<SPE[i])
+		{
+			max_E=SPE[i];
+		}
+		if(min_OCC>OCC[i])
+		{
+			min_OCC=OCC[i];
+		}
+		if(max_OCC<OCC[i])
+		{
+			max_OCC=OCC[i];
+		}
+	}
+	
+	SetTGraphLimits(Pickup_occupancies,min_E,max_E,min_OCC,max_OCC);
+	Pickup_occupancies.SetMarkerColor(4);
+	SetTGraphLimits(Stripping_occupancies,min_E,max_E,min_OCC,max_OCC);
+	Stripping_occupancies.SetMarkerColor(2);
+	SetTGraphLimits(Both_occupancies,min_E,max_E,min_OCC,max_OCC);
+	Both_occupancies.SetMarkerColor(1);
+	occupancies.Draw("AP");	
+	occupancies.SetMarkerStyle(28);
+	occupancies.SetMarkerSize(2);
+	occupancies.Fit(&BCS,"M");
+	BCS.Draw("l same");
+	
+	//cc3->Print("BCS.pdf","pdf");//напечатать отдельный файл с фитом БКШ (?)
+	Ef=BCS.GetParameter(0);
+	Ef_error=BCS.GetParError(0);
+	Delta=BCS.GetParameter(1);
+	Delta_error=BCS.GetParError(1);
+}
+
+string NormalisedCoupleOfExperiments::FitResultsInTextForm(char verbose_level)//функция записывает в строку результаты нормировки и принятые параметры (строка оказывается слева внизу каждого выходного pdf файла)
 {
 	stringstream s;//задаём строку, куда всё будем сохранять
 	if(verbose_level==0)
@@ -1181,7 +1205,7 @@ string CoupleOfExperiments::FitResultsInTextForm(char verbose_level)//функц
 	return s.str();//вернём строку, где всё сохранили
 }//конец метода FitResultsInTextForm
 	
-string CoupleOfExperiments::FitResultsInTextForm2(char verbose_level)//функция записывает в строку результаты и принятые параметры (строка оказывается слева внизу каждого выходного pdf файла)
+string NormalisedCoupleOfExperiments::FitResultsInTextForm2(char verbose_level)//функция записывает в строку результаты и принятые параметры (строка оказывается слева внизу каждого выходного pdf файла)
 {//cout<< "FitResultsInTextForm2 started working!!!!!\n";
 	stringstream s;//задаём строку, куда всё будем сохранять
 	if(verbose_level==0)
@@ -1217,4 +1241,3 @@ string CoupleOfExperiments::FitResultsInTextForm2(char verbose_level)//функ�
 	return s.str();//вернём строку, где всё сохранили
 	//cout<< "FitResultsInTextForm2 returned s and exit!!!!!\n";
 }//конец метода FitResultsInTextForm2
-///конец кусок7 кода, добавленного для нормировки СС
