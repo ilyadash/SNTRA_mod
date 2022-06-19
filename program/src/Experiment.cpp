@@ -571,7 +571,7 @@ double Experiment::GetSumSF(StateParameters &s)
 	// if (SSD.GetState(s.n,s.l,s.JP).SumG<0.1) cout<<"Error Experiment::GetSumSF() SumG is less than 0.1!"<<endl;
 	return SSD.GetState(s.n,s.l,s.JP).SumG;
 }
-///кусок3,6 добавленного кода для нормировки 
+
 double Experiment::GetErSumSF(int n,int l,double JP_inp)//Возвращает ошибку суммы СФ для данных n,l,JP
 {
 	return SSD.GetState(n,l,JP_inp).er_SumG;
@@ -581,7 +581,7 @@ double Experiment::GetErSumSF(StateParameters &s)
 {
 	return SSD.GetState(s.n,s.l,s.JP).er_SumG;
 }
-///конец кусок3,6 добавленного кода для нормировки
+
 double Experiment::GetCentroid(StateParameters &s)
 {
 	return SSD.GetState(s.n,s.l,s.JP).C;
@@ -617,45 +617,21 @@ SummarizedSpectroscopicState&  Experiment::operator [] (int index)
 }
 //vector<TH1F> BuildSpectroscopicFactorHistogram(float &maximum)
 
-SpectroscopicFactorHistogram  Experiment::BuildSpectroscopicFactorHistogram()
-{
-	SpectroscopicFactorHistogram SFHistograms;
-	//Histograms.resize(0);
-	////cout<<"SSD.size(): "<<SSD.size()<<"\n";
-	SFHistograms.maximum=0;
-	SFHistograms.Reference=reference+" "+GetType();
-	for(unsigned int i=0;i<SSD.size();i++)
-	{
-		string name=reference+sprintf("_%d_%d_%d",SSD.States[i].n,SSD.States[i].L,(int)(SSD.States[i].JP*2));
-		TH1F histogram(name.c_str(),name.c_str(),100,0,10000);
-		for(unsigned int j=0;j<States.size();j++)
-		{
-			if((States[j].n[0]==SSD.States[i].n)&&(States[j].L[0]==SSD.States[i].L)&&(States[j].JP[0]==SSD.States[i].JP))
-			histogram.SetBinContent(histogram.GetXaxis()->FindFixBin(States[j].Energy),States[j].G());
-		}
-		histogram.SetLineColor(GetColor(SSD.States[i].L, SSD.States[i].JP));
-		histogram.SetFillColor(GetColor(SSD.States[i].L, SSD.States[i].JP));
-		if(histogram.GetMaximum()>SFHistograms.maximum)
-		{
-			SFHistograms.maximum=histogram.GetMaximum();
-		} 
-		SFHistograms.Histograms.push_back(histogram);
-		SFHistograms.n.push_back(SSD.States[i].n);
-		SFHistograms.L.push_back(SSD.States[i].L);
-		SFHistograms.JP.push_back(SSD.States[i].JP);
-	}
-	return SFHistograms;
-}	
-
-///кусок4 добавленного кода для нормировки
-SpectroscopicFactorHistogram Experiment::BuildNormSpectroscopicFactorHistogram(double norma)//метод для заполнения гистограммы нормированными данными экперимента
+SpectroscopicFactorHistogram Experiment::BuildSpectroscopicFactorHistogram(double norma=1)//метод для заполнения гистограммы нормированными данными экперимента
 {	//возвращает объект класса SpectroscopicFactorHistogram с данными нормированного (*norma) объекта класса Experiment для дальнейшего построения
 	SpectroscopicFactorHistogram SFHistograms;//создаём пустую гистограмму, которую будем заполнять данными
+	if (norma<0)
+	{
+		cout<<"	*** Error! Experiment::BuildSpectroscopicFactorHistogram got negative normalisation coefficient! Return empty SpectroscopicFactorHistogram!"<<endl;
+		return SFHistograms;
+	} 
 	SFHistograms.maximum=0;
-	SFHistograms.Reference=reference+" norm. "+GetType();
+	TString name_buffer=" ";
+	if (norma!=1) name_buffer=" norm. ";
+	SFHistograms.Reference=reference+name_buffer+GetType();
 	for(unsigned int i=0;i<SSD.size();i++)//для каждого состояния в объекте SSD (SummarizedSpectroscopicData)
 	{
-		string name=reference+sprintf("_%d_%d_%d",SSD.States[i].n,SSD.States[i].L,(int)(SSD.States[i].JP*2));//имя?
+		string name=reference+sprintf("_%d_%d_%d",SSD.States[i].n,SSD.States[i].L,(int)(SSD.States[i].JP*2));//имя гистограмы?
 		TH1F histogram(name.c_str(),name.c_str(),100,0,10000);
 		for(unsigned int j=0;j<States.size();j++)
 		{
@@ -674,8 +650,7 @@ SpectroscopicFactorHistogram Experiment::BuildNormSpectroscopicFactorHistogram(d
 		SFHistograms.JP.push_back(SSD.States[i].JP);
 	}
 	return SFHistograms;//возвращает результирующую гистограмму
-}//конец метода BuildNormSpectroscopicFactorHistogram()
-///конец кусок4 добавленного кода для нормировки
+}//конец метода BuildSpectroscopicFactorHistogram()
 
 TH1F CoupleOfExperiments::BuildPenaltyComponentsHistogram()
 {
@@ -777,7 +752,7 @@ void CoupleOfExperiments::GenerateCommonNJPList()
 	}
 }
 
-void CoupleOfExperiments::CalcSPE_and_OCC(TCanvas *cc1, TCanvas *cc3)//функция рассчитывает одночастичную энергию, 
+void CoupleOfExperiments::CalcSPE_and_OCC()//функция рассчитывает одночастичную энергию, 
 {//формирует графики для отрисовки и т.д.
 	cout<<"CoupleOfExperiments::CalcSPE_and_OCC has started!"<<endl;
 	//cout<<"\n Generate \n";
@@ -865,7 +840,6 @@ void CoupleOfExperiments::CalcSPE_and_OCC(TCanvas *cc1, TCanvas *cc3)//функ�
 	occupancies.Fit(&BCS,"M");
 	//BCS.Draw("l same");
 	
-	//cc1->Print("BCS.pdf","pdf");//напечатать отдельный файл с фитом БКШ (?)
 	Ef=BCS.GetParameter(0);
 	Ef_error=BCS.GetParError(0);
 	Delta=BCS.GetParameter(1);
@@ -901,8 +875,8 @@ void CoupleOfExperiments::ClearCalcResults()
 	OCC.resize(0);
 	ParticlesAndHolesSum.resize(0);
 	SP_centroids.resize(0);
-	OccupanciesForBCSFit.resize(0);//отдельные векторы заселенностей для аппроксимации БКШ
-	EnergiesForBCSFit.resize(0);
+	//OccupanciesForBCSFit.resize(0);//отдельные векторы заселенностей для аппроксимации БКШ
+	//EnergiesForBCSFit.resize(0);
 	
 	//заменяем графики заселённостей на пустые:
 	occupancies=TGraph();//график заселённостей состояний от энергии, использованных для фита БКШ
@@ -928,7 +902,7 @@ string CoupleOfExperiments::ResultsInTextForm(char verbose_level)
 	}
 	
 	s<<Pickup.particle<<" transfer\n";
-	s<<Pickup.particle[0]<<" separation energy A:"<<Pickup.BA<<", A+1: "<<Pickup.BA1<<"\n";
+	//s<<Pickup.particle[0]<<" separation energy A:"<<Pickup.BA<<", A+1: "<<Pickup.BA1<<"\n";
 	s<<"E_F: "<<Ef<<" #pm "<<Ef_error<<"  keV \n #Delta: "<<Delta<<" #pm "<<Delta_error<<" keV\n";
 	s<<"penalty: "<<penalty<<"\n";
 	s<<"SPE,keV nlj OCC #frac{G^{+}+G^{-}}{2J+1}\n";
@@ -939,8 +913,6 @@ string CoupleOfExperiments::ResultsInTextForm(char verbose_level)
 	return s.str();
 }
 
-///
-//void CoupleOfExperiments::DrawResultsInTextForm()
 void CoupleOfExperiments::DrawResultsInTextForm(string str)
 {
 	//stringstream s(ResultsInTextForm());
@@ -954,6 +926,13 @@ void CoupleOfExperiments::DrawResultsInTextForm(string str)
 		latex.DrawLatexNDC(x,y,LatexLineTmp.c_str());
 		y+=step;
 	}
+}
+
+NormalisedCoupleOfExperiments::NormalisedCoupleOfExperiments(Experiment &InpPickup, Experiment &InpStripping)
+:CoupleOfExperiments(InpPickup, InpStripping)
+{
+	//Pickup=InpPickup;
+	//Stripping=InpStripping;
 }
 
 void NormalisedCoupleOfExperiments::InduceNormalisation()
@@ -1022,6 +1001,8 @@ void NormalisedCoupleOfExperiments::InduceNormalisation()
 		
 	if ((n_p < 0.5) || (n_m < 0.5) || (isnan(n_p)) || (isnan(n_m)))//если фит вышел плохой, то n+ и n- не имеют смысла, 
 	{//так что приравниваем их к 1
+		cout<<"NormalisedCoupleOfExperiments::InduceNormalisation() normalisation procedure has failed!"<<endl;
+		cout<<"n_p = "<<n_p<<"; n_m = "<<n_m<<endl;
 		n_p = 1.; 
 		n_m =1.;
 	}
@@ -1057,7 +1038,7 @@ void NormalisedCoupleOfExperiments::InduceNormalisation()
 	FIT2=TF1("FIT","pol1",0,GetMaximum(Gm_alt_c)+1);//создаём линию для изображения фита
 	FIT2.SetParameter(0,-fit_a2/fit_b2);//устанавливаем свободный член прямой, которую будем строить
 	FIT2.SetParameter(1,1/fit_b2);//устанавливаем коэффициента наклона прямой, которую будем строить
-	///третья линия фита:
+	///третья линия фита (усреднённая):
 	FIT3=TF1("FIT","pol1",0,GetMaximum(Gm_alt_c)+1);//создаём линию для изображения фита
 	FIT3.SetParameter(0,1/n_p);//устанавливаем свободный член прямой, которую будем строить
 	FIT3.SetParameter(1,-n_m/n_p);//устанавливаем коэффициента наклона прямой, которую будем строить
@@ -1101,12 +1082,12 @@ void NormalisedCoupleOfExperiments::ReCalcSPE_and_OCC()
 		}
 	}//конец цикла for
 
-	occupancies=TGraph(OccupanciesForNormFit.size(),&EnergiesForNormFit[0],&OccupanciesForNormFit[0]);
+	occupancies=TGraph(OccupanciesForBCSFit.size(),&EnergiesForBCSFit[0],&OccupanciesForBCSFit[0]);
 	BCS=TF1("BCS_norm","0.5*(1-(x-[0])/(sqrt((x-[0])^2+[1]^2)))",-50000,0);
 	BCS.SetParameter(0,-8000);
 	BCS.SetParameter(1,15000);
 	float min_E,max_E,min_OCC,max_OCC;
-	for(unsigned int i=0;i<OCC_norm.size();i++)
+	for(unsigned int i=0;i<OCC.size();i++)
 	{
 		if(SP_centroids[i].GetType()=="pickup")
 		{
@@ -1114,7 +1095,7 @@ void NormalisedCoupleOfExperiments::ReCalcSPE_and_OCC()
 		}
 		else if(SP_centroids[i].GetType()=="stripping")
 		{
-			Stripping_occupancies.SetPoint(tripping_occupancies.GetN(),SPE[i],OCC[i]);
+			Stripping_occupancies.SetPoint(Stripping_occupancies.GetN(),SPE[i],OCC[i]);
 		}
 		else if(SP_centroids[i].GetType()=="both")
 		{
@@ -1150,7 +1131,6 @@ void NormalisedCoupleOfExperiments::ReCalcSPE_and_OCC()
 	occupancies.Fit(&BCS,"M");
 	BCS.Draw("l same");
 	
-	//cc3->Print("BCS.pdf","pdf");//напечатать отдельный файл с фитом БКШ (?)
 	Ef=BCS.GetParameter(0);
 	Ef_error=BCS.GetParError(0);
 	Delta=BCS.GetParameter(1);
@@ -1199,13 +1179,15 @@ string NormalisedCoupleOfExperiments::FitResultsInTextForm(char verbose_level)//
 		s<<"n^{-} = "<<n_m<<" #pm "<<er_n_m<<" (for pick-up)\n";//выведем n- с его ошибкой
 		for(unsigned int i=0;i<SPE.size();i++)
 		{//запишем получившиеся после нормировки спектроскопические силы, они должны быть ближе к ОМО, ради этого всё затевалось
-			s<<NLJToString(SP_centroids[i].n,SP_centroids[i].l,SP_centroids[i].JP)<<" G^{+},G^{-}: "<<Gp_c[i]<<"->"<<Gp_norm_c[i]<<" "<<Gm_c[i]<<"->"<<Gm_norm_c[i]<<"\n";
+			s<<NLJToString(SP_centroids[i].n,SP_centroids[i].l,SP_centroids[i].JP)<<" G^{+},G^{-}: "<<
+			TString::Format(".2%f",Gp_c[i]/n_p)<<"->"<<TString::Format(".2%f",Gp_c[i])<<" "<<
+			TString::Format(".2%f",Gm_c[i]/n_m)<<"->"<<TString::Format(".2%f",Gm_c[i])<<"\n";
 		}
 	}
 	return s.str();//вернём строку, где всё сохранили
 }//конец метода FitResultsInTextForm
 	
-string NormalisedCoupleOfExperiments::FitResultsInTextForm2(char verbose_level)//функция записывает в строку результаты и принятые параметры (строка оказывается слева внизу каждого выходного pdf файла)
+string NormalisedCoupleOfExperiments::ResultsInTextForm(char verbose_level)//функция записывает в строку результаты и принятые параметры (строка оказывается слева внизу каждого выходного pdf файла)
 {//cout<< "FitResultsInTextForm2 started working!!!!!\n";
 	stringstream s;//задаём строку, куда всё будем сохранять
 	if(verbose_level==0)
@@ -1227,17 +1209,17 @@ string NormalisedCoupleOfExperiments::FitResultsInTextForm2(char verbose_level)/
 	else
 	{	//cout<< "FitResultsInTextForm2 write result in s!!!!!\n";
 			
-		s<<Pickup.particle<<" transfer_norm\n";
+		s<<Pickup.particle<<" transfer\n";
 		s<<"n^{+} = "<<n_p<<" #pm "<<er_n_p<<" n^{-} = "<<n_m<<" #pm "<<er_n_m<<endl;//выведем n+ и n- с их ошибками
 		s<<"penalty: "<<penalty<<"\n";
-		s<<"E_F: "<<Ef_norm<<" #pm "<<Ef_error_norm<<"  keV \n #Delta: "<<Delta_norm<<" #pm "<<Delta_error_norm<<" keV\n";
+		s<<"E_F: "<<Ef<<" #pm "<<Ef_error<<"  keV \n #Delta: "<<Delta<<" #pm "<<Delta_error<<" keV\n";
 		s<<"SPE,keV nlj OCC #frac{G^{+}+G^{-}}{2J+1}\n";
-		for(unsigned int i=0;i<SPE_norm.size();i++)
+		for(unsigned int i=0;i<SPE.size();i++)
 		{//cout<< "FitResultsInTextForm2 write result for " << i << " time in s!!!!!\n";
-			s<<SPE_norm[i]<<" "<<NLJToString(SP_centroids[i].n,SP_centroids[i].l,SP_centroids[i].JP)<<" "<<OCC_norm[i]<<" "<<ParticlesAndHolesSum_norm[i]<<"\n";//запишем одночастичную энергию, nlj подоболочки, заселённость, сумму частиц и дырок из экспериментов
+			s<<SPE[i]<<" "<<NLJToString(SP_centroids[i].n,SP_centroids[i].l,SP_centroids[i].JP)<<" "<<OCC[i]<<" "<<ParticlesAndHolesSum[i]<<"\n";//запишем одночастичную энергию, nlj подоболочки, заселённость, сумму частиц и дырок из экспериментов
 		}
 		//cout<< "FitResultsInTextForm2 has written result in s!!!!!\n";
 	}
 	return s.str();//вернём строку, где всё сохранили
-	//cout<< "FitResultsInTextForm2 returned s and exit!!!!!\n";
-}//конец метода FitResultsInTextForm2
+	//cout<< "ResultsInTextForm returned s and exit!!!!!\n";
+}//конец метода ResultsInTextForm

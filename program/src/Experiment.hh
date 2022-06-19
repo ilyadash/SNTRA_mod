@@ -50,6 +50,7 @@ class parameters//класс пользовательских параметро
 	vector<StateParameters> SubShellsUsedInAllCalculations;
 	vector<StateParameters> SubShellsUsedForOccupancyFit;// подоболочки, которые используются в фите БКШ
 	vector<StateParameters> SubShellsUsedInDrawing;//подоболочки, которые должны отрисовываться на холсте (в энергетическом спектре, в фите БКШ)
+	vector<StateParameters> SubShellsUsedNormalisation;//подоболочки, для которых выписываются и решаются уравнения, нужные для нахождения нормировочных коэффициентов
 	vector<unsigned char> UsedPenaltyFunctionComponents;
 	string GetComponentName(unsigned int iterator);
 	void ReadParameters(string filename);//метод считывает параметры из файла на диске
@@ -98,8 +99,7 @@ class Experiment
 	int SSSsize();
 	SummarizedSpectroscopicState& operator [] (int index);
 	//vector<TH1F> BuildSpectroscopicFactorHistogram(float &maximum)
-	SpectroscopicFactorHistogram BuildSpectroscopicFactorHistogram();
-	SpectroscopicFactorHistogram BuildNormSpectroscopicFactorHistogram(double norma);
+	SpectroscopicFactorHistogram BuildSpectroscopicFactorHistogram(double norma);
 };
 
 vector<Experiment> SplitExperiment(Experiment &BExperiment)
@@ -168,6 +168,7 @@ void SplitExperiments(vector<Experiment> &Experiments)
 class CoupleOfExperiments
 {//класс пары комплиментарных экспермиентов срыва-подхвата
 	public:
+	
 	Experiment Pickup;//эксперимент подхвата
 	Experiment Stripping;//эксперимент срыва
 	parameters par;//считанные пользовательские параметры
@@ -179,6 +180,9 @@ class CoupleOfExperiments
 	vector<double> PenaltyComponents;//
 	int Pickup_size;//
 	int Stripping_size;//
+
+	double n_p = 1.;//значение нормировочного коэффициента n+ для данной пары экспериментов
+	double n_m = 1.;//значение нормировочного коэффициента n- для данной пары экспериментов
 	
 	vector<double> Gp_c;//вектор спектроскопических сил срыва подоболочек 
 	vector<double> Gm_c;//вектор спектроскопических сил подхвата подоболочек 
@@ -208,11 +212,13 @@ class CoupleOfExperiments
 	TF1 BCS;//фит заселённостей в зависисмости от энергии (фит БКШ)
 	string PenaltyFunction;//
 	TH1F BuildPenaltyComponentsHistogram();
+
 	CoupleOfExperiments(Experiment &InpPickup,Experiment &InpStripping);//конструктор, аргументы которого представляют из себя эксперименты по подхвату и срыву
+	
 	void GenerateCommonNJPList();
-	void CalcSPE_and_OCC(TCanvas *cc1, TCanvas *cc3);
+	void CalcSPE_and_OCC();
 	void ClearCalcResults();
-	string ResultsInTextForm(char verbose_level=0);
+	virtual string ResultsInTextForm(char verbose_level=0);
 	void DrawResultsInTextForm(string str);
 };
 
@@ -224,14 +230,16 @@ class NormalisedCoupleOfExperiments: public CoupleOfExperiments
 	double fit_b;//сохраняем в объекте класса подобранный 2-ой параметр прямой y = a + b * x
 	double er_fit_a;//сохраняем в объекте класса ошибку подобранного 1-го параметра прямой y = a + b * x
 	double er_fit_b;//сохраняем в объекте класса ошибку подобранного 2-го параметра прямой y = a + b * x
-	double n_p = 1.;//значение нормировочного коэффициента n+ для данной пары экспериментов
-	double n_m = 1.;//значение нормировочного коэффициента n- для данной пары экспериментов
 	double er_n_p=0;//значение ошибки нормировочного коэффициента n+ для данной пары экспериментов
 	double er_n_m=0;//значение ошибки нормировочного коэффициента n- для данной пары экспериментов
-	
+
+	TGraphErrors points_G_norm;
 	TF1 FIT,FIT2,FIT3;//прямые фитов, использованные в процессе нормировки (для отрисовки в файле нормировки)
+
+	NormalisedCoupleOfExperiments(Experiment &InpPickup,Experiment &InpStripping);
+
 	void InduceNormalisation();//функция, которая нормализует данную пару экспериментов, обновляя значения аргументов
-	void ReCalcSPE_and_OCC();
+	void ReCalcSPE_and_OCC();//функция дял перерасчёта величин одночастичных энергий, заселённостей после нормализации
 	string FitResultsInTextForm(char verbose_level=0);
-	string FitResultsInTextForm2(char verbose_level=0);
+	virtual string ResultsInTextForm(char verbose_level=0);
 };
