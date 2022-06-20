@@ -47,16 +47,16 @@ class parameters//класс пользовательских параметро
 	public:
 	unsigned char IncompleteCouplesFlag;//all=1, pickup only=2, stripping only=3, no=4//флаг использования пар экпериментов разных типов для расчёта
 	bool LimitedSubShellsUsedInDrawing=0;//флаг отрисовки только выбранных пользователем в параметрах подоболочек
-	vector<StateParameters> SubShellsUsedInAllCalculations;
+	vector<StateParameters> SubShellsUsedInAllCalculations;// подоболочки, которые используются во всех вычислениях, а остальные будут игнорироваться (?)
 	vector<StateParameters> SubShellsUsedForOccupancyFit;// подоболочки, которые используются в фите БКШ
 	vector<StateParameters> SubShellsUsedInDrawing;//подоболочки, которые должны отрисовываться на холсте (в энергетическом спектре, в фите БКШ)
-	vector<StateParameters> SubShellsUsedNormalisation;//подоболочки, для которых выписываются и решаются уравнения, нужные для нахождения нормировочных коэффициентов
+	vector<StateParameters> SubShellsUsedForNormalisation;//подоболочки, для которых выписываются и решаются уравнения, нужные для нахождения нормировочных коэффициентов
 	vector<unsigned char> UsedPenaltyFunctionComponents;
 	string GetComponentName(unsigned int iterator);
 	void ReadParameters(string filename);//метод считывает параметры из файла на диске
 	void CoutParameters();//метод выводит в терминал считанные в класс параметры расчёта
 	bool CheckStateParameters(StateParameters &s);// ?
-	bool CheckOccupancy(StateParameters &s);// ?
+	bool CheckBelonging(StateParameters &s, vector<StateParameters> &v);// ?
 	void PrintUsedSubShells();
 };
 
@@ -172,7 +172,7 @@ class CoupleOfExperiments
 	Experiment Pickup;//эксперимент подхвата
 	Experiment Stripping;//эксперимент срыва
 	parameters par;//считанные пользовательские параметры
-	vector<StateParameters> SP;//
+	vector<StateParameters> SP;//все состояния, которые указаны в паре экспериментов. каждое состояние знает, где он встречалось, в strip, pickup или обоих (?)
 	vector<StateParameters> SP_centroids;//состояния, для которых были вычеслены центроиды C_nlm
 	vector<double> SPE;//одночастичные энергии
 	vector<double> OCC;//квадраты заселенностей
@@ -215,7 +215,7 @@ class CoupleOfExperiments
 
 	CoupleOfExperiments(Experiment &InpPickup,Experiment &InpStripping);//конструктор, аргументы которого представляют из себя эксперименты по подхвату и срыву
 	
-	void GenerateCommonNJPList();
+	void GenerateCommonNJPList();//метод заполняет vector<StateParameters> SP данного объекта
 	void CalcSPE_and_OCC();
 	void ClearCalcResults();
 	virtual string ResultsInTextForm(char verbose_level=0);

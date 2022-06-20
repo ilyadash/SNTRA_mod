@@ -405,6 +405,7 @@ void PrintCalculationResult(vector<NormalisedCoupleOfExperiments> v, string Outp
 	cc1->Print((OutputFileName+".pdf[").c_str(),"pdf");//создаём .pdf файл с выходными данными, который сейчас будем наполнять графиками и текстом
 	for(unsigned int i=0;i<v.size();i++)//для каждой пары экспериментов во входном векторе v
 	{	//cout<< "I started pdf writing for the pair!!!!\n";
+		TMultiGraph* mgr=new TMultiGraph();
 		SpectroscopicFactorHistogram HistPickup=v[i].Pickup.BuildSpectroscopicFactorHistogram(v[i].n_m);//создаём гистограммы нормированных спектроскопических факторов, которые будем отрисовывать на холсте
 		SpectroscopicFactorHistogram HistStrip=v[i].Stripping.BuildSpectroscopicFactorHistogram(v[i].n_p);//для срыва и подхвата, всего 2 гистограммы, итого 2 гистограммы на холсте
 		cc1->Clear();//Delete all pad primitives
@@ -415,13 +416,12 @@ void PrintCalculationResult(vector<NormalisedCoupleOfExperiments> v, string Outp
 		HistPickup.PrintSpectroscopicFactorHistogram();//рисуем гистограмму для эксперимента подхвата
 		
 		cc1->cd(2);//переходим к Pad2
-		TMultiGraph mgr;
 		v[i].occupancies.SetTitle("Occupancy;E,keV;v^2");
-		mgr.SetTitle("Occupancy;E, keV;v^{2}");
-		mgr.Add(&v[i].Pickup_occupancies);
-		mgr.Add(&v[i].Stripping_occupancies);
-		mgr.Add(&v[i].Both_occupancies);
-		mgr.Draw("ap");
+		//mgr->SetTitle("Occupancy;E, keV;v^{2}");
+		mgr->Add(&v[i].Pickup_occupancies);
+		mgr->Add(&v[i].Stripping_occupancies);
+		mgr->Add(&v[i].Both_occupancies);
+		mgr->Draw("ap");
 		v[i].occupancies.Draw("p same");//отрисуем заселённости, которые использовались в фите БКШ поверх остальных (выделим их крестами)
 		v[i].BCS.Draw("l same");//отрисуем кривую фита БКШ на том же Pad
 		
@@ -461,7 +461,6 @@ void PrintCalculationResult(vector<NormalisedCoupleOfExperiments> v, string Outp
 		v[i].DrawResultsInTextForm(v[i].ResultsInTextForm());
 		cc1->Print((OutputFileName+".pdf").c_str(),"pdf");
 		gPad->Update();
-		
 	}
 	cc1->Print((OutputFileName+".pdf]").c_str(),"pdf");
 	cout<<"void PrintCalculationResult has ended!"<<"\n";
@@ -470,23 +469,28 @@ void PrintCalculationResult(vector<NormalisedCoupleOfExperiments> v, string Outp
 void PrintFitCalculationResult(vector<CoupleOfExperiments> v, vector<NormalisedCoupleOfExperiments> v_norm, string OutputFileName, string output_dir="output")//функция записывает результаты нормировки в выходные файлы .txt и .pdf
 {//на вход подаётся вектор пар экспериментов (вектор объектов CoupleOfExperiments)
 	//и название выходных файлов .pdf .txt OutputFileName
+	cout<<"void PrintFitCalculationResult has started!"<<endl;
 	OutputFileName=string(output_dir)+"/"+OutputFileName;
+	cout<<"void PrintFitCalculationResult will save results in "<<OutputFileName<<endl;
 	ofstream OutputTextFile((OutputFileName+".txt").c_str());//создаём .txt файл с выходными данными
 	cc2->Print((OutputFileName+".pdf[").c_str(),"pdf");//создаём .pdf файл с выходными данными, который сейчас будем наполнять графиками и текстом
 	for(unsigned int i=0;i<v.size();i++)//для каждой пары экспериментов во входном векторе v
 	{
+		cout<<"working with "<<i<<" pair!"<<endl;
 		SpectroscopicFactorHistogram HistPickup=v[i].Pickup.BuildSpectroscopicFactorHistogram();//создаём гистограммы спектроскопических факторов, которые будем отрисовывать на холсте
 		SpectroscopicFactorHistogram HistStrip=v[i].Stripping.BuildSpectroscopicFactorHistogram();//для срыва и подхвата, всего 2 гистограммы
-		SpectroscopicFactorHistogram HistNormPickup=v_norm[i].Pickup.BuildSpectroscopicFactorHistogram(v[i].n_m);//создаём гистограммы нормированных спектроскопических факторов, которые будем отрисовывать на холсте
-		SpectroscopicFactorHistogram HistNormStrip=v_norm[i].Stripping.BuildSpectroscopicFactorHistogram(v[i].n_p);//для срыва и подхвата, всего 2 гистограммы, итого 4 гистограммы на холсте
+		SpectroscopicFactorHistogram HistNormPickup=v_norm[i].Pickup.BuildSpectroscopicFactorHistogram(v_norm[i].n_m);//создаём гистограммы нормированных спектроскопических факторов, которые будем отрисовывать на холсте
+		SpectroscopicFactorHistogram HistNormStrip=v_norm[i].Stripping.BuildSpectroscopicFactorHistogram(v_norm[i].n_p);//для срыва и подхвата, всего 2 гистограммы, итого 4 гистограммы на холсте
 		
 		cc2->Clear();//Delete all pad primitives
 		cc2->Divide(3,2);//разделить Pad на 3 независимые области по вертикали и на 2 по горизонтали (всего 6 областей)
+		cout<<"Going to Pad1!"<<endl;
 		cc2->cd(1);//переходим к Pad1
 		HistPickup.PrintSpectroscopicFactorHistogram();//рисуем гистограмму для эксперимента подхвата
+		cout<<"Going to Pad2!"<<endl;
 		cc2->cd(2);//переходим к Pad2
 		HistNormPickup.PrintSpectroscopicFactorHistogram();//рисуем гистограмму для эксперимента нормированного подхвата
-		
+		cout<<"Going to Pad3!"<<endl;
 		cc2->cd(3);//переходим к Pad3	
 		v[i].points_G.SetTitle("Fit graph;G^-/2j+1;G^+/2j+1");//здесь и далее рисуем график фита; устанавливаем заголовок сверху графика
 		v[i].points_G.SetMarkerStyle(28);//устанавливаем стиль маркеров фитируемых точек
@@ -499,7 +503,7 @@ void PrintFitCalculationResult(vector<CoupleOfExperiments> v, vector<NormalisedC
 		
 		v_norm[i].points_G.SetMarkerColor(kBlue);//меняем цвет маркеров на синий, чтобы выделялись
 		v_norm[i].points_G.SetMarkerStyle(29);
-		v_norm[i].points_G.Draw("P");
+		v_norm[i].points_G.Draw("P SAME");
 		
 		//v[i].FIT.SetRange(0,0,GetMaximum(v[i].Gm_alt_c)+1,GetMaximum(v[i].Gp_alt_c)+1);	
 		v_norm[i].FIT.Draw("l same");//"SAME" - superimpose on top of existing picture, "L" - connect all computed points with a straight line  
@@ -508,23 +512,24 @@ void PrintFitCalculationResult(vector<CoupleOfExperiments> v, vector<NormalisedC
 		///для построения третей линии фита:
 		v_norm[i].FIT3.SetLineColor(1);
 		v_norm[i].FIT3.Draw("l same");
-		
+		cout<<"Going to Pad4!"<<endl;
 		cc2->cd(4);//переходим к Pad4
 		HistStrip.PrintSpectroscopicFactorHistogram();//рисуем гистограмму для эксперимента срыва
 		
 		string TextOutput=v_norm[i].FitResultsInTextForm(1);
 		stringstream s(TextOutput);
 		OutputTextFile<<TextOutput<<"\n";//записывем в текстовый файл результаты расчёта
-		
+		cout<<"Going to Pad5!"<<endl;
 		cc2->cd(5);//переходим к Pad5
 		HistNormStrip.PrintSpectroscopicFactorHistogram();//рисуем гистограмму для нормированного эксперимента срыва
-		
+		cout<<"Going to Pad6!"<<endl;
 		cc2->cd(6);//переходим к Pad6
-		v_norm[i].DrawResultsInTextForm(v_norm[i].FitResultsInTextForm());//выводим текст справа внизу
-		
+		v_norm[i].DrawResultsInTextForm(TextOutput);//выводим текст справа внизу
+		cout<<"Printing in pdf file!"<<endl;
 		cc2->Print((OutputFileName+".pdf").c_str(),"pdf");//сохраняем всё в .pdf файл
+		cout<<"gPad->Update()!"<<endl;
 		gPad->Update();//обновим текущую область построения
-		
+		cc2->Clear();
 	}
 	cc2->Print((OutputFileName+".pdf]").c_str(),"pdf");//сохраняем всё в .pdf файл (в третий раз?)
 }
@@ -586,19 +591,18 @@ void SNTRA(string PathToFiles, string particle="", int ListFilesFlag=0, string o
 	s1>>ParFileName;
 	par.ReadParameters(ParFileName+"parameters.par");//считаем пользовательские параметры из файла parameters.par на диске
 	par.CoutParameters();//выведем считанные параметры в терминал
+	
 	vector<CoupleOfExperiments> CE=CreateCouplesOfExperiments(Pickup,Stripping,par);
 	vector<NormalisedCoupleOfExperiments> CE_norm=CreateNormalisedCouplesOfExperiments(Pickup,Stripping,par);
 	for(unsigned int i=0;i<CE.size();i++)//для каждой пары срыв-подхват в векторе CE
 	{
 		CE[i].CalcSPE_and_OCC();//применяем метод для расчёта одночастичной энергии и нормированной заселённости на подоболочке для пары экпериментов 
+	}
+	for(unsigned int i=0;i<CE_norm.size();i++)//для каждой пары срыв-подхват в векторе CE
+	{	
+		CE_norm[i].CalcSPE_and_OCC();
 		CE_norm[i].InduceNormalisation();
 		CE_norm[i].ReCalcSPE_and_OCC();
-		//cout<<CE[i].SPE.size()<<" "<<CE[i].EJP.size()<<" "<<CE[i].n.size()<<"\n";
-		for(int j=0;j<CE[i].SPE.size();j++)
-		{
-			//cout<<CE[i].SPE[j]<<" "<<CE[i].n[j]<<" "<<CE[i].EJP[j]<<"\n"; 
-		}
-		////cout<<CE[i]<<"\n";
 	}
 	string OutputFileName;//создаём строку с именем выходного файла для результата расчёта SNTRA до нормировки
 	string OutputFileName2;//создаём строку с именем выходного файла для результата нормировки
@@ -617,7 +621,7 @@ void SNTRA(string PathToFiles, string particle="", int ListFilesFlag=0, string o
 	CalculatePenaltyFunction(CE);//применяем функцию для вычисления штрафной функции
 	ArrangeByPenalty(CE);//применяем функцию для сортировки нашего вывода по возрастанию значения штрафной функции
 	PrintCalculationResult(CE,OutputFileName,output_dir_path);//записывает результат ранжировки для пары экспериментов CE в выходные файлы .txt и .pdf
-
+	//пока вызывает сегфолт, исправить:
 	PrintFitCalculationResult(CE,CE_norm,OutputFileName2,output_dir_path);//записывает результат нормировки для пары экспериментов CE в выходные файлы .txt и .pdf
 
 	CalculatePenaltyFunction(CE_norm);//применяем функцию для вычисления штрафной функции

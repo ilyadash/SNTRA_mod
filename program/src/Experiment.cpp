@@ -61,7 +61,7 @@ StateParameters::StateParameters(int n,int l,double JP,string c_flag, bool to_be
 	this->l=l;
 	this->JP=JP;
 	ToBeDrawn=to_be_drawn;
-	//получим флаг принадлежности состояния эксперименат срыв и/или подхвата
+	//получим флаг принадлежности состояния эксперименат срыв и/или подхвата:
 	if(c_flag=="pickup")
 	{
 		couple_flag=1;
@@ -203,6 +203,7 @@ void parameters::ReadParameters(string filename)
 			{
 				tmp2.resize(0);
 				s>>tmp2;
+				cout<<"Found component "<<tmp2<<" of penalty function."<<endl;
 				if(tmp2=="a_ij")
 				{
 					UsedPenaltyFunctionComponents.push_back(1);
@@ -224,6 +225,10 @@ void parameters::ReadParameters(string filename)
 					UsedPenaltyFunctionComponents.push_back(5);
 				}
 			}
+			for(unsigned int i=0;i<UsedPenaltyFunctionComponents.size();i++)
+			{
+				cout<<"Component of penalty function no."<<int(UsedPenaltyFunctionComponents[i])<<" will be used."<<endl;
+			}
 		}
 		else if(tmp=="SubShellsUsedForOccupancyFit:")//чтение параметра подоболочек, используемых в фите БКШ
 		{
@@ -236,7 +241,10 @@ void parameters::ReadParameters(string filename)
 				if(StringToNLJ(tmp2,n,l,JP))
 				{
 					StateParameters sp(n,l,JP,"both");
-					SubShellsUsedForOccupancyFit.push_back(sp);
+					if(CheckBelonging(sp,this->SubShellsUsedForOccupancyFit)==0)
+					{
+						SubShellsUsedForOccupancyFit.push_back(sp);
+					}
 				}
 			}
 		}
@@ -252,12 +260,37 @@ void parameters::ReadParameters(string filename)
 				if(StringToNLJ(tmp2,n,l,JP))
 				{
 					StateParameters sp(n,l,JP,"both");
-					SubShellsUsedInDrawing.push_back(sp);
+					if(CheckBelonging(sp,this->SubShellsUsedInDrawing)==0)
+					{
+						SubShellsUsedInDrawing.push_back(sp);
+					}
 				}
 			}
 			for(unsigned int i=0;i<SubShellsUsedInDrawing.size();i++)
 			{
-				cout<<SubShellsUsedInDrawing[i].GetNLJ()<<" will be drawn"<<endl;
+				cout<<SubShellsUsedInDrawing[i].GetNLJ()<<" will be drawn in pdf files."<<endl;
+			}
+		}
+		else if(tmp=="SubShellsUsedForNormalisation:")//чтение параметра подоболочек, используемых в отрисовке на холсте
+		{
+			string tmp2;
+			while(s)
+			{
+				s>>tmp2;
+				int n,l;
+				float JP;
+				if(StringToNLJ(tmp2,n,l,JP))
+				{
+					StateParameters sp(n,l,JP,"both");
+					if(CheckBelonging(sp,this->SubShellsUsedForNormalisation)==0)
+					{
+						SubShellsUsedForNormalisation.push_back(sp);
+					}
+				}
+			}
+			for(unsigned int i=0;i<SubShellsUsedForNormalisation.size();i++)
+			{
+				cout<<SubShellsUsedForNormalisation[i].GetNLJ()<<" will be used in normalisation procedure."<<endl;
 			}
 		}
 	}
@@ -299,11 +332,11 @@ bool parameters::CheckStateParameters(StateParameters &s)
 	}
 }
 
-bool parameters::CheckOccupancy(StateParameters &s)
+bool parameters::CheckBelonging(StateParameters &s, vector<StateParameters> &v)
 {
-	for(unsigned int i=0;i<SubShellsUsedForOccupancyFit.size();i++)
+	for(unsigned int i=0;i<v.size();i++)
 	{
-		if(SubShellsUsedForOccupancyFit[i].CompareQN(s))
+		if(v[i].CompareQN(s))
 		{
 			return true;
 		}
@@ -700,6 +733,7 @@ CoupleOfExperiments::CoupleOfExperiments(Experiment &InpPickup,Experiment &InpSt
 
 void CoupleOfExperiments::GenerateCommonNJPList()
 {
+	cout<<"CoupleOfExperiments::GenerateCommonNJPList() has started!"<<endl;
 	for(int i=0;i<Pickup.SSSsize();i++)
 	{
 		unsigned char flag=0;
@@ -750,14 +784,13 @@ void CoupleOfExperiments::GenerateCommonNJPList()
 			SP.push_back(s);
 		}		
 	}
+	cout<<"CoupleOfExperiments::GenerateCommonNJPList() has ended!"<<endl;
 }
 
 void CoupleOfExperiments::CalcSPE_and_OCC()//функция рассчитывает одночастичную энергию, 
 {//формирует графики для отрисовки и т.д.
 	cout<<"CoupleOfExperiments::CalcSPE_and_OCC has started!"<<endl;
-	//cout<<"\n Generate \n";
-	GenerateCommonNJPList();
-	//cout<<"\n Generated \n";
+	GenerateCommonNJPList();//
 	vector<double> OccupanciesForBCSFit;//отдельные векторы заселенностей для аппроксимации БКШ
 	vector<double> EnergiesForBCSFit;
 	for(int i=0;i<SP.size();i++)
@@ -778,7 +811,7 @@ void CoupleOfExperiments::CalcSPE_and_OCC()//функция рассчитыва
 			OCC.push_back(OCC_tmp);//Диплом Марковой М.Л., ф-ла 18
 			ParticlesAndHolesSum.push_back((Pickup.GetSumSF(SP[i])+Stripping.GetSumSF(SP[i]))/(2*abs(SP[i].JP)+1));
 			SP_centroids.push_back(SP[i]);
-			if(par.CheckOccupancy(SP[i]))
+			if(par.CheckBelonging(SP[i],par.SubShellsUsedForOccupancyFit))
 			{
 				OccupanciesForBCSFit.push_back(OCC_tmp);//отдельные векторы заселенностей для аппроксимации БКШ
 				EnergiesForBCSFit.push_back(SPE_tmp);
@@ -844,14 +877,9 @@ void CoupleOfExperiments::CalcSPE_and_OCC()//функция рассчитыва
 	Ef_error=BCS.GetParError(0);
 	Delta=BCS.GetParameter(1);
 	Delta_error=BCS.GetParError(1);
-	cout<<"CoupleOfExperiments::CalcSPE_and_OCC has ended!"<<endl;
 	
 	for(int i=0;i<SP.size();i++)//цикл for; для каждой подоболочки:
 	{
-		//cout<<NLJToString(SP[i].n,SP[i].l,SP[i].JP)<<" subshell_sum: "<<Pickup.GetSumSF(SP[i])+Stripping.GetSumSF(SP[i])<<"\n";
-		//double Gp_alt=Stripping.GetSumSF(SP[i])/(2*abs(SP[i].JP)+1);//находим нормализованную сумму СС срыва для данной подоболочки
-		//double Gm_alt=Pickup.GetSumSF(SP[i])/(2*abs(SP[i].JP)+1);//находим нормализованную сумму СС подхвата для данной подоболочки
-		//cout << NLJToString(SP[i].n,SP[i].l,SP[i].JP) << " pick-up norm.G, Gm_alt = " << Gm_alt << " stripping norm. G, Gp_alt = " << Gp_alt <<"\n";
 		Gp_c.push_back(Stripping.GetSumSF(SP[i]));//формируем вектор из сумм СС срыва для каждой подоболочки
 		Gm_c.push_back(Pickup.GetSumSF(SP[i]));//формируем вектор из сумм СС подхвата для каждой подоболочки
 		er_Gp_c.push_back(Stripping.GetErSumSF(SP[i]));//формируем вектор из ошибок сумм СС срыва для каждой подоболочки
@@ -860,30 +888,37 @@ void CoupleOfExperiments::CalcSPE_and_OCC()//функция рассчитыва
 		Gm_alt_c.push_back(Pickup.GetSumSF(SP[i])/(2*abs(SP[i].JP)+1));//формируем вектор из делённых на (2j+1) сумм СС подхвата для каждой подоболочки
 		er_Gp_alt_c.push_back(Stripping.GetErSumSF(SP[i])/(2*abs(SP[i].JP)+1));//формируем вектор из делённых на (2j+1) ошибок сумм СС срыва для каждой подоболочки
 		er_Gm_alt_c.push_back(Pickup.GetErSumSF(SP[i])/(2*abs(SP[i].JP)+1));//формируем вектор из делённых на (2j+1) сумм СС подхвата для каждой подоболочки
-		
-		if(par.CheckOccupancy(SP[i]))///здесь можно заменить на отдельную функцию проверки подоболочки на принадлежность к списку для участия в фите нормировки
-		{
-			p_size++;
-		}
 	}
+	cout<<"CoupleOfExperiments::CalcSPE_and_OCC has ended!"<<endl;
 }
 
 void CoupleOfExperiments::ClearCalcResults()
 {
+	cout<<"CoupleOfExperiments::ClearCalcResults() has started!"<<endl;
 	//очищаем аттрибуты объекта - вектора вычисленных величин:
+	SP.resize(0);
+	SP_centroids.resize(0);
 	SPE.resize(0);
 	OCC.resize(0);
 	ParticlesAndHolesSum.resize(0);
-	SP_centroids.resize(0);
 	//OccupanciesForBCSFit.resize(0);//отдельные векторы заселенностей для аппроксимации БКШ
 	//EnergiesForBCSFit.resize(0);
+	
+	Gp_c.resize(0);//вектор спектроскопических сил срыва подоболочек 
+	Gm_c.resize(0);//вектор спектроскопических сил подхвата подоболочек 
+	er_Gp_c.resize(0);//вектор ошибок спектроскопических сил срыва подоболочек для расчёта нормированных Gp_norm_c
+	er_Gm_c.resize(0);//вектор ошибок спектроскопических сил подхвата подоболочек для расчёта нормированных Gm_norm_c
+	Gp_alt_c.resize(0);//вектор спектроскопических сил  подоболочек для расчёта через МНК, делённых на 2j+1 (они должны быть близки к 1)
+	Gm_alt_c.resize(0);//вектор спектроскопических сил подоболочек для расчёта через МНК, делённых на 2j+1 (они должны быть близки к 1)
+	er_Gp_alt_c.resize(0);//вектор ошибок спектроскопических сил подоболочек для расчёта через МНК, делённых на 2j+1
+	er_Gm_alt_c.resize(0);
 	
 	//заменяем графики заселённостей на пустые:
 	occupancies=TGraph();//график заселённостей состояний от энергии, использованных для фита БКШ
 	Pickup_occupancies=TGraph();
 	Stripping_occupancies=TGraph();
 	Both_occupancies=TGraph();
-	
+	cout<<"CoupleOfExperiments::ClearCalcResults() has ended!"<<endl;
 }
 
 string CoupleOfExperiments::ResultsInTextForm(char verbose_level)
@@ -929,7 +964,7 @@ void CoupleOfExperiments::DrawResultsInTextForm(string str)
 }
 
 NormalisedCoupleOfExperiments::NormalisedCoupleOfExperiments(Experiment &InpPickup, Experiment &InpStripping)
-:CoupleOfExperiments(InpPickup, InpStripping)
+:CoupleOfExperiments(InpPickup, InpStripping)//уточняем,какой конструктор родительского класса нужно вызывать при использовании этого конструктора
 {
 	//Pickup=InpPickup;
 	//Stripping=InpStripping;
@@ -945,34 +980,40 @@ void NormalisedCoupleOfExperiments::InduceNormalisation()
 	//cout << "Perform the fit  y = a + b * x in Minuit" << endl;//оглашает с помощью какой Root штуки берём фит (Minuit)
 	//int size = SP.size();//число G нормированных на 2j+1 в векторе (т.е. число подоболочек)
 	//int p_size = OccupanciesForNormFit.size();//число фитируемых точек совпадает с числом учитываемых подоболочек
+	cout << "par.SubShellsUsedForNormalisation.size() = "<<par.SubShellsUsedForNormalisation.size()<<endl;
+	cout << "SP.size() = "<<SP.size()<<endl;
+	for(int i=0;i<SP.size();i++)//цикл for; для каждой подоболочки:
+	{	
+		if(par.CheckBelonging(SP[i],par.SubShellsUsedForNormalisation))///здесь можно заменить на отдельную функцию проверки подоболочки на принадлежность к списку для участия в фите нормировки
+		{
+			cout << "Got state parameters included in UsedForNormalisation list."<<endl;
+			p_size++;
+		}
+	}
 	if ((p_size < 2) || (p_size>SP.size()))//но если точек оказалось меньше двух или точек полагается больше, чем есть подоболочек
 	{
-		cout << "Note: Wrong number of NORM. FIT points! Fit will not be performed";
+		cout << "Note: Wrong number of Normalisation FIT points: "<<p_size<<". Fit will not be performed! Return!"<<endl;
 		return;
 	}//то возьмём число точек равным числу подооболочек во входных данных
-	//cout << "Got number of points: " << size << endl;
-	const Int_t nrVar  = 2;//число параметров в функции
-
+	else
+	{
+		cout << "Number of Normalisation FIT points: "<<p_size<<". Fit will be performed! Continue!"<<endl;
+	}
+	cout << "Creating arrays with points."<<endl;
 	//массивы с координатами точек:
 	Double_t x[p_size], x2[p_size];//x координаты точек 
 	Double_t y[p_size], y2[p_size];//y координаты точек 
 	Double_t xe[p_size], xe2[p_size];//ошибки по x 
 	Double_t ye[p_size], ye2[p_size];//ошибки по y
-   
-	//cout << "||||||| List of points:" << endl;
-   
+    cout << "Filling arrays with points."<<endl;
 	for(int i=0;i<SP.size();i++)//цикл для заполнения координат точек и их ошибок
-	{//cout << "Point number " << i << ":" << endl;
-		if(par.CheckOccupancy(SP[i]))
+	{
+		if(par.CheckBelonging(SP[i],par.SubShellsUsedForNormalisation))
 		{
 			x[i] = Gm_alt_c[i]; 
-			//cout << "x[" << i << "] = " << x[i] << endl;
 			y[i] = Gp_alt_c[i];
-			//cout << "y[" << i << "] = " << y[i] << endl;
 			xe[i] = er_Gm_alt_c[i]; 
-			//cout << "xe[" << i << "] = " << xe[i] << endl;
 			ye[i] = er_Gp_alt_c[i];
-			//cout << "ye[" << i << "] = " << ye[i] << endl;
 		}
 	}
 	///Вариант с усреднением двух фитов:
@@ -981,11 +1022,15 @@ void NormalisedCoupleOfExperiments::InduceNormalisation()
 	TGraphErrors *gr2 = new TGraphErrors(p_size,y,x,0,xe);//A TGraphErrors is a TGraph with error bars. 
 	//В аргументах: чило точек, координаты точек по х, координаты точек по у, ошибки точек по х, ошибки точек по у
 	//если передавать ошибки по x, то фит сработает неправильно, поэтому обнуляем их (очень жаль, но пока не решено)
+	cout << "Creating TF1 functions."<<endl;
 	TF1 *f1 = new TF1("f1","pol1");//A TF1 object is a 1-Dim function, f1 - её название, тип pol1 - линейная функция: y=a*x+b, определяем ей от 0 до максимального G^- + 0.1
 	TF1 *f2 = new TF1("f2","pol1");
 	//A TF1 object is a 1-Dim function defined between a lower and upper limit.
+	cout << "Starting first Fit."<<endl;
 	gr1->Fit("f1");//фитируем; если с параметром Q: Fit("FIT","Q"); - quiet, отключить вывод параметров фита
+	cout << "Starting second Fit."<<endl;
 	gr2->Fit("f2");
+	cout << "Getting resulting parameters of the Fits."<<endl;
 	fit_a = f1->GetParameter(0);//возвращаем подобранный 1-ый параметр прямой 1-го фита
 	fit_b = f1->GetParameter(1);//возвращаем подобранный 2-ой параметр прямой 2-го фита
 	double fit_a2 = f2->GetParameter(0);
@@ -1001,14 +1046,19 @@ void NormalisedCoupleOfExperiments::InduceNormalisation()
 		
 	if ((n_p < 0.5) || (n_m < 0.5) || (isnan(n_p)) || (isnan(n_m)))//если фит вышел плохой, то n+ и n- не имеют смысла, 
 	{//так что приравниваем их к 1
-		cout<<"NormalisedCoupleOfExperiments::InduceNormalisation() normalisation procedure has failed!"<<endl;
+		cout<<"	Note: NormalisedCoupleOfExperiments::InduceNormalisation() normalisation procedure has failed!"<<endl;
 		cout<<"n_p = "<<n_p<<"; n_m = "<<n_m<<endl;
 		n_p = 1.; 
 		n_m =1.;
+		cout<<"n_p and n_m will be turned into 1!"<<endl;
 	}
-		
+	else
+	{
+		cout<<"	Note: NormalisedCoupleOfExperiments::InduceNormalisation() normalisation procedure has been sucsesfull!"<<endl;
+	}	
 	er_n_p = 1/2*sqrt((er_fit_a/(fit_a*fit_a))*(er_fit_a/(fit_a*fit_a))+(er_fit_b2/fit_a2)*(er_fit_b2/fit_a2)+(fit_b2/(fit_a2*fit_a2)*er_fit_a2)*(fit_b2/(fit_a2*fit_a2)*er_fit_a2));//находим ошибку первого нормировочного параметра n+ 
 	er_n_m = 1/2*sqrt((er_fit_b/fit_a)*(er_fit_b/fit_a)+(fit_b/(fit_a*fit_a)*er_fit_a)*(fit_b/(fit_a*fit_a)*er_fit_a)+er_fit_a2/(fit_a2*fit_a2)*er_fit_a2/(fit_a2*fit_a2));//находим ошибку второго нормировочного параметр n- 
+	cout<<"	Normalisation result:"<<endl;
 	cout << "n+ = " << n_p << "+/-" << er_n_p << endl;//выводим первый нормировочный параметр n+ 
 	cout << "n- = " << n_m << "+/-" << er_n_m << endl;//выводим второй нормировочный параметр n-
 	er_fit_a = er_n_p/(n_p*n_p);//
@@ -1069,7 +1119,7 @@ void NormalisedCoupleOfExperiments::ReCalcSPE_and_OCC()
 			SPE.push_back(SPE_tmp);//Диплом Марковой М.Л., ф-ла 17
 			OCC.push_back(OCC_tmp);//Диплом Марковой М.Л., ф-ла 18
 			SP_centroids.push_back(SP[i]);
-			if(par.CheckOccupancy(SP[i]))
+			if(par.CheckBelonging(SP[i],par.SubShellsUsedForOccupancyFit))
 			{
 				OccupanciesForBCSFit.push_back(OCC_tmp);//отдельные векторы заселенностей для аппроксимации БКШ
 				EnergiesForBCSFit.push_back(SPE_tmp);
@@ -1135,6 +1185,19 @@ void NormalisedCoupleOfExperiments::ReCalcSPE_and_OCC()
 	Ef_error=BCS.GetParError(0);
 	Delta=BCS.GetParameter(1);
 	Delta_error=BCS.GetParError(1);
+	
+	for(int i=0;i<SP.size();i++)//цикл for; для каждой подоболочки:
+	{
+		Gp_c.push_back(Stripping.GetSumSF(SP[i]));//формируем вектор из сумм СС срыва для каждой подоболочки
+		Gm_c.push_back(Pickup.GetSumSF(SP[i]));//формируем вектор из сумм СС подхвата для каждой подоболочки
+		er_Gp_c.push_back(Stripping.GetErSumSF(SP[i]));//формируем вектор из ошибок сумм СС срыва для каждой подоболочки
+		er_Gm_c.push_back(Pickup.GetErSumSF(SP[i]));//формируем вектор из ошибок сумм СС подхвата для каждой подоболочки
+		Gp_alt_c.push_back(Stripping.GetSumSF(SP[i])/(2*abs(SP[i].JP)+1));//формируем вектор из делённых на (2j+1) сумм СС срыва для каждой подоболочки
+		Gm_alt_c.push_back(Pickup.GetSumSF(SP[i])/(2*abs(SP[i].JP)+1));//формируем вектор из делённых на (2j+1) сумм СС подхвата для каждой подоболочки
+		er_Gp_alt_c.push_back(Stripping.GetErSumSF(SP[i])/(2*abs(SP[i].JP)+1));//формируем вектор из делённых на (2j+1) ошибок сумм СС срыва для каждой подоболочки
+		er_Gm_alt_c.push_back(Pickup.GetErSumSF(SP[i])/(2*abs(SP[i].JP)+1));//формируем вектор из делённых на (2j+1) сумм СС подхвата для каждой подоболочки
+	}
+	cout<<"NormalisedCoupleOfExperiments::ReCalcSPE_and_OCC has ended!"<<endl;
 }
 
 string NormalisedCoupleOfExperiments::FitResultsInTextForm(char verbose_level)//функция записывает в строку результаты нормировки и принятые параметры (строка оказывается слева внизу каждого выходного pdf файла)
@@ -1151,27 +1214,23 @@ string NormalisedCoupleOfExperiments::FitResultsInTextForm(char verbose_level)//
 		s<<"Experiment(stripping): "<<Stripping.reference<<" ("<<Stripping.size()<<")\n";
 		s<<Stripping.ChangesLog<<"\n";
 	}
-		
+	unsigned int k=0;	
 	s<<"n^{+}G*^{+} + n^{-}G*^{-} = 1 equations:\n";//укажем вид уравнений, которые потом преобразовывались для МНК
-	unsigned int k =0;//это счётчик для вывода подоболочек, использованных для нормировки
-	//if (SPE.size()<=subshell_number)//если число подоболочек с СС меньше-равно нашего ограничения, то выводим их все
-	//{	
-	//k = SP.size();
-	//}
-	//else//если же число подоболочек больше нашего ограничения, то выводим первые subshell_number
-	//{//на самом деле данные есть для всех, но если уж мы фитируем только эти, то незачем остальные выводить
-	//	k = subshell_number;
-	//}
+	cout<<"Will draw n^{+}G*^{+} + n^{-}G*^{-} = 1 equations"<<endl;
 	for(unsigned int i=0;i<SPE.size();i++)
 	{//выведем все уравнения для подоболочек, которые мы должны были использовать для нахождения n+ и n-:
-		if(par.CheckOccupancy(SP[i]))
+		if(par.CheckBelonging(SP[i],par.SubShellsUsedForNormalisation))
 		{	
 			k++;
+			cout<<"Got n="<<SP_centroids[i].n<<"; l="<<SP_centroids[i].l<<"; JP="<<SP_centroids[i].JP<<endl;
 			s<<NLJToString(SP_centroids[i].n,SP_centroids[i].l,SP_centroids[i].JP)<<": n^{+} "<<Gp_alt_c[i]<<" +"<<" n^{-} "<<Gm_alt_c[i]<<" = 1\n";
+			cout<<"Drawing data for "<<NLJToString(SP_centroids[i].n,SP_centroids[i].l,SP_centroids[i].JP)<<endl;
 		}
 	}
-	if ((n_p==1.)&&(n_m==1.))//если нормировочные клэффициенты равны 1, то логично, что нормировки не происходило
-	{s<<"Normalization was not perfomed.\n";}//сообщим об этом в .pdf файле
+	if ((n_p==1.)&&(n_m==1.))//если нормировочные коэффициенты равны 1, то логично, что нормировки не происходило
+	{
+		s<<"Normalization was not perfomed.\n";
+	}//сообщим об этом в .pdf файле
 	else
 	{
 		s<<"Normalization of "<< k <<" subshells result:\n";//в этой строке укажем параметр, который ставили для ограничения числа точек в фите
