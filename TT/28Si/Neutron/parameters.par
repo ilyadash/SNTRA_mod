@@ -1,10 +1,11 @@
 #это комментарий
 UseIncompleteCouples: all
-UsedPenaltyFunctionComponents:  a_ij NPickupMax NStrippingMax EF_err Delta_err NumberOfParticlesInUsedShell
+UsedPenaltyFunctionComponents: a_ij NPickupMax NStrippingMax EF_err Delta_err NumberOfParticlesInUsedShell
 Weights: 1 1 1 1 1 1 1 
-#SubShellsUsedInDrawing: 1d5/2 2s1/2 1d3/2 1f7/2
+SubShellsUsedInDrawing: 1d5/2 2s1/2 1d3/2 1f7/2
 SubShellsUsedForOccupancyFit: 1d5/2 2s1/2 1d3/2
 SubShellsUsedForPenaltyFunction: 1d5/2 2s1/2 1d3/2
+SubShellsUsedForNormalisation: 1d5/2 2s1/2 1d3/2
 NParticles: 6
 NHoles: 6
 #Normalize
