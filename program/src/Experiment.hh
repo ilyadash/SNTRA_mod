@@ -1,13 +1,24 @@
 #include "State.cpp"
 #include "TH1F.h"
-#include  <TLegend.h>
+#include <TLegend.h>
 #include <TF1.h>
 #include <TGraphErrors.h>
 #include <TMultiGraph.h>
 #include <TLatex.h>
 #include <TCanvas.h>
+#include <TString.h>
 #define G_CUT 0.8 //значение для ???
 using namespace std;
+
+vector<TString> AllPrimitiveSubShellsList={
+	"1s1/2", "1p3/2", "1p1/2",
+	"1d5/2", "2s1/2", "1d3/2",
+	"1f7/2", "2p3/2", "1f5/2", "2p1/2",
+	"1g9/2", "1g7/2", "2d5/2", "2d3/2", "3s1/2",
+	"1h11/2", "1h9/2", "2f7/2", "2f5/2", "3p3/2", "3p1/2",
+	"1i13/2", "2g9/2", "3d5/2", "1i11/2", "2g7/2", "4s1/2", "3d3/2",
+	"1j15/2"};
+
 class SpectroscopicFactorHistogram
 {//класс гистограмм спектроскопических сил (?)
 	public:
@@ -28,7 +39,7 @@ class StateParameters//класс парасметров состояний, и�
 	int n,l;
 	unsigned char couple_flag;//couple_flag показывает, есть ли в "паре" экспериментов pickup или stripping: 1: pickup only, 2:stripping only, 3:pickup and stripping, 0-undefined
 	StateParameters();
-	StateParameters(int n, int l, double JP, string c_flag, bool to_be_drawn=1);
+	StateParameters(int n, int l, double JP, string couple_flag="0", bool to_be_drawn=1);
 	unsigned char GetColor();
 	void GetQN(int &n_out, int &l_out, double &JP_out);
 	bool CompareQN(StateParameters &s);//CompareQN=CompareQauntumNumbers, функция сравнивает значения квантовых чисел двух подоболочек (сравнение равенства подоболочек)
@@ -42,14 +53,29 @@ class StateParameters//класс парасметров состояний, и�
 	TString GetNLJ();
 };
 
+vector<StateParameters> VectorConvertTStringToStateParameters(vector<TString> &v)
+{
+	vector<StateParameters> result;
+	for(unsigned int i=0;i<v.size();i++)
+	{
+		int n, l;
+		float JP;
+		TStringToNLJ(v[i], n, l, JP);
+		StateParameters s(n, l, JP, 0);
+		result.push_back(s);
+	}
+	return result;
+}
+
 class parameters//класс пользовательских параметров расчёта
 {
 	public:
 	unsigned char IncompleteCouplesFlag;//all=1, pickup only=2, stripping only=3, no=4//флаг использования пар экпериментов разных типов для расчёта
 	bool LimitedSubShellsUsedInDrawing=0;//флаг отрисовки только выбранных пользователем в параметрах подоболочек
-	vector<StateParameters> SubShellsUsedInAllCalculations;// подоболочки, которые используются во всех вычислениях, а остальные будут игнорироваться (?)
-	vector<StateParameters> SubShellsUsedForOccupancyFit;// подоболочки, которые используются в фите БКШ
-	vector<StateParameters> SubShellsUsedInDrawing;//подоболочки, которые должны отрисовываться на холсте (в энергетическом спектре, в фите БКШ)
+	vector<StateParameters> AllPrimitiveSubShells=VectorConvertTStringToStateParameters(AllPrimitiveSubShellsList);
+	vector<StateParameters> SubShellsUsedInAllCalculations=AllPrimitiveSubShells;// подоболочки, которые используются во всех вычислениях, а остальные будут игнорироваться (?)
+	vector<StateParameters> SubShellsUsedForOccupancyFit=AllPrimitiveSubShells;// подоболочки, которые используются в фите БКШ
+	vector<StateParameters> SubShellsUsedInDrawing=AllPrimitiveSubShells;//подоболочки, которые должны отрисовываться на холсте (в энергетическом спектре, в фите БКШ)
 	vector<StateParameters> SubShellsUsedForNormalisation;//подоболочки, для которых выписываются и решаются уравнения, нужные для нахождения нормировочных коэффициентов
 	vector<unsigned char> UsedPenaltyFunctionComponents;
 	string GetComponentName(unsigned int iterator);
@@ -203,8 +229,9 @@ class CoupleOfExperiments
 	double Ef_error_max;//максимальная ошибка энергии Ферми, получаемая в фите БКШ
 	double Delta_error_max;	//максимальная ошибка дельты в квадрате, получаемая в фите БКШ
 	double penalty;
-	
-	TGraph occupancies;//график заселённостей состояний от энергии, использованных для фита БКШ
+
+	//графики заселённостей состояний от энергии, использованных для фита БКШ:
+	TGraph occupancies;
 	TGraph Pickup_occupancies;
 	TGraph Stripping_occupancies;
 	TGraph Both_occupancies;;

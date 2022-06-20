@@ -55,28 +55,28 @@ StateParameters::StateParameters()
 	ToBeDrawn=1;
 }
 
-StateParameters::StateParameters(int n,int l,double JP,string c_flag, bool to_be_drawn)
+StateParameters::StateParameters(int n, int l, double JP, string couple_flag, bool to_be_drawn)
 {
 	this->n=n;
 	this->l=l;
 	this->JP=JP;
 	ToBeDrawn=to_be_drawn;
 	//получим флаг принадлежности состояния эксперименат срыв и/или подхвата:
-	if(c_flag=="pickup")
+	if(couple_flag=="pickup")
 	{
-		couple_flag=1;
+		this->couple_flag=1;
 	}
-	else if(c_flag=="stripping")
+	else if(couple_flag=="stripping")
 	{
-		couple_flag=2;
+		this->couple_flag=2;
 	}
-	else if(c_flag=="both")
+	else if(couple_flag=="both")
 	{
-		couple_flag=3;
+		this->couple_flag=3;
 	}
 	else
 	{
-		couple_flag=0;//неопределённое состояние флага
+		this->couple_flag=0;//неопределённое состояние флага
 	}
 }
 
@@ -118,7 +118,7 @@ bool StateParameters::CompareQN(StateParameters &s)
 }
 
 bool StateParameters::CheckIfIncludedIn(vector<StateParameters> SubShellsVec)
-{
+{//есть ли такая же подоболочка в поданном векторе?
 	for(unsigned int i=0;i<SubShellsVec.size();i++)
 	{
 		if((n==SubShellsVec[i].n)&&(l==SubShellsVec[i].l)&&(JP==SubShellsVec[i].JP))
@@ -198,6 +198,7 @@ void parameters::ReadParameters(string filename)
 		}
 		else if(tmp=="UsedPenaltyFunctionComponents:")//чтение параметра компонент штрафной функции
 		{
+			UsedPenaltyFunctionComponents.resize(0);
 			string tmp2;
 			while(s)
 			{
@@ -232,6 +233,7 @@ void parameters::ReadParameters(string filename)
 		}
 		else if(tmp=="SubShellsUsedForOccupancyFit:")//чтение параметра подоболочек, используемых в фите БКШ
 		{
+			SubShellsUsedForOccupancyFit.resize(0);
 			string tmp2;
 			while(s)
 			{
@@ -250,6 +252,7 @@ void parameters::ReadParameters(string filename)
 		}
 		else if(tmp=="SubShellsUsedInDrawing:")//чтение параметра подоболочек, используемых в отрисовке на холсте
 		{
+			SubShellsUsedInDrawing.resize(0);
 			LimitedSubShellsUsedInDrawing=1;
 			string tmp2;
 			while(s)
@@ -273,6 +276,7 @@ void parameters::ReadParameters(string filename)
 		}
 		else if(tmp=="SubShellsUsedForNormalisation:")//чтение параметра подоболочек, используемых в отрисовке на холсте
 		{
+			SubShellsUsedForNormalisation.resize(0);
 			string tmp2;
 			while(s)
 			{
@@ -870,7 +874,7 @@ void CoupleOfExperiments::CalcSPE_and_OCC()//функция рассчитыва
 	//occupancies.Draw("AP");	
 	occupancies.SetMarkerStyle(28);
 	occupancies.SetMarkerSize(2);
-	occupancies.Fit(&BCS,"M");
+	occupancies.Fit(&BCS,"M");//профитируем функцией в приближении БКШ
 	//BCS.Draw("l same");
 	
 	Ef=BCS.GetParameter(0);

@@ -7,6 +7,7 @@
 #include <cmath>
 #include "ExtStrings.cpp"
 #include "Constants.cpp"
+#include "TString.h"
 
 #define AngularMomentumSize 7
 
@@ -84,6 +85,12 @@ int StringToNLJ(string s, int &n, int &l, float &JP)
 		return 1;
 	}
 	
+}
+
+int TStringToNLJ(TString s, int &n, int &l, float &JP)
+{
+	string str(s.Data());
+	return StringToNLJ(str, n, l, JP);
 }
 
 string LToString(int L)

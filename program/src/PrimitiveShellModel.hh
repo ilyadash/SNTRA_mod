@@ -6,6 +6,8 @@
 #include <fstream>
 #include <cmath>
 
+
+
 class SubShell //подоболочка со соответсвующими характеристиками по ОМО
 {
 	public:
