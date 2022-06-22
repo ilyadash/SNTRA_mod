@@ -4,16 +4,6 @@
 
 using namespace std;
 
-/*string RmSymbolsFromEnd(string line, int nsymb)
-{
-	for(int i=0;i<nsymb;i++)
-	{
-		if(line.size()>0)
-		line.pop_back();
-	}
-	return line;
-}*/
-
 string InvertString(string line)
 {
 	string line2;

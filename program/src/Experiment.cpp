@@ -167,8 +167,28 @@ TString StateParameters::GetNLJ()
 	return NLJToString(n,l,JP);
 }
 
+parameters::parameters()
+{
+	cout<<"parameters::parameters has started!"<<"\n";
+	IncompleteCouplesFlag=1;//all=1, pickup only=2, stripping only=3, no=4//флаг использования пар экпериментов разных типов для расчёта
+	cout<<"IncompleteCouplesFlag=1"<<"\n";
+	LimitedSubShellsUsedInDrawing=0;//флаг отрисовки только выбранных пользователем в параметрах подоболочек
+	cout<<"LimitedSubShellsUsedInDrawing=0"<<"\n";
+	cout<<"AllPrimitiveSubShells=VectorConvertTStringToStateParameters(AllPrimitiveSubShellsList)"<<"\n";
+	SubShellsUsedInAllCalculations=AllPrimitiveSubShells;// подоболочки, которые используются во всех вычислениях, а остальные будут игнорироваться (?)
+	cout<<"SubShellsUsedInAllCalculations=AllPrimitiveSubShell"<<"\n";
+	SubShellsUsedForOccupancyFit=AllPrimitiveSubShells;// подоболочки, которые используются в фите БКШ
+	cout<<"SubShellsUsedForOccupancyFit=AllPrimitiveSubShells"<<"\n";
+	SubShellsUsedInDrawing=AllPrimitiveSubShells;//подоболочки, которые должны отрисовываться на холсте (в энергетическом спектре, в фите БКШ)
+	cout<<"SubShellsUsedInDrawing=AllPrimitiveSubShells"<<"\n";
+	SubShellsUsedForNormalisation=VectorConvertTStringToStateParameters({"2s1/2","1d5/2","1d3/2"});//подоболочки, для которых выписываются и решаются уравнения, нужные для нахождения нормировочных коэффициентов
+	cout<<"SubShellsUsedForNormalisation=VectorConvertTStringToStateParameters({2s1/2,1d5/2,1d3/2})"<<"\n";
+	UsedPenaltyFunctionComponents={1,2,3,4,5};
+}
+
 void parameters::ReadParameters(string filename)
 {
+	cout<<"parameters::ReadParameters has started!"<<"\n";
 	ifstream ifs(filename.c_str());
 	string line;//переменная считываемой строки
 	while(getline(ifs,line))//для каждой строки в файле на диске

@@ -585,10 +585,13 @@ void SNTRA(string PathToFiles, string particle="", int ListFilesFlag=0, string o
 	vector<Experiment> Stripping;//создаём вектор всех экспериментов срыва
 	
 	ReadFilesInDirectory(PathToFiles,Pickup,Stripping,particle,ListFilesFlag);//считаем поготовленные файлы данных с диска
-	parameters par;
+	cout<<"Creating parameters object!"<<"\n";
+	parameters par=parameters();
+	cout<<"Creating stringstream object!"<<"\n";
 	stringstream s1(PathToFiles);
 	string ParFileName;
 	s1>>ParFileName;
+	
 	par.ReadParameters(ParFileName+"parameters.par");//считаем пользовательские параметры из файла parameters.par на диске
 	par.CoutParameters();//выведем считанные параметры в терминал
 	

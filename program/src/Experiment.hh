@@ -53,31 +53,37 @@ class StateParameters//класс парасметров состояний, и�
 	TString GetNLJ();
 };
 
-vector<StateParameters> VectorConvertTStringToStateParameters(vector<TString> &v)
+vector<StateParameters> VectorConvertTStringToStateParameters(vector<TString> v)
 {
+	cout<<"VectorConvertTStringToStateParameters has started!\n";
 	vector<StateParameters> result;
 	for(unsigned int i=0;i<v.size();i++)
 	{
 		int n, l;
 		float JP;
 		TStringToNLJ(v[i], n, l, JP);
-		StateParameters s(n, l, JP, 0);
+		cout<<"VectorConvertTStringToStateParameters creating StateParameters s!\n";
+		StateParameters s(n, l, JP, "0");
+		cout<<"VectorConvertTStringToStateParameters creating pushing s!\n";
 		result.push_back(s);
 	}
+	cout<<"VectorConvertTStringToStateParameters has finished!\n";
 	return result;
 }
+
+vector<StateParameters> AllPrimitiveSubShells=VectorConvertTStringToStateParameters(AllPrimitiveSubShellsList);
 
 class parameters//класс пользовательских параметров расчёта
 {
 	public:
 	unsigned char IncompleteCouplesFlag;//all=1, pickup only=2, stripping only=3, no=4//флаг использования пар экпериментов разных типов для расчёта
-	bool LimitedSubShellsUsedInDrawing=0;//флаг отрисовки только выбранных пользователем в параметрах подоболочек
-	vector<StateParameters> AllPrimitiveSubShells=VectorConvertTStringToStateParameters(AllPrimitiveSubShellsList);
-	vector<StateParameters> SubShellsUsedInAllCalculations=AllPrimitiveSubShells;// подоболочки, которые используются во всех вычислениях, а остальные будут игнорироваться (?)
-	vector<StateParameters> SubShellsUsedForOccupancyFit=AllPrimitiveSubShells;// подоболочки, которые используются в фите БКШ
-	vector<StateParameters> SubShellsUsedInDrawing=AllPrimitiveSubShells;//подоболочки, которые должны отрисовываться на холсте (в энергетическом спектре, в фите БКШ)
+	bool LimitedSubShellsUsedInDrawing;//флаг отрисовки только выбранных пользователем в параметрах подоболочек
+	vector<StateParameters> SubShellsUsedInAllCalculations;// подоболочки, которые используются во всех вычислениях, а остальные будут игнорироваться (?)
+	vector<StateParameters> SubShellsUsedForOccupancyFit;// подоболочки, которые используются в фите БКШ
+	vector<StateParameters> SubShellsUsedInDrawing;//подоболочки, которые должны отрисовываться на холсте (в энергетическом спектре, в фите БКШ)
 	vector<StateParameters> SubShellsUsedForNormalisation;//подоболочки, для которых выписываются и решаются уравнения, нужные для нахождения нормировочных коэффициентов
 	vector<unsigned char> UsedPenaltyFunctionComponents;
+	parameters();
 	string GetComponentName(unsigned int iterator);
 	void ReadParameters(string filename);//метод считывает параметры из файла на диске
 	void CoutParameters();//метод выводит в терминал считанные в класс параметры расчёта
