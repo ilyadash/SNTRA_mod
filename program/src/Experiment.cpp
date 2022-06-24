@@ -997,6 +997,7 @@ NormalisedCoupleOfExperiments::NormalisedCoupleOfExperiments(Experiment &InpPick
 void NormalisedCoupleOfExperiments::InduceNormalisation()
 {
 	cout<<"NormalisedCoupleOfExperiments::InduceNormalisation() has started!"<<endl;
+	NormalisationWasTried=1;
 	///подготовительная работа для реализации фитирования закончена, теперь фитируем:
 	vector<double> OccupanciesForNormFit;//отдельный вектор заселённостей для аппроксимации нормировки (пока совпадают с набором для аппроксимации БКШ)
 	vector<double> EnergiesForNormFit;//отдельный вектор энергий для аппроксимации нормировки (пока совпадают с набором для аппроксимации БКШ)
@@ -1155,7 +1156,7 @@ void NormalisedCoupleOfExperiments::ReCalcSPE_and_OCC()
 			OCC.push_back(0);//добавляем в вектор заселённостей 0, вместо рассчитанного значения
 		}
 	}//конец цикла for
-
+	cout<<"SPE.size() = "<<SPE.size()<<endl;
 	occupancies=TGraph(OccupanciesForBCSFit.size(),&EnergiesForBCSFit[0],&OccupanciesForBCSFit[0]);
 	BCS=TF1("BCS_norm","0.5*(1-(x-[0])/(sqrt((x-[0])^2+[1]^2)))",-50000,0);
 	BCS.SetParameter(0,-8000);
@@ -1221,11 +1222,13 @@ void NormalisedCoupleOfExperiments::ReCalcSPE_and_OCC()
 		er_Gp_alt_c.push_back(Stripping.GetErSumSF(SP[i])/(2*abs(SP[i].JP)+1));//формируем вектор из делённых на (2j+1) ошибок сумм СС срыва для каждой подоболочки
 		er_Gm_alt_c.push_back(Pickup.GetErSumSF(SP[i])/(2*abs(SP[i].JP)+1));//формируем вектор из делённых на (2j+1) сумм СС подхвата для каждой подоболочки
 	}
+	cout<<"SPE.size() = "<<SPE.size()<<endl;
 	cout<<"NormalisedCoupleOfExperiments::ReCalcSPE_and_OCC has ended!"<<endl;
 }
 
 string NormalisedCoupleOfExperiments::FitResultsInTextForm(char verbose_level)//функция записывает в строку результаты нормировки и принятые параметры (строка оказывается слева внизу каждого выходного pdf файла)
 {
+	cout<<"FitResultsInTextForm has started!"<<endl;
 	stringstream s;//задаём строку, куда всё будем сохранять
 	if(verbose_level==0)
 	{
@@ -1241,8 +1244,12 @@ string NormalisedCoupleOfExperiments::FitResultsInTextForm(char verbose_level)//
 	unsigned int k=0;	
 	s<<"n^{+}G*^{+} + n^{-}G*^{-} = 1 equations:\n";//укажем вид уравнений, которые потом преобразовывались для МНК
 	cout<<"Will draw n^{+}G*^{+} + n^{-}G*^{-} = 1 equations"<<endl;
+	cout<<"SPE.size() = "<<SPE.size()<<endl;
 	for(unsigned int i=0;i<SPE.size();i++)
 	{//выведем все уравнения для подоболочек, которые мы должны были использовать для нахождения n+ и n-:
+		cout<<"Got n="<<SP_centroids[i].n<<"; l="<<SP_centroids[i].l<<"; JP="<<SP_centroids[i].JP<<endl;
+		cout<<"par.SubShellsUsedForNormalisation.size() = "<<par.SubShellsUsedForNormalisation.size()<<endl;
+		cout<<"par.CheckBelonging(SP["<<i<<"],par.SubShellsUsedForNormalisation = "<<par.CheckBelonging(SP[i],par.SubShellsUsedForNormalisation)<<endl;
 		if(par.CheckBelonging(SP[i],par.SubShellsUsedForNormalisation))
 		{	
 			k++;
@@ -1272,37 +1279,44 @@ string NormalisedCoupleOfExperiments::FitResultsInTextForm(char verbose_level)//
 	
 string NormalisedCoupleOfExperiments::ResultsInTextForm(char verbose_level)//функция записывает в строку результаты и принятые параметры (строка оказывается слева внизу каждого выходного pdf файла)
 {//cout<< "FitResultsInTextForm2 started working!!!!!\n";
-	stringstream s;//задаём строку, куда всё будем сохранять
-	if(verbose_level==0)
+	if(NormalisationWasTried==0)
 	{
-		s<<"Experiment: "<<Pickup.reference<<" ("<<Pickup.size()<<") "<<Stripping.reference<<" ("<<Stripping.size()<<") \n";
+		return CoupleOfExperiments::ResultsInTextForm(verbose_level);
 	}
-	else if(verbose_level==1)
-	{
-		s<<"Experiment(pickup): "<<Pickup.reference<<" ("<<Pickup.size()<<")\n";
-		s<<Pickup.ChangesLog<<"\n";
-		s<<"Experiment(stripping): "<<Stripping.reference<<" ("<<Stripping.size()<<")\n";
-		s<<Stripping.ChangesLog<<"\n";
-	}
-	if ((n_p==1.)&&(n_m==1.))//если нормировочные колэффициенты равны 1, то логично, что нормировки не происходило
-	{	
-		s<<"penalty: "<<penalty<<"\n";
-		s<<"Normalization was not perfomed.\n";
-	}//сообщим об этом в .pdf файле
 	else
-	{	//cout<< "FitResultsInTextForm2 write result in s!!!!!\n";
-			
-		s<<Pickup.particle<<" transfer\n";
-		s<<"n^{+} = "<<n_p<<" #pm "<<er_n_p<<" n^{-} = "<<n_m<<" #pm "<<er_n_m<<endl;//выведем n+ и n- с их ошибками
-		s<<"penalty: "<<penalty<<"\n";
-		s<<"E_F: "<<Ef<<" #pm "<<Ef_error<<"  keV \n #Delta: "<<Delta<<" #pm "<<Delta_error<<" keV\n";
-		s<<"SPE,keV nlj OCC #frac{G^{+}+G^{-}}{2J+1}\n";
-		for(unsigned int i=0;i<SPE.size();i++)
-		{//cout<< "FitResultsInTextForm2 write result for " << i << " time in s!!!!!\n";
-			s<<SPE[i]<<" "<<NLJToString(SP_centroids[i].n,SP_centroids[i].l,SP_centroids[i].JP)<<" "<<OCC[i]<<" "<<ParticlesAndHolesSum[i]<<"\n";//запишем одночастичную энергию, nlj подоболочки, заселённость, сумму частиц и дырок из экспериментов
+	{
+		stringstream s;//задаём строку, куда всё будем сохранять
+		if(verbose_level==0)
+		{
+			s<<"Experiment: "<<Pickup.reference<<" ("<<Pickup.size()<<") "<<Stripping.reference<<" ("<<Stripping.size()<<") \n";
 		}
-		//cout<< "FitResultsInTextForm2 has written result in s!!!!!\n";
+		else if(verbose_level==1)
+		{
+			s<<"Experiment(pickup): "<<Pickup.reference<<" ("<<Pickup.size()<<")\n";
+			s<<Pickup.ChangesLog<<"\n";
+			s<<"Experiment(stripping): "<<Stripping.reference<<" ("<<Stripping.size()<<")\n";
+			s<<Stripping.ChangesLog<<"\n";
+		}
+		if ((n_p==1.)&&(n_m==1.))//если нормировочные колэффициенты равны 1, то логично, что нормировки не происходило
+		{	
+			s<<"penalty: "<<penalty<<"\n";
+			s<<"Normalization was not perfomed.\n";
+		}//сообщим об этом в .pdf файле
+		else
+		{	//cout<< "FitResultsInTextForm2 write result in s!!!!!\n";
+				
+			s<<Pickup.particle<<" transfer\n";
+			s<<"n^{+} = "<<n_p<<" #pm "<<er_n_p<<" n^{-} = "<<n_m<<" #pm "<<er_n_m<<endl;//выведем n+ и n- с их ошибками
+			s<<"penalty: "<<penalty<<"\n";
+			s<<"E_F: "<<Ef<<" #pm "<<Ef_error<<"  keV \n #Delta: "<<Delta<<" #pm "<<Delta_error<<" keV\n";
+			s<<"SPE,keV nlj OCC #frac{G^{+}+G^{-}}{2J+1}\n";
+			for(unsigned int i=0;i<SPE.size();i++)
+			{//cout<< "FitResultsInTextForm2 write result for " << i << " time in s!!!!!\n";
+				s<<SPE[i]<<" "<<NLJToString(SP_centroids[i].n,SP_centroids[i].l,SP_centroids[i].JP)<<" "<<OCC[i]<<" "<<ParticlesAndHolesSum[i]<<"\n";//запишем одночастичную энергию, nlj подоболочки, заселённость, сумму частиц и дырок из экспериментов
+			}
+			//cout<< "FitResultsInTextForm2 has written result in s!!!!!\n";
+		}
+		return s.str();//вернём строку, где всё сохранили
+		//cout<< "ResultsInTextForm returned s and exit!!!!!\n";
 	}
-	return s.str();//вернём строку, где всё сохранили
-	//cout<< "ResultsInTextForm returned s and exit!!!!!\n";
 }//конец метода ResultsInTextForm

@@ -503,7 +503,7 @@ void PrintFitCalculationResult(vector<CoupleOfExperiments> v, vector<NormalisedC
 		
 		v_norm[i].points_G.SetMarkerColor(kBlue);//меняем цвет маркеров на синий, чтобы выделялись
 		v_norm[i].points_G.SetMarkerStyle(29);
-		v_norm[i].points_G.Draw("P SAME");
+		v_norm[i].points_G.Draw("AP SAME");
 		
 		//v[i].FIT.SetRange(0,0,GetMaximum(v[i].Gm_alt_c)+1,GetMaximum(v[i].Gp_alt_c)+1);	
 		v_norm[i].FIT.Draw("l same");//"SAME" - superimpose on top of existing picture, "L" - connect all computed points with a straight line  
@@ -512,6 +512,82 @@ void PrintFitCalculationResult(vector<CoupleOfExperiments> v, vector<NormalisedC
 		///для построения третей линии фита:
 		v_norm[i].FIT3.SetLineColor(1);
 		v_norm[i].FIT3.Draw("l same");
+		gPad->BuildLegend();
+		cout<<"Going to Pad4!"<<endl;
+		cc2->cd(4);//переходим к Pad4
+		HistStrip.PrintSpectroscopicFactorHistogram();//рисуем гистограмму для эксперимента срыва
+		
+		string TextOutput=v_norm[i].FitResultsInTextForm(1);
+		stringstream s(TextOutput);
+		OutputTextFile<<TextOutput<<"\n";//записывем в текстовый файл результаты расчёта
+		cout<<"Going to Pad5!"<<endl;
+		cc2->cd(5);//переходим к Pad5
+		HistNormStrip.PrintSpectroscopicFactorHistogram();//рисуем гистограмму для нормированного эксперимента срыва
+		cout<<"Going to Pad6!"<<endl;
+		cc2->cd(6);//переходим к Pad6
+		v_norm[i].DrawResultsInTextForm(TextOutput);//выводим текст справа внизу
+		cout<<"Printing in pdf file!"<<endl;
+		cc2->Print((OutputFileName+".pdf").c_str(),"pdf");//сохраняем всё в .pdf файл
+		cout<<"gPad->Update()!"<<endl;
+		gPad->Update();//обновим текущую область построения
+		cc2->Clear();
+	}
+	cc2->Print((OutputFileName+".pdf]").c_str(),"pdf");//сохраняем всё в .pdf файл (в третий раз?)
+}
+
+void PrintFitCalculationResult(vector<NormalisedCoupleOfExperiments> v_norm, string OutputFileName, string output_dir="output")//функция записывает результаты нормировки в выходные файлы .txt и .pdf
+{//на вход подаётся вектор пар экспериментов (вектор объектов CoupleOfExperiments)
+	//и название выходных файлов .pdf .txt OutputFileName
+	cout<<"void PrintFitCalculationResult has started!"<<endl;
+	OutputFileName=string(output_dir)+"/"+OutputFileName;
+	cout<<"void PrintFitCalculationResult will save results in "<<OutputFileName<<endl;
+	ofstream OutputTextFile((OutputFileName+".txt").c_str());//создаём .txt файл с выходными данными
+	cc2->Print((OutputFileName+".pdf[").c_str(),"pdf");//создаём .pdf файл с выходными данными, который сейчас будем наполнять графиками и текстом
+	for(unsigned int i=0;i<v_norm.size();i++)//для каждой пары экспериментов во входном векторе v
+	{
+		cout<<"working with "<<i<<" pair!"<<endl;
+		SpectroscopicFactorHistogram HistPickup=v_norm[i].Pickup.BuildSpectroscopicFactorHistogram(1);//создаём гистограммы спектроскопических факторов, которые будем отрисовывать на холсте
+		SpectroscopicFactorHistogram HistStrip=v_norm[i].Stripping.BuildSpectroscopicFactorHistogram(1);//для срыва и подхвата, всего 2 гистограммы
+		SpectroscopicFactorHistogram HistNormPickup=v_norm[i].Pickup.BuildSpectroscopicFactorHistogram(v_norm[i].n_m);//создаём гистограммы нормированных спектроскопических факторов, которые будем отрисовывать на холсте
+		SpectroscopicFactorHistogram HistNormStrip=v_norm[i].Stripping.BuildSpectroscopicFactorHistogram(v_norm[i].n_p);//для срыва и подхвата, всего 2 гистограммы, итого 4 гистограммы на холсте
+		
+		cc2->Clear();//Delete all pad primitives
+		cc2->Divide(3,2);//разделить Pad на 3 независимые области по вертикали и на 2 по горизонтали (всего 6 областей)
+		cout<<"Going to Pad1!"<<endl;
+		cc2->cd(1);//переходим к Pad1
+		HistPickup.PrintSpectroscopicFactorHistogram();//рисуем гистограмму для эксперимента подхвата
+		cout<<"Going to Pad2!"<<endl;
+		cc2->cd(2);//переходим к Pad2
+		HistNormPickup.PrintSpectroscopicFactorHistogram();//рисуем гистограмму для эксперимента нормированного подхвата
+		cout<<"Going to Pad3!"<<endl;
+		cc2->cd(3);//переходим к Pad3
+		TGraphErrors gr_before_norm=TGraphErrors();
+		for(unsigned int j=0;j<v_norm[i].points_G.GetN();j++)//для каждой пары срыв-подхват в векторе CE
+		{	
+			gr_before_norm.SetPoint(j,v_norm[i].points_G.GetPointX(j)/v_norm[i].n_m,v_norm[i].points_G.GetPointY(j)/v_norm[i].n_p);
+			gr_before_norm.SetPointError(j,v_norm[i].points_G.GetErrorX(j)/v_norm[i].n_m,v_norm[i].points_G.GetErrorY(j)/v_norm[i].n_p);
+		}	
+		gr_before_norm.SetTitle("Fit graph;G^-/2j+1;G^+/2j+1");//здесь и далее рисуем график фита; устанавливаем заголовок сверху графика
+		gr_before_norm.SetMarkerStyle(28);//устанавливаем стиль маркеров фитируемых точек
+		//gr_before_norm.ComputeRange(0,0,GetMaximum(v[i].Gm_alt_c)+0.1,GetMaximum(v[i].Gp_alt_c)+0.1);//изменим границы оси
+		//gr_before_norm.SetMarkerColor();//было бы неплохо сделать цвет каждой точки соответвующим цвету подоболочки на гистограммах
+		gr_before_norm.GetXaxis()->SetLimits(0.,1.5);
+		gr_before_norm.Draw("AP");	
+		gr_before_norm.SetMinimum(0.);
+		gr_before_norm.SetMaximum(1.5);
+		
+		v_norm[i].points_G.SetMarkerColor(kBlue);//меняем цвет маркеров на синий, чтобы выделялись
+		v_norm[i].points_G.SetMarkerStyle(29);
+		v_norm[i].points_G.Draw("AP SAME");
+		
+		//v[i].FIT.SetRange(0,0,GetMaximum(v[i].Gm_alt_c)+1,GetMaximum(v[i].Gp_alt_c)+1);	
+		v_norm[i].FIT.Draw("l same");//"SAME" - superimpose on top of existing picture, "L" - connect all computed points with a straight line  
+		///для построения второй линии фита:
+		v_norm[i].FIT2.Draw("l same");
+		///для построения третей линии фита:
+		v_norm[i].FIT3.SetLineColor(1);
+		v_norm[i].FIT3.Draw("l same");
+		gPad->BuildLegend();
 		cout<<"Going to Pad4!"<<endl;
 		cc2->cd(4);//переходим к Pad4
 		HistStrip.PrintSpectroscopicFactorHistogram();//рисуем гистограмму для эксперимента срыва
@@ -595,17 +671,15 @@ void SNTRA(string PathToFiles, string particle="", int ListFilesFlag=0, string o
 	par.ReadParameters(ParFileName+"parameters.par");//считаем пользовательские параметры из файла parameters.par на диске
 	par.CoutParameters();//выведем считанные параметры в терминал
 	
-	vector<CoupleOfExperiments> CE=CreateCouplesOfExperiments(Pickup,Stripping,par);
+	//vector<CoupleOfExperiments> CE=CreateCouplesOfExperiments(Pickup,Stripping,par);
 	vector<NormalisedCoupleOfExperiments> CE_norm=CreateNormalisedCouplesOfExperiments(Pickup,Stripping,par);
-	for(unsigned int i=0;i<CE.size();i++)//для каждой пары срыв-подхват в векторе CE
+	/*for(unsigned int i=0;i<CE.size();i++)//для каждой пары срыв-подхват в векторе CE
 	{
 		CE[i].CalcSPE_and_OCC();//применяем метод для расчёта одночастичной энергии и нормированной заселённости на подоболочке для пары экпериментов 
-	}
+	}*/
 	for(unsigned int i=0;i<CE_norm.size();i++)//для каждой пары срыв-подхват в векторе CE
 	{	
 		CE_norm[i].CalcSPE_and_OCC();
-		CE_norm[i].InduceNormalisation();
-		CE_norm[i].ReCalcSPE_and_OCC();
 	}
 	string OutputFileName;//создаём строку с именем выходного файла для результата расчёта SNTRA до нормировки
 	string OutputFileName2;//создаём строку с именем выходного файла для результата нормировки
@@ -621,11 +695,16 @@ void SNTRA(string PathToFiles, string particle="", int ListFilesFlag=0, string o
 		return ;//заканчиваем нашу функцию SNTRA здесь
 	}
 
-	CalculatePenaltyFunction(CE);//применяем функцию для вычисления штрафной функции
-	ArrangeByPenalty(CE);//применяем функцию для сортировки нашего вывода по возрастанию значения штрафной функции
-	PrintCalculationResult(CE,OutputFileName,output_dir_path);//записывает результат ранжировки для пары экспериментов CE в выходные файлы .txt и .pdf
-	//пока вызывает сегфолт, исправить:
-	PrintFitCalculationResult(CE,CE_norm,OutputFileName2,output_dir_path);//записывает результат нормировки для пары экспериментов CE в выходные файлы .txt и .pdf
+	CalculatePenaltyFunction(CE_norm);//применяем функцию для вычисления штрафной функции
+	ArrangeByPenalty(CE_norm);//применяем функцию для сортировки нашего вывода по возрастанию значения штрафной функции
+	PrintCalculationResult(CE_norm,OutputFileName,output_dir_path);//записывает результат ранжировки для пары экспериментов CE в выходные файлы .txt и .pdf
+	
+	for(unsigned int i=0;i<CE_norm.size();i++)//для каждой пары срыв-подхват в векторе CE
+	{	
+		CE_norm[i].InduceNormalisation();
+		CE_norm[i].ReCalcSPE_and_OCC();
+	}
+	PrintFitCalculationResult(CE_norm,OutputFileName2,output_dir_path);//записывает результат нормировки для пары экспериментов CE в выходные файлы .txt и .pdf
 
 	CalculatePenaltyFunction(CE_norm);//применяем функцию для вычисления штрафной функции
 	ArrangeByPenalty(CE_norm);//применяем функцию для сортировки нашего вывода по возрастанию значения штрафной функции
