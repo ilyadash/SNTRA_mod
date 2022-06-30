@@ -167,22 +167,20 @@ TString StateParameters::GetNLJ()
 	return NLJToString(n,l,JP);
 }
 
+void StateParameters::Cout()//метод выводит в терминал считанные в класс параметры расчёта
+{
+	cout<<"State: "<<this->GetNLJ()<<" with "<<couple_flag<<" for couple_flag"<<endl;
+}
+
 parameters::parameters()
 {
 	cout<<"parameters::parameters has started!"<<"\n";
 	IncompleteCouplesFlag=1;//all=1, pickup only=2, stripping only=3, no=4//флаг использования пар экпериментов разных типов для расчёта
-	cout<<"IncompleteCouplesFlag=1"<<"\n";
 	LimitedSubShellsUsedInDrawing=0;//флаг отрисовки только выбранных пользователем в параметрах подоболочек
-	cout<<"LimitedSubShellsUsedInDrawing=0"<<"\n";
-	cout<<"AllPrimitiveSubShells=VectorConvertTStringToStateParameters(AllPrimitiveSubShellsList)"<<"\n";
 	SubShellsUsedInAllCalculations=AllPrimitiveSubShells;// подоболочки, которые используются во всех вычислениях, а остальные будут игнорироваться (?)
-	cout<<"SubShellsUsedInAllCalculations=AllPrimitiveSubShell"<<"\n";
 	SubShellsUsedForOccupancyFit=AllPrimitiveSubShells;// подоболочки, которые используются в фите БКШ
-	cout<<"SubShellsUsedForOccupancyFit=AllPrimitiveSubShells"<<"\n";
 	SubShellsUsedInDrawing=AllPrimitiveSubShells;//подоболочки, которые должны отрисовываться на холсте (в энергетическом спектре, в фите БКШ)
-	cout<<"SubShellsUsedInDrawing=AllPrimitiveSubShells"<<"\n";
 	SubShellsUsedForNormalisation=VectorConvertTStringToStateParameters({"2s1/2","1d5/2","1d3/2"});//подоболочки, для которых выписываются и решаются уравнения, нужные для нахождения нормировочных коэффициентов
-	cout<<"SubShellsUsedForNormalisation=VectorConvertTStringToStateParameters({2s1/2,1d5/2,1d3/2})"<<"\n";
 	UsedPenaltyFunctionComponents={1,2,3,4,5};
 }
 
@@ -269,6 +267,10 @@ void parameters::ReadParameters(string filename)
 					}
 				}
 			}
+			for(unsigned int i=0;i<SubShellsUsedForOccupancyFit.size();i++)
+			{
+				cout<<SubShellsUsedForOccupancyFit[i].GetNLJ()<<" will be used in BCS fit."<<endl;
+			}
 		}
 		else if(tmp=="SubShellsUsedInDrawing:")//чтение параметра подоболочек, используемых в отрисовке на холсте
 		{
@@ -320,10 +322,35 @@ void parameters::ReadParameters(string filename)
 	}
 }
 
-void parameters::CoutParameters()//метод выводит в терминал считанные в класс параметры расчёта
+void parameters::Cout()//метод выводит в терминал считанные в класс параметры расчёта
 {
-	cout<<"Used experimental couples vanila: "<<(int)IncompleteCouplesFlag<<endl;
-	//cout<<"Used experimental couples: "<<TurnFlagInString((int)IncompleteCouplesFlag)<<endl;
+	cout<<"parameters::CoutParameters() has started!"<<"\n";
+	cout<<"IncompleteCouplesFlag="<<(int)IncompleteCouplesFlag<<"\n";
+	cout<<"LimitedSubShellsUsedInDrawing="<<LimitedSubShellsUsedInDrawing<<"\n";
+	cout<<"SubShellsUsedInAllCalculations="<<"\n";
+	for(int i=0;i<SubShellsUsedInAllCalculations.size();i++)
+	{
+		SubShellsUsedInAllCalculations[i].Cout();
+	}
+	cout<<endl;
+	cout<<"SubShellsUsedForOccupancyFit="<<"\n";
+	for(int i=0;i<SubShellsUsedForOccupancyFit.size();i++)
+	{
+		SubShellsUsedForOccupancyFit[i].Cout();
+	}
+	cout<<endl;
+	cout<<"SubShellsUsedInDrawing="<<"\n";
+	for(int i=0;i<SubShellsUsedInDrawing.size();i++)
+	{
+		SubShellsUsedInDrawing[i].Cout();
+	}
+	cout<<endl;
+	cout<<"SubShellsUsedForNormalisation="<<"\n";
+	for(int i=0;i<SubShellsUsedForNormalisation.size();i++)
+	{
+		SubShellsUsedForNormalisation[i].Cout();
+	}
+	cout<<endl;
 	cout<<"PenaltyFunctionComponents: "<<endl;
 	for(int i=0;i<UsedPenaltyFunctionComponents.size();i++)
 	{
