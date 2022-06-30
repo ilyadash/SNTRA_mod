@@ -52,13 +52,13 @@ string NLJToString(int n, int L, float J)
 
 int StringToNLJ(string s, int &n, int &l, float &JP)
 {
-	cout<<"StringToNLJ has started for "<<s<<"!"<<"\n";
+	//cout<<"StringToNLJ has started for "<<s<<"!"<<"\n";
 	if(s.size()>4)
 	{
 		if(s[0]>='1'&&s[0]<='9')
 		{
 			n=atoi(&s[0]);
-			cout<<"n = "<<n<<"\n";
+			//cout<<"n = "<<n<<"\n";
 		}
 		else
 		{
@@ -69,29 +69,34 @@ int StringToNLJ(string s, int &n, int &l, float &JP)
 		{
 			if(s[1]==AngularMomentum[i])
 			{
-				cout<<"s[1] = "<<s[1]<<"\n";
+				//cout<<"s[1] = "<<s[1]<<"\n";
 				l=i;
-				cout<<"l = "<<l<<"\n";
+				//cout<<"l = "<<l<<"\n";
 			}
 		}
 		s.erase(0,2);
-		cout<<"After erase:\n";
-		cout<<"s = "<<s<<"\n";
+		//cout<<"After erase:\n";
+		//cout<<"s = "<<s<<"\n";
 		if((s[2]>='1'&&s[2]<='9')&&(s[4]>='1'&&s[4]<='9'))
 		{
-			cout<<"s[2]="<<s[2]<<"\n";
+			//cout<<"s[2]="<<s[2]<<"\n";
 			JP=((float)atoi(&s[0]))/((float)atoi(&s[2]));
-			cout<<"JP="<<JP<<"\n";
+			if (s[5]>='1'&&s[5]<='9')
+			{
+				JP=((float)atoi(&s[0]))/(10*(float)atoi(&s[2])+(float)atoi(&s[3]));
+			}
+			//cout<<"JP="<<JP<<"\n";
 			return 1;
 		}
 		else
 		{
+			cout<<"	***Error! StringToNLJ has got too strange JP! Return 0!"<<"\n";
 			return 0;
 		}
 	}
 	else
 	{
-		cout<<"	***Error! StringToNLJ has got too short string! Return 1!"<<"\n";
+		cout<<"	***Error! StringToNLJ has got too short input string! Return 1!"<<"\n";
 		return 1;
 	}
 	
@@ -99,10 +104,10 @@ int StringToNLJ(string s, int &n, int &l, float &JP)
 
 int TStringToNLJ(TString s, int &n, int &l, float &JP)
 {
-	cout<<"TStringToNLJ has started!"<<"\n";
-	cout<<"s.Data() == "<<s.Data()<<"\n";
+	//cout<<"TStringToNLJ has started!"<<"\n";
+	//cout<<"s.Data() == "<<s.Data()<<"\n";
 	string str(s.Data());
-	cout<<"str == "<<str<<"\n";
+	//cout<<"str == "<<str<<"\n";
 	return StringToNLJ(str, n, l, JP);
 }
 
