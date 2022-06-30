@@ -15,9 +15,10 @@ vector<TString> AllPrimitiveSubShellsList={
 	"1d5/2", "2s1/2", "1d3/2",
 	"1f7/2", "2p3/2", "1f5/2", "2p1/2",
 	"1g9/2", "1g7/2", "2d5/2", "2d3/2", "3s1/2",
-	"1h11/2", "1h9/2", "2f7/2", "2f5/2", "3p3/2", "3p1/2",
-	"1i13/2", "2g9/2", "3d5/2", "1i11/2", "2g7/2", "4s1/2", "3d3/2",
-	"1j15/2"};
+	//"1h11/2", "1h9/2", "2f7/2", "2f5/2", "3p3/2", "3p1/2",
+	//"1i13/2", "2g9/2", "3d5/2", "1i11/2", "2g7/2", "4s1/2", "3d3/2",
+	//"1j15/2"
+	};
 
 class SpectroscopicFactorHistogram
 {//класс гистограмм спектроскопических сил (?)
@@ -38,8 +39,10 @@ class StateParameters//класс парасметров состояний, и�
 	double JP;
 	int n,l;
 	unsigned char couple_flag;//couple_flag показывает, есть ли в "паре" экспериментов pickup или stripping: 1: pickup only, 2:stripping only, 3:pickup and stripping, 0-undefined
+
 	StateParameters();
 	StateParameters(int n, int l, double JP, string couple_flag="0", bool to_be_drawn=1);
+
 	unsigned char GetColor();
 	void GetQN(int &n_out, int &l_out, double &JP_out);
 	bool CompareQN(StateParameters &s);//CompareQN=CompareQauntumNumbers, функция сравнивает значения квантовых чисел двух подоболочек (сравнение равенства подоболочек)
@@ -51,23 +54,24 @@ class StateParameters//класс парасметров состояний, и�
 	unsigned char GetCoupleFlag();
 	void SetCoupleFlag(unsigned char flag);
 	TString GetNLJ();
+	void Cout();
 };
 
 vector<StateParameters> VectorConvertTStringToStateParameters(vector<TString> v)
 {
-	cout<<"VectorConvertTStringToStateParameters has started!\n";
+	//cout<<"VectorConvertTStringToStateParameters has started!\n";
 	vector<StateParameters> result;
 	for(unsigned int i=0;i<v.size();i++)
 	{
 		int n, l;
 		float JP;
 		TStringToNLJ(v[i], n, l, JP);
-		cout<<"VectorConvertTStringToStateParameters creating StateParameters s!\n";
+		//cout<<"VectorConvertTStringToStateParameters creating StateParameters s!\n";
 		StateParameters s(n, l, JP, "0");
-		cout<<"VectorConvertTStringToStateParameters creating pushing s!\n";
+		//cout<<"VectorConvertTStringToStateParameters creating pushing s!\n";
 		result.push_back(s);
 	}
-	cout<<"VectorConvertTStringToStateParameters has finished!\n";
+	//cout<<"VectorConvertTStringToStateParameters has finished!\n";
 	return result;
 }
 
@@ -83,13 +87,15 @@ class parameters//класс пользовательских параметро
 	vector<StateParameters> SubShellsUsedInDrawing;//подоболочки, которые должны отрисовываться на холсте (в энергетическом спектре, в фите БКШ)
 	vector<StateParameters> SubShellsUsedForNormalisation;//подоболочки, для которых выписываются и решаются уравнения, нужные для нахождения нормировочных коэффициентов
 	vector<unsigned char> UsedPenaltyFunctionComponents;
+
 	parameters();
+
 	string GetComponentName(unsigned int iterator);
 	void ReadParameters(string filename);//метод считывает параметры из файла на диске
-	void CoutParameters();//метод выводит в терминал считанные в класс параметры расчёта
 	bool CheckStateParameters(StateParameters &s);// ?
 	bool CheckBelonging(StateParameters &s, vector<StateParameters> &v);// ?
 	void PrintUsedSubShells();
+	void Cout();//метод выводит в терминал считанные в класс параметры расчёта
 };
 
 class Experiment

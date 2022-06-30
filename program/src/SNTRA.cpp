@@ -669,7 +669,7 @@ void SNTRA(string PathToFiles, string particle="", int ListFilesFlag=0, string o
 	s1>>ParFileName;
 	
 	par.ReadParameters(ParFileName+"parameters.par");//считаем пользовательские параметры из файла parameters.par на диске
-	par.CoutParameters();//выведем считанные параметры в терминал
+	par.Cout();//выведем считанные параметры в терминал
 	
 	//vector<CoupleOfExperiments> CE=CreateCouplesOfExperiments(Pickup,Stripping,par);
 	vector<NormalisedCoupleOfExperiments> CE_norm=CreateNormalisedCouplesOfExperiments(Pickup,Stripping,par);
