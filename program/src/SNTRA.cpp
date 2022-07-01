@@ -189,14 +189,14 @@ void CalculatePenaltyFunction(vector<NormalisedCoupleOfExperiments> &v)//фун�
 		{
 			MaxDeltaError=v[i].Delta_error;
 		}
-		if(NumberOfPickupStatesMax<v[i].Pickup.size())//GetNlevels())
+		if(NumberOfPickupStatesMax<v[i].Pickup.size())//GetNCalculatedLevels())
 		{
-			//NumberOfPickupStatesMax=v[i].Pickup.GetNlevels();
+			//NumberOfPickupStatesMax=v[i].Pickup.GetNCalculatedLevels();
 			NumberOfPickupStatesMax=v[i].Pickup.size();
 		}
-		if(NumberOfStrippingStatesMax<v[i].Stripping.size())//GetNlevels())
+		if(NumberOfStrippingStatesMax<v[i].Stripping.size())//GetNCalculatedLevels())
 		{
-			NumberOfStrippingStatesMax=v[i].Stripping.size();//)//GetNlevels();
+			NumberOfStrippingStatesMax=v[i].Stripping.size();//)//GetNCalculatedLevels();
 		}
 		AverageNumberOfCalculatedStates+=v[i].SPE.size();
 	}
@@ -265,14 +265,14 @@ void CalculatePenaltyFunction(vector<CoupleOfExperiments> &v)//функция д
 		{
 			MaxDeltaError=v[i].Delta_error;
 		}
-		if(NumberOfPickupStatesMax<v[i].Pickup.size())//GetNlevels())
+		if(NumberOfPickupStatesMax<v[i].Pickup.size())//GetNCalculatedLevels())
 		{
-			//NumberOfPickupStatesMax=v[i].Pickup.GetNlevels();
+			//NumberOfPickupStatesMax=v[i].Pickup.GetNCalculatedLevels();
 			NumberOfPickupStatesMax=v[i].Pickup.size();
 		}
-		if(NumberOfStrippingStatesMax<v[i].Stripping.size())//GetNlevels())
+		if(NumberOfStrippingStatesMax<v[i].Stripping.size())//GetNCalculatedLevels())
 		{
-			NumberOfStrippingStatesMax=v[i].Stripping.size();//)//GetNlevels();
+			NumberOfStrippingStatesMax=v[i].Stripping.size();//)//GetNCalculatedLevels();
 		}
 		AverageNumberOfCalculatedStates+=v[i].SPE.size();
 	}
@@ -345,15 +345,18 @@ void PrintCalculationResult(vector<CoupleOfExperiments> v, string OutputFileName
 		HistPickup.PrintSpectroscopicFactorHistogram();//рисуем гистограмму для эксперимента подхвата
 		
 		cc1->cd(2);//переходим к Pad2
-		TMultiGraph mgr;
-		v[i].occupancies.SetTitle("Occupancy;E,keV;v^2");
-		mgr.SetTitle("Occupancy;E, keV;v^{2}");
-		mgr.Add(&v[i].Pickup_occupancies);
-		mgr.Add(&v[i].Stripping_occupancies);
-		mgr.Add(&v[i].Both_occupancies);
-		mgr.Draw("ap");
+		TMultiGraph* mgr=new TMultiGraph();
+		//v[i].occupancies.SetTitle("Occupancy;E,keV;v^2");
+		mgr->Add(&v[i].Pickup_occupancies);
+		mgr->Add(&v[i].Stripping_occupancies);
+		mgr->Add(&v[i].Both_occupancies);
+		mgr->SetTitle("Occupancy; E, keV; v^{2}");
+		mgr->Draw("ap");
 		v[i].occupancies.Draw("p same");//отрисуем заселённости, которые использовались в фите БКШ поверх остальных (выделим их крестами)
 		v[i].BCS.Draw("l same");//отрисуем кривую фита БКШ на том же Pad
+		mgr->SetTitle("Occupancy; E, keV; v^{2}");
+		gPad->Modified();
+		gPad->Update();
 		
 		cc1->cd(3);
 		TH1F PenaltyComponents=v[i].BuildPenaltyComponentsHistogram();
