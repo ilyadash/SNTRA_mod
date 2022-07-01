@@ -729,16 +729,16 @@ void CoupleOfExperiments::CalcSPE_and_OCC()//функция рассчитыва
 	{
 		double C_pickup=Pickup.GetCentroid(SP[i]);
 		double C_stripping=Stripping.GetCentroid(SP[i]);	
-	
+		cout<<NLJToString(SP[i].n,SP[i].l,SP[i].JP)<<"C_pickup="<<C_pickup<<" C_stripping="<<C_stripping<<"\n"; 
 		if((C_stripping!=-1)&&(C_pickup!=-1)&&(!isnan(C_stripping))&&(!isnan(C_pickup)))//индусский fix, потом проверить, что генерирует nan
 		{
 			double E_pickup=-Pickup.BA-C_pickup;//Диплом Марковой М.Л., ф-ла 4
 			double E_stripping=-Stripping.BA1+C_stripping;//Диплом Марковой М.Л., ф-ла 5
-			//cout<<"E_pickup="<<E_pickup<<" E_stripping="<<E_stripping<<"\n"; 
+			cout<<NLJToString(SP[i].n,SP[i].l,SP[i].JP)<<"E_pickup="<<E_pickup<<" E_stripping="<<E_stripping<<"\n"; 
 			double SPE_tmp=(Pickup.GetSumSF(SP[i])*E_pickup+Stripping.GetSumSF(SP[i])*E_stripping)/(Pickup.GetSumSF(SP[i])+Stripping.GetSumSF(SP[i]));
 			double OCC_tmp=(Pickup.GetSumSF(SP[i])-Stripping.GetSumSF(SP[i])+2*abs(SP[i].JP)+1)/(2*(2*abs(SP[i].JP)+1));
-			//cout<<NLJToString(SP[i].n,SP[i].l,SP[i].JP)<<" pickup_sum: "<<Pickup.GetSumSF(SP[i])<<" stripping_sum:"<<Stripping.GetSumSF(SP[i])<<"\n";
-			//cout<<NLJToString(SP[i].n,SP[i].l,SP[i].JP)<<" pickup_c: "<<C_pickup<<" stripping_c:"<<C_stripping<<"\n";
+			cout<<NLJToString(SP[i].n,SP[i].l,SP[i].JP)<<" pickup_sumG = "<<Pickup.GetSumSF(SP[i])<<" stripping_sumG ="<<Stripping.GetSumSF(SP[i])<<"\n";
+			cout<<NLJToString(SP[i].n,SP[i].l,SP[i].JP)<<" pickup_C = "<<C_pickup<<" stripping_C = "<<C_stripping<<"\n";
 			SPE.push_back(SPE_tmp);//Диплом Марковой М.Л., ф-ла 17
 			OCC.push_back(OCC_tmp);//Диплом Марковой М.Л., ф-ла 18
 			ParticlesAndHolesSum.push_back((Pickup.GetSumSF(SP[i])+Stripping.GetSumSF(SP[i]))/(2*abs(SP[i].JP)+1));
