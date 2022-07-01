@@ -80,10 +80,10 @@ int StringToNLJ(string s, int &n, int &l, float &JP)
 		if((s[2]>='1'&&s[2]<='9')&&(s[4]>='1'&&s[4]<='9'))
 		{
 			//cout<<"s[2]="<<s[2]<<"\n";
-			JP=((float)atoi(&s[0]))/((float)atoi(&s[2]));
+			JP=pow(-1,l)*((float)atoi(&s[0]))/((float)atoi(&s[2]));
 			if (s[5]>='1'&&s[5]<='9')
 			{
-				JP=((float)atoi(&s[0]))/(10*(float)atoi(&s[2])+(float)atoi(&s[3]));
+				JP=pow(-1,l)*((float)atoi(&s[0]))/(10*(float)atoi(&s[2])+(float)atoi(&s[3]));
 			}
 			//cout<<"JP="<<JP<<"\n";
 			return 1;
