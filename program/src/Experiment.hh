@@ -10,16 +10,6 @@
 #define G_CUT 0.8 //значение для ???
 using namespace std;
 
-vector<TString> AllPrimitiveSubShellsList={
-	"1s1/2", "1p3/2", "1p1/2",
-	"1d5/2", "2s1/2", "1d3/2",
-	"1f7/2", "2p3/2", "1f5/2", "2p1/2",
-	"1g9/2", "1g7/2", "2d5/2", "2d3/2", "3s1/2",
-	//"1h11/2", "1h9/2", "2f7/2", "2f5/2", "3p3/2", "3p1/2",
-	//"1i13/2", "2g9/2", "3d5/2", "1i11/2", "2g7/2", "4s1/2", "3d3/2",
-	//"1j15/2"
-	};
-
 class SpectroscopicFactorHistogram
 {//класс гистограмм спектроскопических сил (?)
 	public:
@@ -32,50 +22,6 @@ class SpectroscopicFactorHistogram
 	TLegend* Legend;//хорошие разработчики, сделали "=" protected...
 	void PrintSpectroscopicFactorHistogram();
 };
-
-class StateParameters//класс парасметров состояний, измеренных в эксперименте
-{
-	public:
-	double JP;
-	int n,l;
-	unsigned char couple_flag;//couple_flag показывает, есть ли в "паре" экспериментов pickup или stripping: 1: pickup only, 2:stripping only, 3:pickup and stripping, 0-undefined
-
-	StateParameters();
-	StateParameters(int n, int l, double JP, string couple_flag="0", bool to_be_drawn=1);
-
-	unsigned char GetColor();
-	void GetQN(int &n_out, int &l_out, double &JP_out);
-	bool CompareQN(StateParameters &s);//CompareQN=CompareQauntumNumbers, функция сравнивает значения квантовых чисел двух подоболочек (сравнение равенства подоболочек)
-	bool ToBeDrawn;//флаг отрисовки на холсте
-	bool CheckIfIncludedIn(vector<StateParameters> SubShellsVec);//функция проверяет, встречается ли хоть 1 раз в поданном векторе это состояние
-	string GetType();
-	bool GetToBeDrawnFlag();
-	void SetToBeDrawnFlag(bool flag);
-	unsigned char GetCoupleFlag();
-	void SetCoupleFlag(unsigned char flag);
-	TString GetNLJ();
-	void Cout();
-};
-
-vector<StateParameters> VectorConvertTStringToStateParameters(vector<TString> v)
-{
-	//cout<<"VectorConvertTStringToStateParameters has started!\n";
-	vector<StateParameters> result;
-	for(unsigned int i=0;i<v.size();i++)
-	{
-		int n, l;
-		float JP;
-		TStringToNLJ(v[i], n, l, JP);
-		//cout<<"VectorConvertTStringToStateParameters creating StateParameters s!\n";
-		StateParameters s(n, l, JP, "0");
-		//cout<<"VectorConvertTStringToStateParameters creating pushing s!\n";
-		result.push_back(s);
-	}
-	//cout<<"VectorConvertTStringToStateParameters has finished!\n";
-	return result;
-}
-
-vector<StateParameters> AllPrimitiveSubShells=VectorConvertTStringToStateParameters(AllPrimitiveSubShellsList);
 
 class parameters//класс пользовательских параметров расчёта
 {
@@ -131,10 +77,9 @@ class Experiment
 	double GetCentroid(StateParameters &s);//Возвращает центроид для данных StateParameters
 	double GetSumSF(StateParameters &s);//Возвращает сумму СФ для данных StateParameters
 	
-	int GetNlevels();//возвращает число уровней, для которых вычислены центроиды
+	int GetNCalculatedLevels();//возвращает число уровней, для которых вычислены центроиды
 
 	int size();//возвращает число состояний, зарегистрированных в эксперименте
-	int SSSsize();
 	SummarizedSpectroscopicState& operator [] (int index);
 	//vector<TH1F> BuildSpectroscopicFactorHistogram(float &maximum)
 	SpectroscopicFactorHistogram BuildSpectroscopicFactorHistogram(double norma);
@@ -254,7 +199,7 @@ class CoupleOfExperiments
 
 	CoupleOfExperiments(Experiment &InpPickup,Experiment &InpStripping);//конструктор, аргументы которого представляют из себя эксперименты по подхвату и срыву
 	
-	void GenerateCommonNJPList();//метод заполняет vector<StateParameters> SP данного объекта
+	void GenerateCommonNJPList();//метод заполняет vector<StateParameters> SP данного объекта, генерирует список совпадающих состояний в экспериментах срыва подхвата
 	void CalcSPE_and_OCC();
 	void ClearCalcResults();
 	virtual string ResultsInTextForm(char verbose_level=0);

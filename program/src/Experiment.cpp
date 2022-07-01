@@ -50,128 +50,6 @@ void SpectroscopicFactorHistogram::PrintSpectroscopicFactorHistogram()
 	}
 }
 
-StateParameters::StateParameters()
-{
-	ToBeDrawn=1;
-}
-
-StateParameters::StateParameters(int n, int l, double JP, string couple_flag, bool to_be_drawn)
-{
-	this->n=n;
-	this->l=l;
-	this->JP=JP;
-	ToBeDrawn=to_be_drawn;
-	//получим флаг принадлежности состояния эксперименат срыв и/или подхвата:
-	if(couple_flag=="pickup")
-	{
-		this->couple_flag=1;
-	}
-	else if(couple_flag=="stripping")
-	{
-		this->couple_flag=2;
-	}
-	else if(couple_flag=="both")
-	{
-		this->couple_flag=3;
-	}
-	else
-	{
-		this->couple_flag=0;//неопределённое состояние флага
-	}
-}
-
-unsigned char StateParameters::GetColor()
-{
-	if(couple_flag==3)
-	{
-		return 1;
-	}
-	if(couple_flag==2)
-	{
-		return 2;
-	}
-	if(couple_flag==1)
-	{
-		return 4;
-	}
-	cout<<"Error: StateParameters::GetColor() cannot return color for this couple_flag returns black!"<<endl;
-	return 0;
-}
-
-void StateParameters::GetQN(int &n_out, int &l_out, double &JP_out)
-{
-	n_out=this->n;
-	l_out=this->l;
-	JP_out=this->JP;
-}
-
-bool StateParameters::CompareQN(StateParameters &s)
-{
-	if((n==s.n)&&(l==s.l)&&(JP==s.JP))
-	{
-		return true;
-	}
-	else
-	{
-		return false;
-	}
-}
-
-bool StateParameters::CheckIfIncludedIn(vector<StateParameters> SubShellsVec)
-{//есть ли такая же подоболочка в поданном векторе?
-	for(unsigned int i=0;i<SubShellsVec.size();i++)
-	{
-		if((n==SubShellsVec[i].n)&&(l==SubShellsVec[i].l)&&(JP==SubShellsVec[i].JP))
-		{
-			return true;
-		}
-	}
-	return false;
-}
-
-bool StateParameters::GetToBeDrawnFlag()
-{
-	return ToBeDrawn;
-}
-void StateParameters::SetToBeDrawnFlag(bool flag)
-{
-	this->ToBeDrawn=flag;
-}
-unsigned char StateParameters::GetCoupleFlag()
-{
-	return couple_flag;
-}
-void StateParameters::SetCoupleFlag(unsigned char flag)
-{
-	this->couple_flag=flag;
-}
-
-string StateParameters::GetType()
-{
-	if(couple_flag==3)
-	{
-		return "both";
-	}
-	if(couple_flag==2)
-	{
-		return "stripping";
-	}
-	if(couple_flag==1)
-	{
-		return "pickup";
-	}
-}
-
-TString StateParameters::GetNLJ()
-{
-	return NLJToString(n,l,JP);
-}
-
-void StateParameters::Cout()//метод выводит в терминал считанные в класс параметры расчёта
-{
-	cout<<"State: "<<this->GetNLJ()<<" with "<<couple_flag<<" for couple_flag"<<endl;
-}
-
 parameters::parameters()
 {
 	cout<<"parameters::parameters has started!"<<"\n";
@@ -671,7 +549,7 @@ double Experiment::GetCentroid(StateParameters &s)
 	return SSD.GetState(s.n,s.l,s.JP).C;
 }
 
-int Experiment::GetNlevels()//возвращает число уровней, для которых вычислены центроиды
+int Experiment::GetNCalculatedLevels()//возвращает число уровней, для которых вычислены центроиды
 {
 	return SSD.size();
 }
@@ -679,11 +557,6 @@ int Experiment::GetNlevels()//возвращает число уровней, д
 int Experiment::size()//возвращает число состояний, зарегистрированных в эксперименте
 {
 	return States.size();
-}
-
-int Experiment::SSSsize()
-{
-	return SSD.size();
 }
 
 SummarizedSpectroscopicState&  Experiment::operator [] (int index)
@@ -699,7 +572,6 @@ SummarizedSpectroscopicState&  Experiment::operator [] (int index)
 		return s1;
 	}
 }
-//vector<TH1F> BuildSpectroscopicFactorHistogram(float &maximum)
 
 SpectroscopicFactorHistogram Experiment::BuildSpectroscopicFactorHistogram(double norma=1)//метод для заполнения гистограммы нормированными данными экперимента
 {	//возвращает объект класса SpectroscopicFactorHistogram с данными нормированного (*norma) объекта класса Experiment для дальнейшего построения
@@ -739,7 +611,7 @@ SpectroscopicFactorHistogram Experiment::BuildSpectroscopicFactorHistogram(doubl
 TH1F CoupleOfExperiments::BuildPenaltyComponentsHistogram()
 {
 	TH1F result("PFC","Penalty function components",PenaltyComponents.size()+1,0,PenaltyComponents.size()+1);
-	result.GetYaxis()->SetRangeUser(10e-12,1);
+	result.GetYaxis()->SetRangeUser(10e-6,1);
 	for(unsigned int i=0;i<PenaltyComponents.size();i++)
 	{
 		result.SetBinContent(i+1,PenaltyComponents[i]);
@@ -747,34 +619,6 @@ TH1F CoupleOfExperiments::BuildPenaltyComponentsHistogram()
 	}
 	return result;
 }
-
-//	TFormula *PenaltyFormula;
-
-/*	void ConstructFormula()
-{
-	PenaltyFunction.replace(PenaltyFunction.find("a_{ij}"),6,"[0]");//поиск подстроки 
-	PenaltyFunction.replace(PenaltyFunction.find("N^+"),3,"[1]");
-	PenaltyFunction.replace(PenaltyFunction.find("N^-"),3,"[2]");
-	PenaltyFunction.replace(PenaltyFunction.find("\sigma(E_f)"),11,"[3]");
-	PenaltyFunction.replace(PenaltyFunction.find("\sigma(\Delta)"),14,"[4]");
-	PenaltyFunction.replace(PenaltyFunction.find("N^+_{max}"),9,"[5]");
-	PenaltyFunction.replace(PenaltyFunction.find("N^-_{max}"),9,"[6]");
-	PenaltyFunction.replace(PenaltyFunction.find("\sigma(E_f)_{max}"),17,"[7]");
-	PenaltyFunction.replace(PenaltyFunction.find("\sigma(\Delta)_{max}"),20,"[8]");
-	PenaltyFormula=new TFormula("Penalty",PenaltyFunction.c_str());
-	
-	PenaltyFormula->SetParameter(0,a);
-	PenaltyFormula->SetParameter(1,NumberOfStrippingStates);
-	PenaltyFormula->SetParameter(2,NumberOfPickupStates);
-	PenaltyFormula->SetParameter(3,Ef_error);
-	PenaltyFormula->SetParameter(4,Delta_error);
-	PenaltyFormula->SetParameter(5,NumberOfStrippingStatesMax);
-	PenaltyFormula->SetParameter(6,NumberOfPickupStatesMax);
-	PenaltyFormula->SetParameter(7,Ef_error_max);
-	PenaltyFormula->SetParameter(8,Delta_error_max);
-	penalty=PenaltyFormula->Eval(0);
-}
-*/
 
 CoupleOfExperiments::CoupleOfExperiments(Experiment &InpPickup,Experiment &InpStripping)//конструктор, аргументы которого представляют из себя эксперименты по подхвату и срыву
 {
@@ -785,18 +629,32 @@ CoupleOfExperiments::CoupleOfExperiments(Experiment &InpPickup,Experiment &InpSt
 void CoupleOfExperiments::GenerateCommonNJPList()
 {
 	cout<<"CoupleOfExperiments::GenerateCommonNJPList() has started!"<<endl;
-	for(int i=0;i<Pickup.SSSsize();i++)
+	par.Cout();
+	for(int i=0;i<Pickup.GetNCalculatedLevels();i++)
 	{
 		unsigned char flag=0;
-		for(int j=0;j<Stripping.SSSsize();j++)
+		for(int j=0;j<Stripping.GetNCalculatedLevels();j++)
 		{
 			if(Pickup[i].Compare(Stripping[j]))
 			{
 				StateParameters s(Pickup[i].n,Pickup[i].L,Pickup[i].JP,"both");
 				if (par.LimitedSubShellsUsedInDrawing==1)//если пользователь указывал в файле параметров подоболочки для отрисовки
 				{
-					if(s.CheckIfIncludedIn(par.SubShellsUsedInDrawing)) s.SetToBeDrawnFlag(1);//средни указанных для отрисовки есть данное состояние, то выставим ему флаг, что его нужно отрисовывать
-					else  s.SetToBeDrawnFlag(0);//иначе укажем флаг, что отрисовывать не надо
+					cout<<"Check no "<<i<<":"<<endl;
+					s.Cout();
+					if(s.CheckIfIncludedIn(par.SubShellsUsedInDrawing)) 
+					{
+						cout<<"s is included in par.SubShellsUsedInDrawing!"<<endl;
+						//cout<<"SP_centroids["<<i<<"].GetToBeDrawnFlag()=="<<SP_centroids[i].GetToBeDrawnFlag()<<endl;
+						s.SetToBeDrawnFlag(1);//средни указанных для отрисовки есть данное состояние, то выставим ему флаг, что его нужно отрисовывать
+						cout<<"s.GetToBeDrawnFlag()=="<<s.GetToBeDrawnFlag()<<endl;
+					}
+					else  
+					{
+						cout<<"s is NOT included in par.SubShellsUsedInDrawing!"<<endl;
+						s.SetToBeDrawnFlag(0);//иначе укажем флаг, что отрисовывать не надо
+						cout<<"s.GetToBeDrawnFlag()=="<<s.GetToBeDrawnFlag()<<endl;
+					}
 				}
 				SP.push_back(s);
 				flag=1;
@@ -805,19 +663,29 @@ void CoupleOfExperiments::GenerateCommonNJPList()
 		if((flag==0)&&((par.IncompleteCouplesFlag==2)||(par.IncompleteCouplesFlag==1)))
 		{
 			StateParameters s(Pickup[i].n,Pickup[i].L,Pickup[i].JP,"pickup");
-			if (par.LimitedSubShellsUsedInDrawing==1)//если пользователь указывал в файле параметров подоболочки для отрисовки
+			cout<<"Check no "<<i<<":"<<endl;
+			s.Cout();
+			if(s.CheckIfIncludedIn(par.SubShellsUsedInDrawing)) 
 			{
-				if(s.CheckIfIncludedIn(par.SubShellsUsedInDrawing)) s.SetToBeDrawnFlag(1);//средни указанных для отрисовки есть данное состояние, то выставим ему флаг, что его нужно отрисовывать
-				else  s.SetToBeDrawnFlag(0);//иначе укажем флаг, что отрисовывать не надо
+				cout<<"s is included in par.SubShellsUsedInDrawing!"<<endl;
+				//cout<<"SP_centroids["<<i<<"].GetToBeDrawnFlag()=="<<SP_centroids[i].GetToBeDrawnFlag()<<endl;
+				s.SetToBeDrawnFlag(1);//средни указанных для отрисовки есть данное состояние, то выставим ему флаг, что его нужно отрисовывать
+				cout<<"s.GetToBeDrawnFlag()=="<<s.GetToBeDrawnFlag()<<endl;
+			}
+			else  
+			{
+				cout<<"s is NOT included in par.SubShellsUsedInDrawing!"<<endl;
+				s.SetToBeDrawnFlag(0);//иначе укажем флаг, что отрисовывать не надо
+				cout<<"s.GetToBeDrawnFlag()=="<<s.GetToBeDrawnFlag()<<endl;
 			}
 			SP.push_back(s);
 		}
 		
 	}//не особо эффективный алгоритм поиска отсутствия совпадений, но сейчас скорость не особо принципиальна
-	for(int i=0;i<Stripping.SSSsize();i++)
+	for(int i=0;i<Stripping.GetNCalculatedLevels();i++)
 	{
 		unsigned char flag=0;
-		for(int j=0;j<Pickup.SSSsize();j++)
+		for(int j=0;j<Pickup.GetNCalculatedLevels();j++)
 		{
 			if(Pickup[j].Compare(Stripping[i]))
 			{
@@ -827,10 +695,23 @@ void CoupleOfExperiments::GenerateCommonNJPList()
 		if((flag==0)&&((par.IncompleteCouplesFlag==3)||(par.IncompleteCouplesFlag==1)))
 		{
 			StateParameters s(Stripping[i].n,Stripping[i].L,Stripping[i].JP,"stripping");
+			cout<<"Check no "<<i<<":"<<endl;
+			s.Cout();
 			if (par.LimitedSubShellsUsedInDrawing==1)//если пользователь указывал в файле параметров подоболочки для отрисовки
 			{
-				if(s.CheckIfIncludedIn(par.SubShellsUsedInDrawing)) s.SetToBeDrawnFlag(1);//средни указанных для отрисовки есть данное состояние, то выставим ему флаг, что его нужно отрисовывать
-				else  s.SetToBeDrawnFlag(0);//иначе укажем флаг, что отрисовывать не надо
+				if(s.CheckIfIncludedIn(par.SubShellsUsedInDrawing)) 
+				{
+					cout<<"s is included in par.SubShellsUsedInDrawing!"<<endl;
+					//cout<<"SP_centroids["<<i<<"].GetToBeDrawnFlag()=="<<SP_centroids[i].GetToBeDrawnFlag()<<endl;
+					s.SetToBeDrawnFlag(1);//средни указанных для отрисовки есть данное состояние, то выставим ему флаг, что его нужно отрисовывать
+					cout<<"s.GetToBeDrawnFlag()=="<<s.GetToBeDrawnFlag()<<endl;
+				}
+				else  
+				{
+					cout<<"s is NOT included in par.SubShellsUsedInDrawing!"<<endl;
+					s.SetToBeDrawnFlag(0);//иначе укажем флаг, что отрисовывать не надо
+					cout<<"s.GetToBeDrawnFlag()=="<<s.GetToBeDrawnFlag()<<endl;
+				}
 			}
 			SP.push_back(s);
 		}		
@@ -870,7 +751,7 @@ void CoupleOfExperiments::CalcSPE_and_OCC()//функция рассчитыва
 		}
 		else
 		{
-			cout<<"C_stripping or C_pickup is incorrect! Add SPE = 0 and OCC = 0!\n"; 
+			cout<<"C_stripping or C_pickup is incorrect (not NaN or -1!?)! Add SPE = 0 and OCC = 0!\n"; 
 			SPE.push_back(0);
 			OCC.push_back(0);
 		}
@@ -882,17 +763,30 @@ void CoupleOfExperiments::CalcSPE_and_OCC()//функция рассчитыва
 	float min_E,max_E,min_OCC,max_OCC;
 	for(unsigned int i=0;i<OCC.size();i++)
 	{
+		//cout<<"SP_centroids["<<i<<"]==";
+		//SP_centroids[i].Cout();
+		//cout<<"SP_centroids["<<i<<"].GetType()=="<<SP_centroids[i].GetType()<<endl;
+		//cout<<"SP_centroids["<<i<<"].GetToBeDrawnFlag()=="<<SP_centroids[i].GetToBeDrawnFlag()<<endl;
 		if(SP_centroids[i].GetType()=="pickup")
 		{
-			if (SP[i].GetToBeDrawnFlag()) Pickup_occupancies.SetPoint(Pickup_occupancies.GetN(),SPE[i],OCC[i]);
+			if (SP_centroids[i].GetToBeDrawnFlag()) 
+			{
+				Pickup_occupancies.SetPoint(Pickup_occupancies.GetN(),SPE[i],OCC[i]);
+			}
 		}
 		else if(SP_centroids[i].GetType()=="stripping")
 		{
-			if (SP[i].GetToBeDrawnFlag()) Stripping_occupancies.SetPoint(Stripping_occupancies.GetN(),SPE[i],OCC[i]);
+			if (SP_centroids[i].GetToBeDrawnFlag()) 
+			{
+				Stripping_occupancies.SetPoint(Stripping_occupancies.GetN(),SPE[i],OCC[i]);
+			}
 		}
 		else if(SP_centroids[i].GetType()=="both")
 		{
-			if (SP[i].GetToBeDrawnFlag()) Both_occupancies.SetPoint(Both_occupancies.GetN(),SPE[i],OCC[i]);
+			if (SP_centroids[i].GetToBeDrawnFlag()) 
+			{
+				Both_occupancies.SetPoint(Both_occupancies.GetN(),SPE[i],OCC[i]);
+			}	
 		}
 		if(min_E>SPE[i])
 		{

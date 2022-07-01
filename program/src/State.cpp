@@ -1,5 +1,138 @@
 #include "State.hh"
+
 const double SF_error_parameter=0.;
+
+StateParameters::StateParameters()
+{
+	ToBeDrawn=1;
+}
+
+StateParameters::StateParameters(int n, int l, double JP, string couple_flag, bool to_be_drawn)
+{
+	this->n=n;
+	this->l=l;
+	this->JP=JP;
+	ToBeDrawn=to_be_drawn;
+	//получим флаг принадлежности состояния эксперименат срыв и/или подхвата:
+	if(couple_flag=="pickup")
+	{
+		this->couple_flag=1;
+	}
+	else if(couple_flag=="stripping")
+	{
+		this->couple_flag=2;
+	}
+	else if(couple_flag=="both")
+	{
+		this->couple_flag=3;
+	}
+	else
+	{
+		this->couple_flag=0;//неопределённое состояние флага
+	}
+}
+
+unsigned char StateParameters::GetColor()
+{
+	if(couple_flag==3)
+	{
+		return 1;
+	}
+	if(couple_flag==2)
+	{
+		return 2;
+	}
+	if(couple_flag==1)
+	{
+		return 4;
+	}
+	cout<<"Error: StateParameters::GetColor() cannot return color for this couple_flag returns black!"<<endl;
+	return 0;
+}
+
+void StateParameters::GetQN(int &n_out, int &l_out, double &JP_out)
+{
+	n_out=this->n;
+	l_out=this->l;
+	JP_out=this->JP;
+}
+
+bool StateParameters::CompareQN(StateParameters &s)
+{
+	if((n==s.n)&&(l==s.l)&&(JP==s.JP))
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+bool StateParameters::CheckIfIncludedIn(vector<StateParameters> SubShellsVec)
+{//есть ли такая же подоболочка в поданном векторе?
+	cout<<"StateParameters::CheckIfIncludedIn checking if StateParameters: "<<endl;
+	this->Cout();
+	cout<<"Is equall: "<<endl;
+	for(unsigned int i=0;i<SubShellsVec.size();i++)
+	{
+		SubShellsVec[i].Cout();
+		cout<<"n = "<<this->n<<" vs n = "<<SubShellsVec[i].n<<endl;
+		cout<<"l = "<<this->l<<" vs l = "<<SubShellsVec[i].l<<endl;
+		cout<<"JP = "<<this->JP<<" vs JP = "<<SubShellsVec[i].JP<<endl;
+		if((this->n==SubShellsVec[i].n)&&(this->l==SubShellsVec[i].l)&&(this->JP==SubShellsVec[i].JP))
+		{
+			cout<<"It is true! True!"<<endl;
+			return true;
+		}
+	}
+	cout<<"Nothing is true! False!"<<endl;
+	return false;
+}
+
+bool StateParameters::GetToBeDrawnFlag()
+{
+	return ToBeDrawn;
+}
+void StateParameters::SetToBeDrawnFlag(bool flag)
+{
+	this->ToBeDrawn=flag;
+}
+unsigned char StateParameters::GetCoupleFlag()
+{
+	return couple_flag;
+}
+void StateParameters::SetCoupleFlag(unsigned char flag)
+{
+	this->couple_flag=flag;
+}
+
+string StateParameters::GetType()
+{
+	if(couple_flag==3)
+	{
+		return "both";
+	}
+	if(couple_flag==2)
+	{
+		return "stripping";
+	}
+	if(couple_flag==1)
+	{
+		return "pickup";
+	}
+}
+
+TString StateParameters::GetNLJ()
+{
+	return NLJToString(n,l,JP);
+}
+
+void StateParameters::Cout()//метод выводит в терминал считанные в класс параметры расчёта
+{
+	cout<<"State: "<<this->GetNLJ()<<" with "<<couple_flag<<" for couple_flag"<<endl;
+}
+
 double State::G(int JP_Index,int SF_Index)
 {
 	if(type==0)//pickup
