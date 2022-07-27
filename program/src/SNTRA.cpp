@@ -50,6 +50,15 @@ vector<string> ListFiles(string mask)
 
 vector<string> ListFiles(string dirname, string ext) //функция ... , выводит названия входных файлов в терминал
 {cout<<"vector<string> ListFiles("<<dirname<<", "<<ext<<")  has started!"<<"\n";
+	if(ext=="txt")//если файлы имеют формат txt, то запустить крипт в директории расположения по переводу xls в txt
+	{
+		/*TString output_dir_cmd1=TString::Format("cd ",dirname.c_str());
+		cout<<"ListFiles(...) executing terminal command '"<<output_dir_cmd1<<"'"<<"\n";
+		gSystem->Exec(output_dir_cmd1.Data());*/
+		TString output_dir_cmd2=TString::Format(". %sconvertFiles.sh",dirname.c_str());
+		cout<<"ListFiles(...) executing terminal command '"<<output_dir_cmd2<<"'"<<"\n";
+		gSystem->Exec(output_dir_cmd2.Data());
+	}//*/
 	TSystemDirectory dir(dirname.c_str(), dirname.c_str()); 
 	TList *files = dir.GetListOfFiles(); 
 	vector<string> result;

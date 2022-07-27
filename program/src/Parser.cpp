@@ -62,7 +62,7 @@ int StringToNLJ(string s, int &n, int &l, float &JP)
 		}
 		else
 		{
-			cout<<"	***Error! StringToNLJ has got too strange n! Return 0!"<<"\n";
+			cout<<"	***Error! StringToNLJ has got too strange n="<<s[0]<<"! Return 0!"<<"\n";
 			return 0;
 		}
 		for(unsigned int i=0;i<7;i++)
