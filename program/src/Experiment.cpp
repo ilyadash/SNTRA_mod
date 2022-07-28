@@ -383,8 +383,8 @@ string Experiment::GetType()
 	return "error";
 }
 
-void Experiment::ReadInputFile(string filename)//просто чтение файла с данными. Сначала поиск ключевых слов, если их нет, то попытка считать строку как состояние, наблюдаемое в эксперименте
-{
+void Experiment::ReadInputFile(string filename)//просто чтение текстового файла с данными. 
+{//Сначала поиск ключевых слов, если их нет, то попытка считать строку как состояние, наблюдаемое в эксперименте
 	ifstream ifs(filename.c_str());
 	string line;
 	while(getline(ifs,line))

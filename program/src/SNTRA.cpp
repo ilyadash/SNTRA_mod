@@ -22,10 +22,9 @@ using namespace std;
 //глобальные переменные:
 TCanvas *cc1=new TCanvas("cc1","cc1");//TCanvas - класс cern_root (холст, где всё отрисовывается), первый - для результатов расчёта без нормировки
 TCanvas *cc2=new TCanvas("cc2","cc2");//сделаем второй холст для результатов нормировки
-//TCanvas *cc3=new TCanvas("cc3","cc3");//сделаем третий холст для результатов применения нормировки
 //TString output_dir="output";
 
-vector<string> ListFiles(string mask)
+vector<string> ListFiles(string mask)//функция для считывания текстовых файлов без расширения(?)
 {cout<<"vector<string> ListFiles(string mask) has started!"<<"\n";
 	vector<string> FileNames;
 	string s;
@@ -40,9 +39,7 @@ vector<string> ListFiles(string mask)
 	{
 		s.resize(0);
 		ss>>s;
-		//if((GetFileName(s)[0]>='.')&&(GetFileName(s)[0]<='z'))
 		FileNames.push_back(s);
-		//cout<<s<<"\n";
 	}
 	return FileNames;
 	cout<<"vector<string> ListFiles(string mask) has ended!"<<"\n";
@@ -50,15 +47,6 @@ vector<string> ListFiles(string mask)
 
 vector<string> ListFiles(string dirname, string ext) //функция ... , выводит названия входных файлов в терминал
 {cout<<"vector<string> ListFiles("<<dirname<<", "<<ext<<")  has started!"<<"\n";
-	if(ext=="txt")//если файлы имеют формат txt, то запустить крипт в директории расположения по переводу xls в txt
-	{
-		/*TString output_dir_cmd1=TString::Format("cd ",dirname.c_str());
-		cout<<"ListFiles(...) executing terminal command '"<<output_dir_cmd1<<"'"<<"\n";
-		gSystem->Exec(output_dir_cmd1.Data());*/
-		TString output_dir_cmd2=TString::Format(". %sconvertFiles.sh",dirname.c_str());
-		cout<<"ListFiles(...) executing terminal command '"<<output_dir_cmd2<<"'"<<"\n";
-		gSystem->Exec(output_dir_cmd2.Data());
-	}//*/
 	TSystemDirectory dir(dirname.c_str(), dirname.c_str()); 
 	TList *files = dir.GetListOfFiles(); 
 	vector<string> result;
@@ -136,26 +124,34 @@ void ReadFilesInDirectory(string PathToFiles, vector<Experiment> &Pickup, vector
 		string path,ext;
 		ss>>path;
 		ss>>ext;
+		if(ext=="txt")
+		{
+			//если файлы имеют формат txt, то запустить крипт в директории расположения по переводу xls в txt
+			///не готово, пользователь сам должен сконвертировать файлы заранее с помощью скрипта
+			/*TString output_dir_cmd1=TString::Format("cd ",dirname.c_str());
+			cout<<"ReadFilesInDirectory(...) executing terminal command '"<<output_dir_cmd1<<"'"<<"\n";
+			gSystem->Exec(output_dir_cmd1.Data());*/
+			/*TString output_dir_cmd2=TString::Format(". %sconvertFiles.sh",dirname.c_str());
+			cout<<"ReadFilesInDirectory(...) executing terminal command '"<<output_dir_cmd2<<"'"<<"\n";
+			gSystem->Exec(output_dir_cmd2.Data());*/
+		}//*/
 		FileNames=ListFiles(path,ext); 
 	}
 	////cout<<"size="<<FileNames.size()<<"\n";
 	for(unsigned int i=0;i<FileNames.size();i++)
 	{
 		Experiment E;
-		E.ReadInputFile(FileNames[i]);
+		E.ReadInputFile(FileNames[i]);///нужно реализовать/модифицировать метод для csv файлов
 		//cout<<E.GetType()<<"\n";
 		int Z,A,ParticleType;//ParticleType-передача нейтрона (0) или протона(1)
 		string type;//pickup/stripping
 		GetAZ(E.Nucleus,Z,A);
-		//cout<<E.Nucleus<<" "<<Z<<" "<<A<<"\n";
 		ParceReaction(E.reaction,type,ParticleType);
 				
 		if(ParticleType==1)
 		{///уже здесь энергии считываются неправильно:!!!
 			E.BA1=GetSeparationEnergy(Z+1, A+1, 1,1)*1000;
-			//cout<<"SeparationEnergy(Z+1, A+1, 1,1)="<<E.BA1<<"\n";
 			E.BA=GetSeparationEnergy(Z, A, 1,1)*1000;
-			//cout<<"SeparationEnergy(Z, A, 1,1="<<E.BA<<"\n";
 			E.particle="proton";
 		}
 		else
