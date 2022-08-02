@@ -1153,17 +1153,19 @@ string NormalisedCoupleOfExperiments::FitResultsInTextForm(char verbose_level)//
 	stringstream s;//задаём строку, куда всё будем сохранять
 	if(verbose_level==0)
 	{
-		s<<"Experiment: "<<Pickup.reference<<" ("<<Pickup.size()<<") "<<Stripping.reference<<" ("<<Stripping.size()<<") \n";
+		s<<"Experiment: "<<Pickup.reference<<" ("<<Pickup.size()<<") "<<Stripping.reference<<" ("
+		<<Stripping.size()<<") \n";
 	}
 	else if(verbose_level==1)
-	{
+	{///to do: исправить здесь корявый вывод названия входного файла с указанием его версии:
 		s<<"Experiment(pickup): "<<Pickup.reference<<" ("<<Pickup.size()<<")\n";
 		s<<Pickup.ChangesLog<<"\n";
 		s<<"Experiment(stripping): "<<Stripping.reference<<" ("<<Stripping.size()<<")\n";
 		s<<Stripping.ChangesLog<<"\n";
 	}
-	unsigned int k=0;	
-	s<<"n^{+}G*^{+} + n^{-}G*^{-} = 1 equations:\n";//укажем вид уравнений, которые потом преобразовывались для МНК
+	unsigned int k=0;
+	//укажем вид уравнений, которые потом преобразовывались для МНК	
+	s<<"n^{+}G*^{+} + n^{-}G*^{-} = 1 equations:\n";
 	cout<<"Will draw n^{+}G*^{+} + n^{-}G*^{-} = 1 equations"<<endl;
 	cout<<"SPE.size() = "<<SPE.size()<<endl;
 	for(unsigned int i=0;i<SPE.size();i++)
@@ -1209,7 +1211,8 @@ string NormalisedCoupleOfExperiments::ResultsInTextForm(char verbose_level)//ф�
 		stringstream s;//задаём строку, куда всё будем сохранять
 		if(verbose_level==0)
 		{
-			s<<"Experiment: "<<Pickup.reference<<" ("<<Pickup.size()<<") "<<Stripping.reference<<" ("<<Stripping.size()<<") \n";
+			s<<"Experiment: "<<Pickup.reference<<" ("<<Pickup.size()<<") "<<Stripping.reference<<" ("
+			<<Stripping.size()<<") \n";
 		}
 		else if(verbose_level==1)
 		{
@@ -1218,26 +1221,26 @@ string NormalisedCoupleOfExperiments::ResultsInTextForm(char verbose_level)//ф�
 			s<<"Experiment(stripping): "<<Stripping.reference<<" ("<<Stripping.size()<<")\n";
 			s<<Stripping.ChangesLog<<"\n";
 		}
-		if ((n_p==1.)&&(n_m==1.))//если нормировочные колэффициенты равны 1, то логично, что нормировки не происходило
-		{	
+		if ((n_p==1.)&&(n_m==1.))
+		{//если нормировочные колэффициенты равны 1, то логично, что нормировки не происходило	
 			s<<"penalty: "<<penalty<<"\n";
 			s<<"Normalization was not perfomed.\n";
 		}//сообщим об этом в .pdf файле
 		else
-		{	//cout<< "FitResultsInTextForm2 write result in s!!!!!\n";
-				
+		{	
 			s<<Pickup.particle<<" transfer\n";
-			s<<"n^{+} = "<<n_p<<" #pm "<<er_n_p<<" n^{-} = "<<n_m<<" #pm "<<er_n_m<<endl;//выведем n+ и n- с их ошибками
+			//выведем n+ и n- с их ошибками:
+			s<<"n^{+} = "<<n_p<<" #pm "<<er_n_p<<" n^{-} = "<<n_m<<" #pm "<<er_n_m<<endl;
 			s<<"penalty: "<<penalty<<"\n";
 			s<<"E_F: "<<Ef<<" #pm "<<Ef_error<<"  keV \n #Delta: "<<Delta<<" #pm "<<Delta_error<<" keV\n";
 			s<<"SPE,keV nlj OCC #frac{G^{+}+G^{-}}{2J+1}\n";
 			for(unsigned int i=0;i<SPE.size();i++)
-			{//cout<< "FitResultsInTextForm2 write result for " << i << " time in s!!!!!\n";
-				s<<SPE[i]<<" "<<NLJToString(SP_centroids[i].n,SP_centroids[i].l,SP_centroids[i].JP)<<" "<<OCC[i]<<" "<<ParticlesAndHolesSum[i]<<"\n";//запишем одночастичную энергию, nlj подоболочки, заселённость, сумму частиц и дырок из экспериментов
+			{
+				//запишем одночастичную энергию, nlj подоболочки, заселённость, сумму частиц и дырок из экспериментов:
+				s<<SPE[i]<<" "<<NLJToString(SP_centroids[i].n,SP_centroids[i].l,SP_centroids[i].JP)<<" "
+				<<OCC[i]<<" "<<ParticlesAndHolesSum[i]<<"\n";
 			}
-			//cout<< "FitResultsInTextForm2 has written result in s!!!!!\n";
 		}
 		return s.str();//вернём строку, где всё сохранили
-		//cout<< "ResultsInTextForm returned s and exit!!!!!\n";
 	}
 }//конец метода ResultsInTextForm

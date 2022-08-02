@@ -1,13 +1,9 @@
 #include <stdio.h>
 #include "InputData.hh"
-//#include "VectorLib.cpp"
 #include "Experiment.cpp"
-//#include <vector>
-//#include <cstring>
 #include <sstream>
 #include <iostream>
 #include <fstream>
-//#include "ExtStrings.cpp"
 #include "PrimitiveShellModel.cpp"
 //root-зависимые библиотеки:
 #include <TGraph.h>
@@ -20,8 +16,8 @@
 
 using namespace std;
 //глобальные переменные:
-TCanvas *cc1=new TCanvas("cc1","cc1");//TCanvas - класс cern_root (холст, где всё отрисовывается), первый - для результатов расчёта без нормировки
-TCanvas *cc2=new TCanvas("cc2","cc2");//сделаем второй холст для результатов нормировки
+TCanvas *cc1=new TCanvas("cc1","cc1",1000,600);//TCanvas - класс cern_root (холст, где всё отрисовывается), первый - для результатов расчёта без нормировки
+TCanvas *cc2=new TCanvas("cc2","cc2",1000,600);//сделаем второй холст для результатов нормировки
 //TString output_dir="output";
 
 vector<string> ListFiles(string mask)//функция для считывания текстовых файлов без расширения(?)
@@ -473,7 +469,7 @@ void PrintCalculationResult(vector<NormalisedCoupleOfExperiments> v, string Outp
 	cc1->Print((OutputFileName+".pdf]").c_str(),"pdf");
 	cout<<"void PrintCalculationResult has ended!"<<"\n";
 }
-
+/*
 void PrintFitCalculationResult(vector<CoupleOfExperiments> v, vector<NormalisedCoupleOfExperiments> v_norm, string OutputFileName, string output_dir="output")//функция записывает результаты нормировки в выходные файлы .txt и .pdf
 {//на вход подаётся вектор пар экспериментов (вектор объектов CoupleOfExperiments)
 	//и название выходных файлов .pdf .txt OutputFileName
@@ -542,7 +538,7 @@ void PrintFitCalculationResult(vector<CoupleOfExperiments> v, vector<NormalisedC
 	}
 	cc2->Print((OutputFileName+".pdf]").c_str(),"pdf");//сохраняем всё в .pdf файл (в третий раз?)
 }
-
+*/
 void PrintFitCalculationResult(vector<NormalisedCoupleOfExperiments> v_norm, string OutputFileName, string output_dir="output")//функция записывает результаты нормировки в выходные файлы .txt и .pdf
 {//на вход подаётся вектор пар экспериментов (вектор объектов CoupleOfExperiments)
 	//и название выходных файлов .pdf .txt OutputFileName
@@ -572,8 +568,10 @@ void PrintFitCalculationResult(vector<NormalisedCoupleOfExperiments> v_norm, str
 		TGraphErrors gr_before_norm=TGraphErrors();
 		for(unsigned int j=0;j<v_norm[i].points_G.GetN();j++)//для каждой пары срыв-подхват в векторе CE
 		{	
-			gr_before_norm.SetPoint(j,v_norm[i].points_G.GetPointX(j)/v_norm[i].n_m,v_norm[i].points_G.GetPointY(j)/v_norm[i].n_p);
-			gr_before_norm.SetPointError(j,v_norm[i].points_G.GetErrorX(j)/v_norm[i].n_m,v_norm[i].points_G.GetErrorY(j)/v_norm[i].n_p);
+			gr_before_norm.SetPoint(j,v_norm[i].points_G.GetPointX(j)/
+			v_norm[i].n_m,v_norm[i].points_G.GetPointY(j)/v_norm[i].n_p);
+			gr_before_norm.SetPointError(j,v_norm[i].points_G.GetErrorX(j)/
+			v_norm[i].n_m,v_norm[i].points_G.GetErrorY(j)/v_norm[i].n_p);
 		}	
 		gr_before_norm.SetTitle("Fit graph;G^-/2j+1;G^+/2j+1");//здесь и далее рисуем график фита; устанавливаем заголовок сверху графика
 		gr_before_norm.SetMarkerStyle(28);//устанавливаем стиль маркеров фитируемых точек
