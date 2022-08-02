@@ -1,4 +1,4 @@
 #!/bin/bash
 clear
 ./compile.sh
-./SNTRA ../TT/28Si/Proton/ txt
+./SNTRA ../data_sets/TT/28Si/Proton/ txt output/test
