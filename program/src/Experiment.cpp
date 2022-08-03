@@ -841,7 +841,7 @@ void CoupleOfExperiments::ClearCalcResults()
 {
 	cout<<"CoupleOfExperiments::ClearCalcResults() has started!"<<endl;
 	//очищаем аттрибуты объекта - вектора вычисленных величин:
-	SP.resize(0);
+	//SP.resize(0);
 	SP_centroids.resize(0);
 	SPE.resize(0);
 	OCC.resize(0);
@@ -1041,7 +1041,7 @@ void NormalisedCoupleOfExperiments::InduceNormalisation()
 }
 
 void NormalisedCoupleOfExperiments::ReCalcSPE_and_OCC()
-{
+{///to do: исправить заполнение вектора SPE
 	cout<<"NormalisedCoupleOfExperiments::ReCalcSPE_and_OCC has started!"<<endl;
 	GenerateCommonNJPList();
 	vector<double> OccupanciesForBCSFit;//отдельные векторы заселенностей для аппроксимации БКШ
@@ -1049,11 +1049,12 @@ void NormalisedCoupleOfExperiments::ReCalcSPE_and_OCC()
 	///применяем расчитанные коэффициенты нормировки n_m, n_p:
 	this->ClearCalcResults();
 	//рассчитываем величины и заполняем вектора заново:
+	cout<<"SP.size() = "<<SP.size()<<endl;
 	for(int i=0;i<SP.size();i++)//цикл for; для каждой подоболочки:
 	{
 		double C_pickup=Pickup.GetCentroid(SP[i]);//записываем значение центроида для эксперимента по подхвату в переменную C_pickup
 		double C_stripping=Stripping.GetCentroid(SP[i]);//записываем значение центроида для эксперимента по срыву в переменную C_stripping	
-			
+		cout<<"C_pickup = "<<C_pickup<<"; C_stripping = "<<C_stripping<<endl;		
 		if((C_stripping!=-1)&&(C_pickup!=-1)&&(!isnan(C_stripping))&&(!isnan(C_pickup)))//индусский fix, потом проверить, что генерирует nan
 		{
 			double E_pickup=-Pickup.BA-C_pickup;//Диплом Марковой М.Л., ф-ла 4//вычисление "одночастичной" для подхвата с использованием энергии отрыва нуклона
@@ -1061,7 +1062,7 @@ void NormalisedCoupleOfExperiments::ReCalcSPE_and_OCC()
 			double SPE_tmp=(Pickup.GetSumSF(SP[i])*E_pickup*n_m+Stripping.GetSumSF(SP[i])*E_stripping*n_p)/(Pickup.GetSumSF(SP[i])*n_m+Stripping.GetSumSF(SP[i])*n_p);//Диплом Марковой М.Л., ф-ла 17 //вычисление одночастичной энергии после нормировки
 			double OCC_tmp=(Pickup.GetSumSF(SP[i])*n_m-Stripping.GetSumSF(SP[i])*n_p+2*abs(SP[i].JP)+1)/(2*(2*abs(SP[i].JP)+1));//Диплом Марковой М.Л., ф-ла 18 //это v^2_{nlj} после нормировки	
 			ParticlesAndHolesSum.push_back((n_m*Pickup.GetSumSF(SP[i])+n_p*Stripping.GetSumSF(SP[i]))/(2*abs(SP[i].JP)+1));
-				
+			cout<<"SPE_tmp = "<<SPE_tmp<<endl;	
 			SPE.push_back(SPE_tmp);//Диплом Марковой М.Л., ф-ла 17
 			OCC.push_back(OCC_tmp);//Диплом Марковой М.Л., ф-ла 18
 			SP_centroids.push_back(SP[i]);
@@ -1153,8 +1154,10 @@ string NormalisedCoupleOfExperiments::FitResultsInTextForm(char verbose_level)//
 	stringstream s;//задаём строку, куда всё будем сохранять
 	if(verbose_level==0)
 	{
-		s<<"Experiment: "<<Pickup.reference<<" ("<<Pickup.size()<<") "<<Stripping.reference<<" ("
-		<<Stripping.size()<<") \n";
+		s<<"Experiment: "<<Pickup.reference
+		<<" ("<<Pickup.size()<<") "
+		<<Stripping.reference
+		<<" ("<<Stripping.size()<<") \n";
 	}
 	else if(verbose_level==1)
 	{///to do: исправить здесь корявый вывод названия входного файла с указанием его версии:
@@ -1168,7 +1171,8 @@ string NormalisedCoupleOfExperiments::FitResultsInTextForm(char verbose_level)//
 	s<<"n^{+}G*^{+} + n^{-}G*^{-} = 1 equations:\n";
 	cout<<"Will draw n^{+}G*^{+} + n^{-}G*^{-} = 1 equations"<<endl;
 	cout<<"SPE.size() = "<<SPE.size()<<endl;
-	for(unsigned int i=0;i<SPE.size();i++)
+	cout<<"SP_centroids.size() = "<<SP_centroids.size()<<endl;
+	for(unsigned int i=0;i<SP_centroids.size();i++)
 	{//выведем все уравнения для подоболочек, которые мы должны были использовать для нахождения n+ и n-:
 		cout<<"Got n="<<SP_centroids[i].n<<"; l="<<SP_centroids[i].l<<"; JP="<<SP_centroids[i].JP<<endl;
 		cout<<"par.SubShellsUsedForNormalisation.size() = "<<par.SubShellsUsedForNormalisation.size()<<endl;
@@ -1188,13 +1192,18 @@ string NormalisedCoupleOfExperiments::FitResultsInTextForm(char verbose_level)//
 	else
 	{
 		s<<"Normalization of "<< k <<" subshells result:\n";//в этой строке укажем параметр, который ставили для ограничения числа точек в фите
-		s<<"n^{+} = "<<n_p<<" #pm "<<er_n_p<<" (for stripping)\n";//выведем n+ с его ошибкой
-		s<<"n^{-} = "<<n_m<<" #pm "<<er_n_m<<" (for pick-up)\n";//выведем n- с его ошибкой
+		s<<"n^{+} = "<<TString::Format("%0.2f",n_p)<<" #pm "
+		<<TString::Format("%0.2f",er_n_p)<<" (for stripping)\n";//выведем n+ с его ошибкой
+		s<<"n^{-} = "<<TString::Format("%0.2f",n_m)<<" #pm "
+		<<TString::Format("%0.2f",er_n_m)<<" (for pick-up)\n";//выведем n- с его ошибкой
 		for(unsigned int i=0;i<SPE.size();i++)
 		{//запишем получившиеся после нормировки спектроскопические силы, они должны быть ближе к ОМО, ради этого всё затевалось
-			s<<NLJToString(SP_centroids[i].n,SP_centroids[i].l,SP_centroids[i].JP)<<" G^{+},G^{-}: "<<
-			TString::Format(".2%f",Gp_c[i]/n_p)<<"->"<<TString::Format(".2%f",Gp_c[i])<<" "<<
-			TString::Format(".2%f",Gm_c[i]/n_m)<<"->"<<TString::Format(".2%f",Gm_c[i])<<"\n";
+			if(par.CheckBelonging(SP[i],par.SubShellsUsedInDrawing))
+			{
+				s<<NLJToString(SP_centroids[i].n,SP_centroids[i].l,SP_centroids[i].JP)<<" G^{+},G^{-}: "<<
+				TString::Format(".2%f",Gp_c[i]/n_p)<<"->"<<TString::Format(".2%f",Gp_c[i])<<" "<<
+				TString::Format(".2%f",Gm_c[i]/n_m)<<"->"<<TString::Format(".2%f",Gm_c[i])<<"\n";
+			}
 		}
 	}
 	return s.str();//вернём строку, где всё сохранили
@@ -1230,17 +1239,87 @@ string NormalisedCoupleOfExperiments::ResultsInTextForm(char verbose_level)//ф�
 		{	
 			s<<Pickup.particle<<" transfer\n";
 			//выведем n+ и n- с их ошибками:
-			s<<"n^{+} = "<<n_p<<" #pm "<<er_n_p<<" n^{-} = "<<n_m<<" #pm "<<er_n_m<<endl;
+			s<<"n^{+} = "<<TString::Format("%0.2f",n_p)<<" #pm "<<TString::Format("%0.2f",er_n_p)
+			<<" n^{-} = "<<TString::Format("%0.2f",n_m)<<" #pm "<<TString::Format("%0.2f",er_n_m)<<endl;
 			s<<"penalty: "<<penalty<<"\n";
 			s<<"E_F: "<<Ef<<" #pm "<<Ef_error<<"  keV \n #Delta: "<<Delta<<" #pm "<<Delta_error<<" keV\n";
 			s<<"SPE,keV nlj OCC #frac{G^{+}+G^{-}}{2J+1}\n";
 			for(unsigned int i=0;i<SPE.size();i++)
-			{
-				//запишем одночастичную энергию, nlj подоболочки, заселённость, сумму частиц и дырок из экспериментов:
-				s<<SPE[i]<<" "<<NLJToString(SP_centroids[i].n,SP_centroids[i].l,SP_centroids[i].JP)<<" "
-				<<OCC[i]<<" "<<ParticlesAndHolesSum[i]<<"\n";
+			{//запишем одночастичную энергию, nlj подоболочки, заселённость,
+				//сумму частиц и дырок из экспериментов:
+				if(par.CheckBelonging(SP[i],par.SubShellsUsedInDrawing))
+				{
+					s<<SPE[i]<<" "<<NLJToString(SP_centroids[i].n,SP_centroids[i].l,SP_centroids[i].JP)<<" "
+					<<OCC[i]<<" "<<ParticlesAndHolesSum[i]<<"\n";
+				}
 			}
 		}
 		return s.str();//вернём строку, где всё сохранили
 	}
 }//конец метода ResultsInTextForm
+
+vector<Experiment> SplitExperiment(Experiment &BExperiment)
+{
+	vector<Experiment> result;
+	int version_iterator=0;
+	for(unsigned i1=0;i1<BExperiment.IndexesOfMultipleStates.size();i1++)
+	{
+		int index=BExperiment.IndexesOfMultipleStates[i1];
+		for(unsigned int i=0;i<BExperiment.States[index].n.size();i++)
+		{
+			for(unsigned int j=0;j<BExperiment.States[index].L.size();j++)
+			{
+				for(unsigned int k=0;k<BExperiment.States[index].JP.size();k++)
+				{
+					for(unsigned int p=0;p<BExperiment.States[index].SpectroscopicFactor.size();p++)
+					{
+						if((BExperiment.States[index].n.size()>1)||(BExperiment.States[index].L.size()>1)||(BExperiment.States[index].JP.size()>1)||(BExperiment.States[index].SpectroscopicFactor.size()>1))
+						{
+							if(BExperiment.States[index].G(k,p)>G_CUT)
+							{
+								Experiment exp_tmp=BExperiment;
+								exp_tmp.States[index].n[0]=BExperiment.States[index].n[i];
+								exp_tmp.States[index].L[0]=BExperiment.States[index].L[j];
+								exp_tmp.States[index].JP[0]=BExperiment.States[index].JP[k];
+								exp_tmp.States[index].SpectroscopicFactor[0]=BExperiment.States[index].SpectroscopicFactor[p];
+								exp_tmp.States[index].n.resize(1);
+								exp_tmp.States[index].L.resize(1);
+								exp_tmp.States[index].JP.resize(1);
+								exp_tmp.States[index].SpectroscopicFactor.resize(1);
+								version_iterator++;
+								exp_tmp.ChangesLog+="ver "+to_string(version_iterator)+": used state "+
+								TString::Format("%0.1f",exp_tmp.States[index].Energy)+" keV "+
+								NLJToString(exp_tmp.States[index],0)+" SF:"+
+								TString::Format("%0.3f",exp_tmp.States[index].SpectroscopicFactor[0]);
+								exp_tmp.reference+="_ver"+to_string(version_iterator);
+								result.push_back(exp_tmp);
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	return result;	
+}
+
+void SplitExperiments(vector<Experiment> &Experiments)
+{
+	int size=Experiments.size();
+	for(unsigned int i=0;i<size;i++)
+	{
+		//cout<<Experiments[i].reference<<"MSize:"<<Experiments[i].IndexesOfMultipleStates.size()<<"\n";
+		if((Experiments[i].IndexesOfMultipleStates.size()>0)&&(Experiments[i].IndexesOfMultipleStates.size()<6))
+		{
+			vector<Experiment> v_Exp=SplitExperiment(Experiments[i]);
+			if(v_Exp.size()>0)
+			{
+				Experiments[i]=v_Exp[0];
+				for(unsigned int j=1;j<v_Exp.size();j++)
+				{
+					Experiments.push_back(v_Exp[j]);
+				}
+			}
+		}
+	}
+}

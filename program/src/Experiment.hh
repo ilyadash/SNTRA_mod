@@ -85,69 +85,6 @@ class Experiment
 	SpectroscopicFactorHistogram BuildSpectroscopicFactorHistogram(double norma);
 };
 
-vector<Experiment> SplitExperiment(Experiment &BExperiment)
-{
-	vector<Experiment> result;
-	int version_iterator=0;
-	for(unsigned i1=0;i1<BExperiment.IndexesOfMultipleStates.size();i1++)
-	{
-		int index=BExperiment.IndexesOfMultipleStates[i1];
-		for(unsigned int i=0;i<BExperiment.States[index].n.size();i++)
-		{
-			for(unsigned int j=0;j<BExperiment.States[index].L.size();j++)
-			{
-				for(unsigned int k=0;k<BExperiment.States[index].JP.size();k++)
-				{
-					for(unsigned int p=0;p<BExperiment.States[index].SpectroscopicFactor.size();p++)
-					{
-						if((BExperiment.States[index].n.size()>1)||(BExperiment.States[index].L.size()>1)||(BExperiment.States[index].JP.size()>1)||(BExperiment.States[index].SpectroscopicFactor.size()>1))
-						{
-							if(BExperiment.States[index].G(k,p)>G_CUT)
-							{
-								Experiment exp_tmp=BExperiment;
-								exp_tmp.States[index].n[0]=BExperiment.States[index].n[i];
-								exp_tmp.States[index].L[0]=BExperiment.States[index].L[j];
-								exp_tmp.States[index].JP[0]=BExperiment.States[index].JP[k];
-								exp_tmp.States[index].SpectroscopicFactor[0]=BExperiment.States[index].SpectroscopicFactor[p];
-								exp_tmp.States[index].n.resize(1);
-								exp_tmp.States[index].L.resize(1);
-								exp_tmp.States[index].JP.resize(1);
-								exp_tmp.States[index].SpectroscopicFactor.resize(1);
-								version_iterator++;
-								exp_tmp.ChangesLog+="ver "+to_string(version_iterator)+": used state "+to_string(exp_tmp.States[index].Energy)+" keV "+NLJToString(exp_tmp.States[index].n[0],exp_tmp.States[index].L[0], exp_tmp.States[index].JP[0])+" SF:"+to_string(exp_tmp.States[index].SpectroscopicFactor[0])+"\n";
-								exp_tmp.reference+="_ver"+to_string(version_iterator);
-								result.push_back(exp_tmp);
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-	return result;	
-}
-
-void SplitExperiments(vector<Experiment> &Experiments)
-{
-	int size=Experiments.size();
-	for(unsigned int i=0;i<size;i++)
-	{
-		//cout<<Experiments[i].reference<<"MSize:"<<Experiments[i].IndexesOfMultipleStates.size()<<"\n";
-		if((Experiments[i].IndexesOfMultipleStates.size()>0)&&(Experiments[i].IndexesOfMultipleStates.size()<6))
-		{
-			vector<Experiment> v_Exp=SplitExperiment(Experiments[i]);
-			if(v_Exp.size()>0)
-			{
-				Experiments[i]=v_Exp[0];
-				for(unsigned int j=1;j<v_Exp.size();j++)
-				{
-					Experiments.push_back(v_Exp[j]);
-				}
-			}
-		}
-	}
-}
-
 class CoupleOfExperiments
 {//класс пары комплиментарных экспермиентов срыва-подхвата
 	public:

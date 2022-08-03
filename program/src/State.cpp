@@ -133,8 +133,7 @@ void StateParameters::Cout()//метод выводит в терминал сч
 	cout<<"State: "<<this->GetNLJ()<<" with "<<couple_flag<<" for couple_flag"<<endl;
 }
 
-double State::G(int JP_Index,int SF_Index)
-{
+double State::G(int JP_Index,int SF_Index) {
 	if(type==0)//pickup
 	{
 		return SpectroscopicFactor[SF_Index];
@@ -151,8 +150,7 @@ double State::G(int JP_Index,int SF_Index)
 		}
 	}
 }
-double State::GetJP(int JP_Index)
-{
+double State::GetJP(int JP_Index) {
 	////cout<<"JP_Index="<<JP_Index<<"\n";
 	if(JP.size()>JP_Index)
 	{
@@ -163,8 +161,7 @@ double State::GetJP(int JP_Index)
 		return -1;
 	}
 }
-double State::GetN(int N_Index)
-{
+double State::GetN(int N_Index) {
 	if(n.size()>N_Index)
 	{
 		return n[N_Index];
@@ -174,17 +171,14 @@ double State::GetN(int N_Index)
 		return -1;
 	}
 }
-int State::GetL(int L_index)
-{
+int State::GetL(int L_index) {
 	return L[L_index];
 }
-State::State()
-{
+State::State() {
 	JP0=0;
 	UseFlag=0;
 }
-State::State(string InputString,int E_iterator, int n_iterator, int L_iterator, int JP_iterator, int SF_iterator)
-{
+State::State(string InputString,int E_iterator, int n_iterator, int L_iterator, int JP_iterator, int SF_iterator) {
 	////cout<<"iterators:"<<E_iterator<<" "<<L_iterator<<" "<<SF_iterator<<" "<<n_iterator<<" "<<JP_iterator<<"\n";
 	JP0=0;
 	stringstream str_stream(InputString);		
@@ -308,8 +302,7 @@ State::State(string InputString,int E_iterator, int n_iterator, int L_iterator, 
 		}
 	}
 }
-int State::Good()
-{
+int State::Good() {
 	if((JP.size()>0)&&(n.size()>0))
 	{
 		return 1;
@@ -318,6 +311,9 @@ int State::Good()
 	{
 		return 0;
 	}
+}
+TString NLJToString(const State &s, unsigned int index=0) {
+	return TString(NLJToString(s.n[index], s.L[index], s.JP[index]));
 }
 
 SummarizedSpectroscopicState::SummarizedSpectroscopicState()
