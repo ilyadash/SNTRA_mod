@@ -1050,12 +1050,13 @@ void NormalisedCoupleOfExperiments::InduceNormalisation()
 	FIT3=TF1("FIT","pol1",0,GetMaximum(Gm_alt_c)+1);//создаём линию для изображения фита
 	FIT3.SetParameter(0,1/n_p);//устанавливаем свободный член прямой, которую будем строить
 	FIT3.SetParameter(1,-n_m/n_p);//устанавливаем коэффициента наклона прямой, которую будем строить
+	cout << "SP.size() = "<<SP.size()<<endl;
 }
 
 void NormalisedCoupleOfExperiments::ReCalcSPE_and_OCC()
 {///to do: исправить заполнение вектора SPE
 	cout<<"NormalisedCoupleOfExperiments::ReCalcSPE_and_OCC has started!"<<endl;
-	GenerateCommonNJPList();
+	//GenerateCommonNJPList();///эта штука удваивает вектор SP, записывая те же самые состояния
 	vector<double> OccupanciesForBCSFit;//отдельные векторы заселенностей для аппроксимации БКШ
 	vector<double> EnergiesForBCSFit;
 	///применяем расчитанные коэффициенты нормировки n_m, n_p:
@@ -1166,10 +1167,8 @@ string NormalisedCoupleOfExperiments::FitResultsInTextForm(char verbose_level)//
 	stringstream s;//задаём строку, куда всё будем сохранять
 	if(verbose_level==0)
 	{
-		s<<"Experiment: "<<Pickup.reference
-		<<" ("<<Pickup.size()<<") "
-		<<Stripping.reference
-		<<" ("<<Stripping.size()<<") \n";
+		s<<"Experiment: "<<Pickup.reference<<" ("<<Pickup.size()<<") "
+		<<Stripping.reference<<" ("<<Stripping.size()<<") \n";
 	}
 	else if(verbose_level==1)
 	{///to do: исправить здесь корявый вывод названия входного файла с указанием его версии:
@@ -1186,15 +1185,17 @@ string NormalisedCoupleOfExperiments::FitResultsInTextForm(char verbose_level)//
 	cout<<"SP_centroids.size() = "<<SP_centroids.size()<<endl;
 	for(unsigned int i=0;i<SP_centroids.size();i++)
 	{//выведем все уравнения для подоболочек, которые мы должны были использовать для нахождения n+ и n-:
-		cout<<"Got n="<<SP_centroids[i].n<<"; l="<<SP_centroids[i].l<<"; JP="<<SP_centroids[i].JP<<endl;
-		cout<<"par.SubShellsUsedForNormalisation.size() = "<<par.SubShellsUsedForNormalisation.size()<<endl;
-		cout<<"par.CheckBelonging(SP["<<i<<"],par.SubShellsUsedForNormalisation = "<<par.CheckBelonging(SP[i],par.SubShellsUsedForNormalisation)<<endl;
+		//cout<<"Got n="<<SP_centroids[i].n<<"; l="<<SP_centroids[i].l<<"; JP="<<SP_centroids[i].JP<<endl;
+		//cout<<"par.SubShellsUsedForNormalisation.size() = "<<par.SubShellsUsedForNormalisation.size()<<endl;
+		//cout<<"par.CheckBelonging(SP["<<i<<"],par.SubShellsUsedForNormalisation = "<<
+		//par.CheckBelonging(SP[i],par.SubShellsUsedForNormalisation)<<endl;
 		if(par.CheckBelonging(SP[i],par.SubShellsUsedForNormalisation))
 		{	
 			k++;
-			cout<<"Got n="<<SP_centroids[i].n<<"; l="<<SP_centroids[i].l<<"; JP="<<SP_centroids[i].JP<<endl;
-			s<<NLJToString(SP_centroids[i].n,SP_centroids[i].l,SP_centroids[i].JP)<<": n^{+} "<<Gp_alt_c[i]<<" +"<<" n^{-} "<<Gm_alt_c[i]<<" = 1\n";
-			cout<<"Drawing data for "<<NLJToString(SP_centroids[i].n,SP_centroids[i].l,SP_centroids[i].JP)<<endl;
+			//cout<<"Got n="<<SP_centroids[i].n<<"; l="<<SP_centroids[i].l<<"; JP="<<SP_centroids[i].JP<<endl;
+			s<<NLJToString(SP_centroids[i].n,SP_centroids[i].l,SP_centroids[i].JP)<<": n^{+} "
+			<<TString::Format("%1.2f",Gp_alt_c[i])<<" +"<<" n^{-} "<<TString::Format("%1.2f",Gm_alt_c[i])<<" = 1\n";
+			//cout<<"Drawing data for "<<NLJToString(SP_centroids[i].n,SP_centroids[i].l,SP_centroids[i].JP)<<endl;
 		}
 	}
 	if ((n_p==1.)&&(n_m==1.))//если нормировочные коэффициенты равны 1, то логично, что нормировки не происходило
@@ -1204,17 +1205,17 @@ string NormalisedCoupleOfExperiments::FitResultsInTextForm(char verbose_level)//
 	else
 	{
 		s<<"Normalization of "<< k <<" subshells result:\n";//в этой строке укажем параметр, который ставили для ограничения числа точек в фите
-		s<<"n^{+} = "<<TString::Format("%0.2f",n_p)<<" #pm "
-		<<TString::Format("%0.2f",er_n_p)<<" (for stripping)\n";//выведем n+ с его ошибкой
-		s<<"n^{-} = "<<TString::Format("%0.2f",n_m)<<" #pm "
-		<<TString::Format("%0.2f",er_n_m)<<" (for pick-up)\n";//выведем n- с его ошибкой
+		s<<"n^{+} = "<<TString::Format("%2.2f",n_p)<<" #pm "
+		<<TString::Format("%2.2f",er_n_p)<<" (for stripping)\n";//выведем n+ с его ошибкой
+		s<<"n^{-} = "<<TString::Format("%2.2f",n_m)<<" #pm "
+		<<TString::Format("%2.2f",er_n_m)<<" (for pick-up)\n";//выведем n- с его ошибкой
 		for(unsigned int i=0;i<SPE.size();i++)
 		{//запишем получившиеся после нормировки спектроскопические силы, они должны быть ближе к ОМО, ради этого всё затевалось
 			if(par.CheckBelonging(SP[i],par.SubShellsUsedInDrawing))
 			{
 				s<<NLJToString(SP_centroids[i].n,SP_centroids[i].l,SP_centroids[i].JP)<<" G^{+},G^{-}: "<<
-				TString::Format(".2%f",Gp_c[i]/n_p)<<"->"<<TString::Format(".2%f",Gp_c[i])<<" "<<
-				TString::Format(".2%f",Gm_c[i]/n_m)<<"->"<<TString::Format(".2%f",Gm_c[i])<<"\n";
+				TString::Format("%2.2f",Gp_c[i]/n_p)<<" -> "<<TString::Format("%2.2f",Gp_c[i])<<", "<<
+				TString::Format("%2.2f",Gm_c[i]/n_m)<<" -> "<<TString::Format("%2.2f",Gm_c[i])<<"\n";
 			}
 		}
 	}

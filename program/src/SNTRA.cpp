@@ -13,12 +13,13 @@
 #include <TSystemFile.h>
 #include <TLine.h>
 #include <TMultiGraph.h>
+#include <TROOT.h>
+#include <TStyle.h>
 
 using namespace std;
 //глобальные переменные:
 TCanvas *cc1=new TCanvas("cc1","cc1",1000,600);//TCanvas - класс cern_root (холст, где всё отрисовывается), первый - для результатов расчёта без нормировки
 TCanvas *cc2=new TCanvas("cc2","cc2",1000,600);//сделаем второй холст для результатов нормировки
-//TString output_dir="output";
 
 vector<string> ListFiles(string mask)//функция для считывания текстовых файлов без расширения(?)
 {cout<<"vector<string> ListFiles(string "<<mask<<") has started!"<<"\n";
@@ -611,6 +612,7 @@ void PrintFitCalculationResult(vector<NormalisedCoupleOfExperiments> v_norm, str
 		HistNormStrip.PrintSpectroscopicFactorHistogram();//рисуем гистограмму для нормированного эксперимента срыва
 		cout<<"Going to Pad6!"<<endl;
 		cc2->cd(6);//переходим к Pad6
+		TextOutput=v_norm[i].FitResultsInTextForm(0);
 		v_norm[i].DrawResultsInTextForm(TextOutput);//выводим текст справа внизу
 		cout<<"Printing in pdf file!"<<endl;
 		cc2->Print((OutputFileName+".pdf").c_str(),"pdf");//сохраняем всё в .pdf файл
@@ -731,6 +733,10 @@ void SNTRA(string PathToFiles, string particle="", int ListFilesFlag=0, string o
 
 int main(int argc, char** argv)//главная функция, принимает аргументы из терминала при вызове SNTRA пользователем
 {//argc (argument count) и argv (argument vector) - число переданных строк в main через argv и массив переданных в main строк
+	/*gStyle->SetLabelSize(0.06,"xyz");
+	gStyle->SetTextSize(0.06);
+	gStyle->SetLegendTextSize(0.06);
+	gStyle->SetTitleSize(0.03,"xyz");*/
 	TString output_dir=argv[3];
 	if(output_dir=="") output_dir="output"; 
 	TString output_dir_cmd=TString::Format("mkdir -v %s",output_dir.Data());
