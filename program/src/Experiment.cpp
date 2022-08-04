@@ -64,14 +64,19 @@ parameters::parameters()
 
 void parameters::ReadParameters(string filename)
 {
-	cout<<"parameters::ReadParameters has started!"<<"\n";
+	cout<<"parameters::ReadParameters has for"<<filename<<" file!"<<"\n";
 	ifstream ifs(filename.c_str());
 	string line;//переменная считываемой строки
 	while(getline(ifs,line))//для каждой строки в файле на диске
 	{
+		//cout<<"before line = "<<line<<endl;
+		TString Tline=TString(line);
+		if(Tline.Contains("#")) line=line.substr(0,Tline.First('#'));
+		//cout<<"after line = "<<line<<endl;
 		stringstream s(line);
-		string tmp;
+		TString tmp;
 		s>>tmp;
+		//cout<<"tmp = "<<tmp<<endl;
 		if(tmp=="UseIncompleteCouples:")//чтение критерия отбора пар экспериментов по полноте
 		{
 			s>>tmp;
@@ -121,6 +126,10 @@ void parameters::ReadParameters(string filename)
 				{
 					UsedPenaltyFunctionComponents.push_back(5);
 				}
+				if(tmp2=="NumberOfParticlesInUsedShell")
+				{
+					UsedPenaltyFunctionComponents.push_back(6);
+				}
 			}
 			for(unsigned int i=0;i<UsedPenaltyFunctionComponents.size();i++)
 			{
@@ -136,6 +145,7 @@ void parameters::ReadParameters(string filename)
 				s>>tmp2;
 				int n,l;
 				float JP;
+				//cout<<"tmp2 = "<<tmp2<<endl;
 				if(StringToNLJ(tmp2,n,l,JP))
 				{
 					StateParameters sp(n,l,JP,"both");
@@ -160,6 +170,7 @@ void parameters::ReadParameters(string filename)
 				s>>tmp2;
 				int n,l;
 				float JP;
+				//cout<<"tmp2 = "<<tmp2<<endl;
 				if(StringToNLJ(tmp2,n,l,JP))
 				{
 					StateParameters sp(n,l,JP,"both");
@@ -183,6 +194,7 @@ void parameters::ReadParameters(string filename)
 				s>>tmp2;
 				int n,l;
 				float JP;
+				//cout<<"tmp2 = "<<tmp2<<endl;
 				if(StringToNLJ(tmp2,n,l,JP))
 				{
 					StateParameters sp(n,l,JP,"both");

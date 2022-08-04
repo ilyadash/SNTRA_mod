@@ -21,7 +21,7 @@ TCanvas *cc2=new TCanvas("cc2","cc2",1000,600);//сделаем второй х�
 //TString output_dir="output";
 
 vector<string> ListFiles(string mask)//функция для считывания текстовых файлов без расширения(?)
-{cout<<"vector<string> ListFiles(string mask) has started!"<<"\n";
+{cout<<"vector<string> ListFiles(string "<<mask<<") has started!"<<"\n";
 	vector<string> FileNames;
 	string s;
 	FILE* fp;
@@ -38,7 +38,7 @@ vector<string> ListFiles(string mask)//функция для считывани�
 		FileNames.push_back(s);
 	}
 	return FileNames;
-	cout<<"vector<string> ListFiles(string mask) has ended!"<<"\n";
+	cout<<"vector<string> ListFiles(string "<<mask<<") has ended!"<<"\n";
 }
 
 vector<string> ListFiles(string dirname, string ext) //функция ... , выводит названия входных файлов в терминал
@@ -48,16 +48,19 @@ vector<string> ListFiles(string dirname, string ext) //функция ... , вы
 	vector<string> result;
 	if(files) 
 	{
+		//cout<<"ListFiles("<<dirname<<", "<<ext<<") found some file candidates \n";
 		TSystemFile *file; 
 		TString fname; 
 		TIter next(files);
 		while((file=(TSystemFile*)next()))
 		{
+			//cout<<"ListFiles("<<dirname<<", "<<ext<<") moving in candidates iteration\n";
 			fname = file->GetName(); 
+			//cout<<"ListFiles("<<dirname<<", "<<ext<<") chacking file "<<file->GetName()<<" extension\n";
 			if(!file->IsDirectory() && fname.EndsWith(ext.c_str()))
 			{ 
 				result.push_back(dirname+(string)fname); 
-				cout<<(string)fname<<"\n";
+				//cout<<"ListFiles("<<dirname<<", "<<ext<<") found file "<<(string)fname<<"\n";
 			} 
 		} 
 	}
@@ -65,7 +68,7 @@ vector<string> ListFiles(string dirname, string ext) //функция ... , вы
 	{
 		cout<<" *** Error! ListFiles(): TList *files = dir.GetListOfFiles() returned false!"<<endl;
 	}
-	cout<<"vector<string> ListFiles(string dirname, string ext) has ended!"<<"\n";
+	cout<<"vector<string> ListFiles("<<dirname<<", "<<ext<<") has ended!"<<"\n";
 	return result;
 }
 
@@ -92,6 +95,7 @@ vector<NormalisedCoupleOfExperiments> CreateNormalisedCouplesOfExperiments(vecto
 {//функции на вход подаются вектор всех экспериментов срыва и вектор всех экспериментов подхвата (их адреса?)
 	cout<<"CreateNormalisedCouplesOfExperiments has started!"<<endl;
 	vector<NormalisedCoupleOfExperiments> result;
+	if (Pickup.size()==0) cerr<<"	*** Error! There are no Pickup experiments!"<<endl;
 	for(unsigned int i=0;i<Pickup.size();i++)
 	{
 		cout<<"Got number "<<i+1<<" pickup "<<Pickup[i].reference<<"\n";
@@ -136,6 +140,7 @@ void ReadFilesInDirectory(string PathToFiles, vector<Experiment> &Pickup, vector
 	////cout<<"size="<<FileNames.size()<<"\n";
 	for(unsigned int i=0;i<FileNames.size();i++)
 	{
+		cout<<"ReadFilesInDirectory() is reading file "<<FileNames[i]<<"\n";
 		Experiment E;
 		E.ReadInputFile(FileNames[i]);///нужно реализовать/модифицировать метод для csv файлов
 		//cout<<E.GetType()<<"\n";
@@ -667,6 +672,8 @@ void SNTRA(string PathToFiles, string particle="", int ListFilesFlag=0, string o
 	vector<Experiment> Stripping;//создаём вектор всех экспериментов срыва
 	
 	ReadFilesInDirectory(PathToFiles,Pickup,Stripping,particle,ListFilesFlag);//считаем поготовленные файлы данных с диска
+	cout<<"vector<Experiment> Pickup.size() = "<<Pickup.size()<<"\n";
+	cout<<"vector<Experiment> Stripping.size() = "<<Stripping.size()<<"\n";
 	cout<<"Creating parameters object!"<<"\n";
 	parameters par=parameters();
 	cout<<"Creating stringstream object!"<<"\n";
@@ -678,13 +685,16 @@ void SNTRA(string PathToFiles, string particle="", int ListFilesFlag=0, string o
 	par.Cout();//выведем считанные параметры в терминал
 	
 	//vector<CoupleOfExperiments> CE=CreateCouplesOfExperiments(Pickup,Stripping,par);
+	cout<<"Creating parameters vector<NormalisedCoupleOfExperiments> CE_norm!"<<"\n";
 	vector<NormalisedCoupleOfExperiments> CE_norm=CreateNormalisedCouplesOfExperiments(Pickup,Stripping,par);
 	/*for(unsigned int i=0;i<CE.size();i++)//для каждой пары срыв-подхват в векторе CE
 	{
 		CE[i].CalcSPE_and_OCC();//применяем метод для расчёта одночастичной энергии и нормированной заселённости на подоболочке для пары экпериментов 
 	}*/
+	cout<<"Use CalcSPE_and_OCC() for every element in vector<NormalisedCoupleOfExperiments>!"<<"\n";
 	for(unsigned int i=0;i<CE_norm.size();i++)//для каждой пары срыв-подхват в векторе CE
 	{	
+		cout<<"Starting CE_norm["<<i<<"].CalcSPE_and_OCC()!"<<"\n";
 		CE_norm[i].CalcSPE_and_OCC();
 	}
 	string OutputFileName;//создаём строку с именем выходного файла для результата расчёта SNTRA до нормировки
@@ -700,7 +710,7 @@ void SNTRA(string PathToFiles, string particle="", int ListFilesFlag=0, string o
 	{
 		return ;//заканчиваем нашу функцию SNTRA здесь
 	}
-
+	cout<<"Use CalculatePenaltyFunction(CE_norm)!"<<"\n";
 	CalculatePenaltyFunction(CE_norm);//применяем функцию для вычисления штрафной функции
 	ArrangeByPenalty(CE_norm);//применяем функцию для сортировки нашего вывода по возрастанию значения штрафной функции
 	PrintCalculationResult(CE_norm,OutputFileName,output_dir_path);//записывает результат ранжировки для пары экспериментов CE в выходные файлы .txt и .pdf
