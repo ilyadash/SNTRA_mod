@@ -36,10 +36,11 @@ void SpectroscopicFactorHistogram::PrintSpectroscopicFactorHistogram()
 	{
 		if(j==0)
 		{
-			Histograms[j].SetTitle((Reference+";E,kev;G").c_str());
+			Histograms[j].SetTitle((Reference+";E, Mev;G").c_str());
 			Histograms[j].Draw("histo");
 			Legend->AddEntry(&Histograms[j],NLJToString(n[j],L[j], JP[j]).c_str(),"f");
-			Histograms[j].GetYaxis()->SetRangeUser(10e-9,maximum*1.5);
+			Histograms[j].GetXaxis()->SetRangeUser(10e-9,maximum_x*1.2);
+			Histograms[j].GetYaxis()->SetRangeUser(10e-9,maximum_y*1.2);
 		}
 		else
 		{
@@ -593,24 +594,35 @@ SpectroscopicFactorHistogram Experiment::BuildSpectroscopicFactorHistogram(doubl
 		cout<<"	*** Error! Experiment::BuildSpectroscopicFactorHistogram got negative normalisation coefficient! Return empty SpectroscopicFactorHistogram!"<<endl;
 		return SFHistograms;
 	} 
-	SFHistograms.maximum=0;
+	SFHistograms.maximum_x=1;
+	SFHistograms.maximum_y=1;
 	TString name_buffer=" ";
 	if (norma!=1) name_buffer=" norm. ";
 	SFHistograms.Reference=reference+name_buffer+GetType();
-	for(unsigned int i=0;i<SSD.size();i++)//для каждого состояния в объекте SSD (SummarizedSpectroscopicData)
-	{
-		string name=reference+sprintf("_%d_%d_%d",SSD.States[i].n,SSD.States[i].L,(int)(SSD.States[i].JP*2));//имя гистограмы?
-		TH1F histogram(name.c_str(),name.c_str(),100,0,10000);
+	for(unsigned int i=0;i<SSD.size();i++)
+	{//для каждого состояния в объекте SSD (SummarizedSpectroscopicData)
+		string name=reference+sprintf("_%d_%d_%d",SSD.States[i].n,SSD.States[i].L,(int)(SSD.States[i].JP*2));
+		TH1F histogram(name.c_str(),name.c_str(),100,0,10);
 		for(unsigned int j=0;j<States.size();j++)
 		{
-			if((States[j].n[0]==SSD.States[i].n)&&(States[j].L[0]==SSD.States[i].L)&&(States[j].JP[0]==SSD.States[i].JP))
-			histogram.SetBinContent(histogram.GetXaxis()->FindFixBin(States[j].Energy),States[j].G()*norma);//строим столбик высотой с нормированную спектроскопическую силу?
+			if((States[j].n[0]==SSD.States[i].n)&&(States[j].L[0]==SSD.States[i].L)
+			&&(States[j].JP[0]==SSD.States[i].JP))
+			{
+				histogram.SetBinContent(histogram.GetXaxis()->FindFixBin(States[j].Energy/1000),
+				States[j].G()*norma);//строим столбик высотой с нормированную спектроскопическую силу
+			}
 		}
 		histogram.SetLineColor(GetColor(SSD.States[i].L, SSD.States[i].JP));
 		histogram.SetFillColor(GetColor(SSD.States[i].L, SSD.States[i].JP));
-		if(histogram.GetMaximum()>SFHistograms.maximum)
+		if(histogram.GetMaximum()>SFHistograms.maximum_y)
 		{
-			SFHistograms.maximum=histogram.GetMaximum();
+			SFHistograms.maximum_y=histogram.GetMaximum();
+		}
+		if(histogram.GetBinCenter(histogram.FindLastBinAbove(0))>SFHistograms.maximum_x)
+		{
+			//cout<<"Before: SFHistograms.maximum_x = "<<SFHistograms.maximum_x<<endl;
+			SFHistograms.maximum_x=histogram.GetBinCenter(histogram.FindLastBinAbove(0));
+			//cout<<"After: SFHistograms.maximum_x = "<<SFHistograms.maximum_x<<endl;
 		} 
 		SFHistograms.Histograms.push_back(histogram);
 		SFHistograms.n.push_back(SSD.States[i].n);

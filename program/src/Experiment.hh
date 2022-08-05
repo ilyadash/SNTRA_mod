@@ -18,7 +18,7 @@ class SpectroscopicFactorHistogram
 	vector<int> L;
 	vector<float> JP;
 	string Reference;
-	float maximum;
+	float maximum_x,maximum_y;
 	TLegend* Legend;//хорошие разработчики, сделали "=" protected...
 	void PrintSpectroscopicFactorHistogram();
 };
@@ -78,10 +78,8 @@ class Experiment
 	double GetSumSF(StateParameters &s);//Возвращает сумму СФ для данных StateParameters
 	
 	int GetNCalculatedLevels();//возвращает число уровней, для которых вычислены центроиды
-
 	int size();//возвращает число состояний, зарегистрированных в эксперименте
 	SummarizedSpectroscopicState& operator [] (int index);
-	//vector<TH1F> BuildSpectroscopicFactorHistogram(float &maximum)
 	SpectroscopicFactorHistogram BuildSpectroscopicFactorHistogram(double norma);
 };
 
