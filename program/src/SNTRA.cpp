@@ -290,8 +290,9 @@ void CalculatePenaltyFunction(vector<CoupleOfExperiments> &v)//функция д
 	
 	for(unsigned int i=0;i<v.size();i++)
 	{
+		v[i].PenaltyComponents.resize(0);
 		//v[i].PenaltyComponents.resize(v[i].par.UsedPenaltyFunctionComponents.size());
-		//cout<<"size "<<v[i].par.UsedPenaltyFunctionComponents.size()<<"\n";
+		cout<<"size = "<<v[i].par.UsedPenaltyFunctionComponents.size()<<"\n";
 		for(unsigned int j=0;j<v[i].par.UsedPenaltyFunctionComponents.size();j++)
 		{
 			//cout<<"comp "<<(int)v[i].par.UsedPenaltyFunctionComponents[j]<<"\n";
@@ -475,76 +476,7 @@ void PrintCalculationResult(vector<NormalisedCoupleOfExperiments> v, string Outp
 	cc1->Print((OutputFileName+".pdf]").c_str(),"pdf");
 	cout<<"void PrintCalculationResult has ended!"<<"\n";
 }
-/*
-void PrintFitCalculationResult(vector<CoupleOfExperiments> v, vector<NormalisedCoupleOfExperiments> v_norm, string OutputFileName, string output_dir="output")//функция записывает результаты нормировки в выходные файлы .txt и .pdf
-{//на вход подаётся вектор пар экспериментов (вектор объектов CoupleOfExperiments)
-	//и название выходных файлов .pdf .txt OutputFileName
-	cout<<"void PrintFitCalculationResult has started!"<<endl;
-	OutputFileName=string(output_dir)+"/"+OutputFileName;
-	cout<<"void PrintFitCalculationResult will save results in "<<OutputFileName<<endl;
-	ofstream OutputTextFile((OutputFileName+".txt").c_str());//создаём .txt файл с выходными данными
-	cc2->Print((OutputFileName+".pdf[").c_str(),"pdf");//создаём .pdf файл с выходными данными, который сейчас будем наполнять графиками и текстом
-	for(unsigned int i=0;i<v.size();i++)//для каждой пары экспериментов во входном векторе v
-	{
-		cout<<"working with "<<i<<" pair!"<<endl;
-		SpectroscopicFactorHistogram HistPickup=v[i].Pickup.BuildSpectroscopicFactorHistogram();//создаём гистограммы спектроскопических факторов, которые будем отрисовывать на холсте
-		SpectroscopicFactorHistogram HistStrip=v[i].Stripping.BuildSpectroscopicFactorHistogram();//для срыва и подхвата, всего 2 гистограммы
-		SpectroscopicFactorHistogram HistNormPickup=v_norm[i].Pickup.BuildSpectroscopicFactorHistogram(v_norm[i].n_m);//создаём гистограммы нормированных спектроскопических факторов, которые будем отрисовывать на холсте
-		SpectroscopicFactorHistogram HistNormStrip=v_norm[i].Stripping.BuildSpectroscopicFactorHistogram(v_norm[i].n_p);//для срыва и подхвата, всего 2 гистограммы, итого 4 гистограммы на холсте
-		
-		cc2->Clear();//Delete all pad primitives
-		cc2->Divide(3,2);//разделить Pad на 3 независимые области по вертикали и на 2 по горизонтали (всего 6 областей)
-		cout<<"Going to Pad1!"<<endl;
-		cc2->cd(1);//переходим к Pad1
-		HistPickup.PrintSpectroscopicFactorHistogram();//рисуем гистограмму для эксперимента подхвата
-		cout<<"Going to Pad2!"<<endl;
-		cc2->cd(2);//переходим к Pad2
-		HistNormPickup.PrintSpectroscopicFactorHistogram();//рисуем гистограмму для эксперимента нормированного подхвата
-		cout<<"Going to Pad3!"<<endl;
-		cc2->cd(3);//переходим к Pad3	
-		v[i].points_G.SetTitle("Fit graph;G^-/2j+1;G^+/2j+1");//здесь и далее рисуем график фита; устанавливаем заголовок сверху графика
-		v[i].points_G.SetMarkerStyle(28);//устанавливаем стиль маркеров фитируемых точек
-		//v[i].points_G.ComputeRange(0,0,GetMaximum(v[i].Gm_alt_c)+0.1,GetMaximum(v[i].Gp_alt_c)+0.1);//изменим границы оси
-		//v[i].points_G.SetMarkerColor();//было бы неплохо сделать цвет каждой точки соответвующим цвету подоболочки на гистограммах
-		v[i].points_G.GetXaxis()->SetLimits(0.,1.5);
-		v[i].points_G.Draw("AP");	
-		v[i].points_G.SetMinimum(0.);
-		v[i].points_G.SetMaximum(1.5);
-		
-		v_norm[i].points_G.SetMarkerColor(kBlue);//меняем цвет маркеров на синий, чтобы выделялись
-		v_norm[i].points_G.SetMarkerStyle(29);
-		v_norm[i].points_G.Draw("AP SAME");
-		
-		//v[i].FIT.SetRange(0,0,GetMaximum(v[i].Gm_alt_c)+1,GetMaximum(v[i].Gp_alt_c)+1);	
-		v_norm[i].FIT.Draw("l same");//"SAME" - superimpose on top of existing picture, "L" - connect all computed points with a straight line  
-		///для построения второй линии фита:
-		v_norm[i].FIT2.Draw("l same");
-		///для построения третей линии фита:
-		v_norm[i].FIT3.SetLineColor(1);
-		v_norm[i].FIT3.Draw("l same");
-		gPad->BuildLegend();
-		cout<<"Going to Pad4!"<<endl;
-		cc2->cd(4);//переходим к Pad4
-		HistStrip.PrintSpectroscopicFactorHistogram();//рисуем гистограмму для эксперимента срыва
-		
-		string TextOutput=v_norm[i].FitResultsInTextForm(1);
-		stringstream s(TextOutput);
-		OutputTextFile<<TextOutput<<"\n";//записывем в текстовый файл результаты расчёта
-		cout<<"Going to Pad5!"<<endl;
-		cc2->cd(5);//переходим к Pad5
-		HistNormStrip.PrintSpectroscopicFactorHistogram();//рисуем гистограмму для нормированного эксперимента срыва
-		cout<<"Going to Pad6!"<<endl;
-		cc2->cd(6);//переходим к Pad6
-		v_norm[i].DrawResultsInTextForm(TextOutput);//выводим текст справа внизу
-		cout<<"Printing in pdf file!"<<endl;
-		cc2->Print((OutputFileName+".pdf").c_str(),"pdf");//сохраняем всё в .pdf файл
-		cout<<"gPad->Update()!"<<endl;
-		gPad->Update();//обновим текущую область построения
-		cc2->Clear();
-	}
-	cc2->Print((OutputFileName+".pdf]").c_str(),"pdf");//сохраняем всё в .pdf файл (в третий раз?)
-}
-*/
+
 void PrintFitCalculationResult(vector<NormalisedCoupleOfExperiments> v_norm, string OutputFileName, string output_dir="output")//функция записывает результаты нормировки в выходные файлы .txt и .pdf
 {//на вход подаётся вектор пар экспериментов (вектор объектов CoupleOfExperiments)
 	//и название выходных файлов .pdf .txt OutputFileName

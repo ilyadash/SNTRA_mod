@@ -634,8 +634,8 @@ SpectroscopicFactorHistogram Experiment::BuildSpectroscopicFactorHistogram(doubl
 
 TH1F CoupleOfExperiments::BuildPenaltyComponentsHistogram()
 {
-	TH1F result("PFC","Penalty function components",PenaltyComponents.size()+1,0,PenaltyComponents.size()+1);
-	result.GetYaxis()->SetRangeUser(10e-6,1);
+	TH1F result("PFC","Penalty function components",PenaltyComponents.size(),0,PenaltyComponents.size()+1);
+	result.GetYaxis()->SetRangeUser(10e-4,1);
 	for(unsigned int i=0;i<PenaltyComponents.size();i++)
 	{
 		result.SetBinContent(i+1,PenaltyComponents[i]);
