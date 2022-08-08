@@ -1,4 +1,4 @@
-#include "State.hh"
+#include "State.h"
 
 const double SF_error_parameter=0.;
 

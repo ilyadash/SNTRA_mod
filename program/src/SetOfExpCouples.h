@@ -5,8 +5,16 @@ class SetOfExpCouples
 {//класс вектора пар комплиментарных экспермиентов срыва-подхвата
 	public:
 	vector<CoupleOfExperiments> data;
+	CreateCouplesOfExperiments(vector<Experiment> &Pickup, vector<Experiment> &Stripping, parameters &par);//функция создаёт вектор всех вариантов пар экспириментов срыв-подхват (вектор объектов CoupleOfExperiments);
+};
+
+class SetOfNormalisedExpCouples : public SetOfExpCouples
+{//класс вектора пар комплиментарных экспермиентов срыва-подхвата
+	public:
+	vector<NormalisedCoupleOfExperiments> data;
 	
 };
+
 
 /*class NormalisedCoupleOfExperiments: public CoupleOfExperiments
 {//класс пары комплиментарных экспермиентов срыва-подхвата, которые будут/уже пронормированы

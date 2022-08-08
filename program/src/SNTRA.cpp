@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "InputData.hh"
+#include "InputData.h"
 #include "CoupleOfExperiments.cpp"
 #include <sstream>
 #include <iostream>
@@ -88,8 +88,8 @@ vector<CoupleOfExperiments> CreateCouplesOfExperiments(vector<Experiment> &Picku
 			result.push_back(CE);
 		}
 	}
-	return result;//возвращаем результирующий вектор пар
 	cout<<"CreateCouplesOfExperiments has ended!"<<endl;
+	return result;//сохраняем результирующий вектор пар
 }//конец функции vector<CoupleOfExperiments> CreateCouplesOfExperiments
 
 vector<NormalisedCoupleOfExperiments> CreateNormalisedCouplesOfExperiments(vector<Experiment> &Pickup, vector<Experiment> &Stripping, parameters &par)//функция создаёт вектор всех вариантов пар экспириментов срыв-подхват (вектор объектов CoupleOfExperiments);
@@ -217,8 +217,9 @@ void CalculatePenaltyFunction(vector<NormalisedCoupleOfExperiments> &v)//фун�
 	
 	for(unsigned int i=0;i<v.size();i++)
 	{
-		cout<<"v[i].PenaltyComponents.size() = "<<v[i].PenaltyComponents.size()<<"\n";
-		cout<<"size to be = "<<v[i].par.UsedPenaltyFunctionComponents.size()<<"\n";
+		v[i].PenaltyComponents.resize(0);
+		//cout<<"v[i].PenaltyComponents.size() = "<<v[i].PenaltyComponents.size()<<"\n";
+		//cout<<"size to be = "<<v[i].par.UsedPenaltyFunctionComponents.size()<<"\n";
 		for(unsigned int j=0;j<v[i].par.UsedPenaltyFunctionComponents.size();j++)
 		{
 			//cout<<"comp "<<(int)v[i].par.UsedPenaltyFunctionComponents[j]<<"\n";
@@ -298,8 +299,8 @@ void CalculatePenaltyFunction(vector<CoupleOfExperiments> &v)//функция д
 	{
 		v[i].PenaltyComponents.resize(0);
 		//v[i].PenaltyComponents.resize(v[i].par.UsedPenaltyFunctionComponents.size());
-		cout<<"v[i].PenaltyComponents.size() = "<<v[i].PenaltyComponents.size()<<"\n";
-		cout<<"size to be = "<<v[i].par.UsedPenaltyFunctionComponents.size()<<"\n";
+		//cout<<"v[i].PenaltyComponents.size() = "<<v[i].PenaltyComponents.size()<<"\n";
+		//cout<<"size to be = "<<v[i].par.UsedPenaltyFunctionComponents.size()<<"\n";
 		for(unsigned int j=0;j<v[i].par.UsedPenaltyFunctionComponents.size();j++)
 		{
 			//cout<<"comp "<<(int)v[i].par.UsedPenaltyFunctionComponents[j]<<"\n";
@@ -442,6 +443,9 @@ void PrintCalculationResult(vector<NormalisedCoupleOfExperiments> v, string Outp
 		mgr->Draw("ap");
 		v[i].occupancies.Draw("p same");//отрисуем заселённости, которые использовались в фите БКШ поверх остальных (выделим их крестами)
 		v[i].BCS.Draw("l same");//отрисуем кривую фита БКШ на том же Pad
+		mgr->SetTitle("Occupancy; E, keV; v^{2}");
+		gPad->Modified();
+		gPad->Update();
 		
 		cc1->cd(3);
 		TH1F PenaltyComponents=v[i].BuildPenaltyComponentsHistogram();

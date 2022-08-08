@@ -1,4 +1,4 @@
-#include "Experiment.hh"
+#include "Experiment.h"
 template <typename T>// объявление параметра шаблона функции
 
 string TurnFlagInString(T flag_ch, string opt="CouplesFlag")//функция просто переводит значение флага из unsigned char в string

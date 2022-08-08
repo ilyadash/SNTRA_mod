@@ -1,4 +1,4 @@
-#include "CoupleOfExperiments.hh"
+#include "CoupleOfExperiments.h"
 
 TH1F CoupleOfExperiments::BuildPenaltyComponentsHistogram()
 {
