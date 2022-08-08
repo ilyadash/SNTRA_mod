@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "InputData.hh"
-#include "Experiment.cpp"
+#include "CoupleOfExperiments.cpp"
 #include <sstream>
 #include <iostream>
 #include <fstream>
@@ -183,7 +183,7 @@ void ReadFilesInDirectory(string PathToFiles, vector<Experiment> &Pickup, vector
 }
 
 void CalculatePenaltyFunction(vector<NormalisedCoupleOfExperiments> &v)//функция для расчёта штрафной функции
-{cout<<"void CalculatePenaltyFunction has started!"<<"\n";
+{cout<<"void CalculatePenaltyFunction() has started!"<<"\n";
 	float MaxEfError,MaxDeltaError;
 	int NumberOfPickupStatesMax=0, NumberOfStrippingStatesMax=0, AverageNumberOfCalculatedStates=0;
 	for(int i=0;i<v.size();i++)
@@ -210,12 +210,15 @@ void CalculatePenaltyFunction(vector<NormalisedCoupleOfExperiments> &v)//фун�
 	if(v.size()>0)
 	AverageNumberOfCalculatedStates=round(AverageNumberOfCalculatedStates/v.size());
 	else
-	return;
+	{
+		cerr<<"	*** Error! CalculatePenaltyFunction() got empty input vector!"<<"\n";
+		return;
+	};
 	
 	for(unsigned int i=0;i<v.size();i++)
 	{
-		//v[i].PenaltyComponents.resize(v[i].par.UsedPenaltyFunctionComponents.size());
-		//cout<<"size "<<v[i].par.UsedPenaltyFunctionComponents.size()<<"\n";
+		cout<<"v[i].PenaltyComponents.size() = "<<v[i].PenaltyComponents.size()<<"\n";
+		cout<<"size to be = "<<v[i].par.UsedPenaltyFunctionComponents.size()<<"\n";
 		for(unsigned int j=0;j<v[i].par.UsedPenaltyFunctionComponents.size();j++)
 		{
 			//cout<<"comp "<<(int)v[i].par.UsedPenaltyFunctionComponents[j]<<"\n";
@@ -259,7 +262,7 @@ void CalculatePenaltyFunction(vector<NormalisedCoupleOfExperiments> &v)//фун�
 }//конец void CalculatePenaltyFunction
 
 void CalculatePenaltyFunction(vector<CoupleOfExperiments> &v)//функция для расчёта штрафной функции
-{cout<<"void CalculatePenaltyFunction has started!"<<"\n";
+{cout<<"void CalculatePenaltyFunction() has started!"<<"\n";
 	float MaxEfError,MaxDeltaError;
 	int NumberOfPickupStatesMax=0, NumberOfStrippingStatesMax=0, AverageNumberOfCalculatedStates=0;
 	for(int i=0;i<v.size();i++)
@@ -286,13 +289,17 @@ void CalculatePenaltyFunction(vector<CoupleOfExperiments> &v)//функция д
 	if(v.size()>0)
 	AverageNumberOfCalculatedStates=round(AverageNumberOfCalculatedStates/v.size());
 	else
-	return;
+	{
+		cerr<<"	*** Error! CalculatePenaltyFunction() got empty input vector!"<<"\n";
+		return;
+	}
 	
 	for(unsigned int i=0;i<v.size();i++)
 	{
 		v[i].PenaltyComponents.resize(0);
 		//v[i].PenaltyComponents.resize(v[i].par.UsedPenaltyFunctionComponents.size());
-		cout<<"size = "<<v[i].par.UsedPenaltyFunctionComponents.size()<<"\n";
+		cout<<"v[i].PenaltyComponents.size() = "<<v[i].PenaltyComponents.size()<<"\n";
+		cout<<"size to be = "<<v[i].par.UsedPenaltyFunctionComponents.size()<<"\n";
 		for(unsigned int j=0;j<v[i].par.UsedPenaltyFunctionComponents.size();j++)
 		{
 			//cout<<"comp "<<(int)v[i].par.UsedPenaltyFunctionComponents[j]<<"\n";
