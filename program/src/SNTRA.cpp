@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include "InputData.h"
-#include "CoupleOfExperiments.cpp"
+#include "SetOfExpCouples.cpp"
 #include <sstream>
 #include <iostream>
 #include <fstream>
@@ -73,7 +73,8 @@ vector<string> ListFiles(string dirname, string ext) //функция ... , вы
 	return result;
 }
 
-vector<CoupleOfExperiments> CreateCouplesOfExperiments(vector<Experiment> &Pickup, vector<Experiment> &Stripping, parameters &par)//функция создаёт вектор всех вариантов пар экспириментов срыв-подхват (вектор объектов CoupleOfExperiments);
+vector<CoupleOfExperiments> CreateCouplesOfExperiments(vector<Experiment> &Pickup,
+vector<Experiment> &Stripping, parameters &par)//функция создаёт вектор всех вариантов пар экспириментов срыв-подхват (вектор объектов CoupleOfExperiments);
 {//функции на вход подаются вектор всех экспериментов срыва и вектор всех экспериментов подхвата (их адреса?)
 	cout<<"CreateCouplesOfExperiments has started!"<<endl;
 	vector<CoupleOfExperiments> result;
@@ -92,7 +93,8 @@ vector<CoupleOfExperiments> CreateCouplesOfExperiments(vector<Experiment> &Picku
 	return result;//сохраняем результирующий вектор пар
 }//конец функции vector<CoupleOfExperiments> CreateCouplesOfExperiments
 
-vector<NormalisedCoupleOfExperiments> CreateNormalisedCouplesOfExperiments(vector<Experiment> &Pickup, vector<Experiment> &Stripping, parameters &par)//функция создаёт вектор всех вариантов пар экспириментов срыв-подхват (вектор объектов CoupleOfExperiments);
+vector<NormalisedCoupleOfExperiments> CreateNormalisedCouplesOfExperiments(vector<Experiment> &Pickup,
+vector<Experiment> &Stripping, parameters &par)//функция создаёт вектор всех вариантов пар экспириментов срыв-подхват (вектор объектов CoupleOfExperiments);
 {//функции на вход подаются вектор всех экспериментов срыва и вектор всех экспериментов подхвата (их адреса?)
 	cout<<"CreateNormalisedCouplesOfExperiments has started!"<<endl;
 	vector<NormalisedCoupleOfExperiments> result;
@@ -112,7 +114,8 @@ vector<NormalisedCoupleOfExperiments> CreateNormalisedCouplesOfExperiments(vecto
 	cout<<"CreateNormalisedCouplesOfExperiments has ended!"<<endl;
 }//конец функции vector<CoupleOfExperiments> CreateCouplesOfExperiments
 
-void ReadFilesInDirectory(string PathToFiles, vector<Experiment> &Pickup, vector<Experiment> &Stripping, string particle, int ListFilesFlag=0)
+void ReadFilesInDirectory(string PathToFiles, vector<Experiment> &Pickup, vector<Experiment> &Stripping,
+string particle, int ListFilesFlag=0)
 {cout<<"void ReadFilesInDirectory(...) has started!"<<"\n";
 	vector<string> FileNames;
 	if(ListFilesFlag==0)
@@ -343,20 +346,21 @@ void CalculatePenaltyFunction(vector<CoupleOfExperiments> &v)//функция д
 	
 }//конец void CalculatePenaltyFunction
 
-void PrintCalculationResult(vector<CoupleOfExperiments> v, string OutputFileName, string output_dir="output")
-{//на вход подаётся вектор пар экспериментов и название выходных файлов .pdf .txt OutputFileName(вектор объектов CoupleOfExperiments), функция записывает результаты нормировки в выходные файлы .txt и .pdf
+void PrintCalculationResult(vector<CoupleOfExperiments> v,
+string OutputFileName, string output_dir="output") {
+	//на вход подаётся вектор пар экспериментов и название выходных
+	//файлов .pdf .txt OutputFileName(вектор объектов CoupleOfExperiments),
+	//функция записывает результаты нормировки в выходные файлы .txt и .pdf
 	cout<<"void PrintCalculationResult has started!"<<"\n";
 	OutputFileName=string(output_dir)+"/"+OutputFileName;
 	ofstream OutputTextFile((OutputFileName+".txt").c_str());//создаём .txt файл с выходными данными
 	cc1->Print((OutputFileName+".pdf[").c_str(),"pdf");//создаём .pdf файл с выходными данными, который сейчас будем наполнять графиками и текстом
-	for(unsigned int i=0;i<v.size();i++)//для каждой пары экспериментов во входном векторе v
-	{	//cout<< "I started pdf writing for the pair!!!!\n";
+	for(unsigned int i=0;i<v.size();i++) {//для каждой пары экспериментов во входном векторе v
 		SpectroscopicFactorHistogram HistPickup=v[i].Pickup.BuildSpectroscopicFactorHistogram(v[i].n_m);//создаём гистограммы нормированных спектроскопических факторов, которые будем отрисовывать на холсте
 		SpectroscopicFactorHistogram HistStrip=v[i].Stripping.BuildSpectroscopicFactorHistogram(v[i].n_p);//для срыва и подхвата, всего 2 гистограммы, итого 2 гистограммы на холсте
 		cc1->Clear();//Delete all pad primitives
 		cc1->Divide(3,2);//разделить Pad на 3 независимые области по вертикали и на 2 по горизонтали (всего 6 областей)
-		//cout<< "I divided pads!!!!\n";
-		
+
 		cc1->cd(1);//переходим к Pad1
 		HistPickup.PrintSpectroscopicFactorHistogram();//рисуем гистограмму для эксперимента подхвата
 		
@@ -406,11 +410,11 @@ void PrintCalculationResult(vector<CoupleOfExperiments> v, string OutputFileName
 				txt.DrawText(0.8,v[i].SPE[j], NLJToString(v[i].SP_centroids[j].n,v[i].SP_centroids[j].l,v[i].SP_centroids[j].JP).c_str());
 			}
 		}
+
 		cc1->cd(6);//переходим к Pad6
 		v[i].DrawResultsInTextForm(v[i].ResultsInTextForm());
 		cc1->Print((OutputFileName+".pdf").c_str(),"pdf");
 		gPad->Update();
-		
 	}
 	cc1->Print((OutputFileName+".pdf]").c_str(),"pdf");
 	cout<<"void PrintCalculationResult has ended!"<<"\n";
@@ -611,7 +615,7 @@ void ArrangeByPenalty(vector<NormalisedCoupleOfExperiments> &v)//функция 
 	}
 }//конец void ArrangeByPenalty
 
-void SNTRA(string PathToFiles, string particle="", int ListFilesFlag=0, string output_dir_path="output")
+/*void SNTRA(string PathToFiles, string particle="", int ListFilesFlag=0, string output_dir_path="output")
 {cout<<"void SNTRA has started!"<<"\n";
 	vector<Experiment> Pickup;//создаём вектор всех экспериментов подхвата
 	vector<Experiment> Stripping;//создаём вектор всех экспериментов срыва
@@ -629,13 +633,8 @@ void SNTRA(string PathToFiles, string particle="", int ListFilesFlag=0, string o
 	par.ReadParameters(ParFileName+"parameters.par");//считаем пользовательские параметры из файла parameters.par на диске
 	par.Cout();//выведем считанные параметры в терминал
 	
-	//vector<CoupleOfExperiments> CE=CreateCouplesOfExperiments(Pickup,Stripping,par);
 	cout<<"Creating parameters vector<NormalisedCoupleOfExperiments> CE_norm!"<<"\n";
 	vector<NormalisedCoupleOfExperiments> CE_norm=CreateNormalisedCouplesOfExperiments(Pickup,Stripping,par);
-	/*for(unsigned int i=0;i<CE.size();i++)//для каждой пары срыв-подхват в векторе CE
-	{
-		CE[i].CalcSPE_and_OCC();//применяем метод для расчёта одночастичной энергии и нормированной заселённости на подоболочке для пары экпериментов 
-	}*/
 	cout<<"Use CalcSPE_and_OCC() for every element in vector<NormalisedCoupleOfExperiments>!"<<"\n";
 	for(unsigned int i=0;i<CE_norm.size();i++)//для каждой пары срыв-подхват в векторе CE
 	{	
@@ -672,7 +671,48 @@ void SNTRA(string PathToFiles, string particle="", int ListFilesFlag=0, string o
 	PrintCalculationResult(CE_norm,OutputFileName3,output_dir_path);//записывает результат воздействия нормировки для пары экспериментов CE в выходные файлы .txt и .pdf
 
 	cout<<"void SNTRA has ended!"<<"\n";
-}//конец функции void SNTRA
+}//конец функции void SNTRA*/
+
+void SNTRA(string PathToFiles, string particle="", int ListFilesFlag=0, string output_dir_path="output")
+{cout<<"void SNTRA has started!"<<"\n";
+	vector<Experiment> Pickup;//создаём вектор всех экспериментов подхвата
+	vector<Experiment> Stripping;//создаём вектор всех экспериментов срыва
+	ReadFilesInDirectory(PathToFiles,Pickup,Stripping,particle,ListFilesFlag);//считаем поготовленные файлы данных с диска
+	parameters par=parameters();
+	stringstream s1(PathToFiles);
+	string ParFileName;
+	s1>>ParFileName;
+	par.ReadParameters(ParFileName+"parameters.par");//считаем пользовательские параметры из файла parameters.par на диске
+	par.Cout();//выведем считанные параметры в терминал
+	SetOfNormalisedExpCouples Analysis;
+	Analysis.CreateNormalisedCouplesOfExperiments(Pickup,Stripping,par);
+	Analysis.CalcSPE_and_OCC();
+	string OutputFileName;//создаём строку с именем выходного файла для результата расчёта SNTRA до нормировки
+	string OutputFileName2;//создаём строку с именем выходного файла для результата нормировки
+	string OutputFileName3;//создаём строку с именем второго выходного файла для результата нормировки
+	if((Pickup.size()>0)&&(Stripping.size()>0))//если есть хоть 1 эксперимент срыва и хоть 1 эксперимент подхвата, то
+	{//задаём имя выходного pdf файла в строку OutputFileName
+		OutputFileName=Pickup[0].Nucleus+"_"+Pickup[0].particle;//OutputFileName равен название ядра _ налетающий нуклон
+		OutputFileName2=OutputFileName+"_norm";//OutputFileName2 равен название ядра _ налетающий нуклон_norm
+		OutputFileName3=OutputFileName+"_norm2";//OutputFileName3 равен название ядра _ налетающий нуклон_norm2
+	}//получаем для название типа "32S_neutron" для pdf и txt файлов
+	else//иначе
+	{
+		return ;//заканчиваем нашу функцию SNTRA здесь
+	}
+	cout<<"Use CalculatePenaltyFunction(CE_norm)!"<<"\n";
+	Analysis.CalculatePenaltyFunction();//применяем функцию для вычисления штрафной функции
+	Analysis.ArrangeByPenalty();//применяем функцию для сортировки нашего вывода по возрастанию значения штрафной функции
+	Analysis.PrintCalculationResult(OutputFileName,output_dir_path);//записывает результат ранжировки для пары экспериментов CE в выходные файлы .txt и .pdf
+
+	Analysis.InduceNormalisation();
+	Analysis.ReCalcSPE_and_OCC();
+	Analysis.PrintFitCalculationResult(OutputFileName2,output_dir_path);//записывает результат нормировки для пары экспериментов CE в выходные файлы .txt и .pdf
+	Analysis.CalculatePenaltyFunction();//применяем функцию для вычисления штрафной функции
+	Analysis.ArrangeByPenalty();//применяем функцию для сортировки нашего вывода по возрастанию значения штрафной функции
+	Analysis.PrintCalculationResult(OutputFileName3,output_dir_path);//записывает результат воздействия нормировки для пары экспериментов CE в выходные файлы .txt и .pdf
+	cout<<"void SNTRA has ended!"<<"\n";
+}//конец функции void SNTRA*/
 
 int main(int argc, char** argv)//главная функция, принимает аргументы из терминала при вызове SNTRA пользователем
 {//argc (argument count) и argv (argument vector) - число переданных строк в main через argv и массив переданных в main строк
