@@ -1,7 +1,6 @@
 #include "CoupleOfExperiments.h"
 
-TH1F CoupleOfExperiments::BuildPenaltyComponentsHistogram()
-{
+TH1F CoupleOfExperiments::BuildPenaltyComponentsHistogram() {
 	TH1F result("PFC","Penalty function components",PenaltyComponents.size(),0,PenaltyComponents.size()+1);
 	result.GetYaxis()->SetRangeUser(10e-4,1);
 	for(unsigned int i=0;i<PenaltyComponents.size();i++)
@@ -18,8 +17,7 @@ CoupleOfExperiments::CoupleOfExperiments(Experiment &InpPickup,Experiment &InpSt
 	Stripping=InpStripping;
 }
 
-void CoupleOfExperiments::GenerateCommonNJPList()
-{
+void CoupleOfExperiments::GenerateCommonNJPList() {
 	cout<<"CoupleOfExperiments::GenerateCommonNJPList() has started!"<<endl;
 	par.Cout();
 	for(int i=0;i<Pickup.GetNCalculatedLevels();i++)
@@ -136,7 +134,7 @@ void CoupleOfExperiments::CalcSPE_and_OCC() {//функция рассчитыв
 			SP_centroids.push_back(SP[i]);
 			if(par.CheckBelonging(SP[i],par.SubShellsUsedForOccupancyFit)) {
 				OccupanciesForBCSFit.push_back(OCC_tmp);//отдельные векторы заселенностей для аппроксимации БКШ
-				EnergiesForBCSFit.push_back(SPE_tmp);
+				EnergiesForBCSFit.push_back(SPE_tmp/1000);
 			}
 		}
 		else {
@@ -146,9 +144,9 @@ void CoupleOfExperiments::CalcSPE_and_OCC() {//функция рассчитыв
 		}
 	}
 	occupancies=TGraph(OccupanciesForBCSFit.size(),&EnergiesForBCSFit[0],&OccupanciesForBCSFit[0]);
-	BCS=TF1("BCS","0.5*(1-(x-[0])/(sqrt((x-[0])^2+[1]^2)))",-50000,0);
-	BCS.SetParameter(0,-8000);
-	BCS.SetParameter(1,15000);
+	BCS=TF1("BCS","0.5*(1-(x-[0])/(sqrt((x-[0])^2+[1]^2)))",-50,0);
+	BCS.SetParameter(0,-8);
+	BCS.SetParameter(1,15);
 	float min_E,max_E,min_OCC,max_OCC;
 	for(unsigned int i=0;i<OCC.size();i++) {
 		//cout<<"SP_centroids["<<i<<"]==";
@@ -157,28 +155,19 @@ void CoupleOfExperiments::CalcSPE_and_OCC() {//функция рассчитыв
 		//cout<<"SP_centroids["<<i<<"].GetToBeDrawnFlag()=="<<SP_centroids[i].GetToBeDrawnFlag()<<endl;
 		if (SP_centroids[i].GetToBeDrawnFlag()) {
 			if(SP_centroids[i].GetType()=="pickup") {
-				cout<<"Pickup_occupancies.SetPoint( worked! "<<endl;
-				Pickup_occupancies.SetPoint(Pickup_occupancies.GetN(),SPE[i],OCC[i]);
+				Pickup_occupancies.SetPoint(Pickup_occupancies.GetN(),SPE[i]/1000,OCC[i]);
 			}
 			else if(SP_centroids[i].GetType()=="stripping") {
-				Stripping_occupancies.SetPoint(Stripping_occupancies.GetN(),SPE[i],OCC[i]);
+				Stripping_occupancies.SetPoint(Stripping_occupancies.GetN(),SPE[i]/1000,OCC[i]);
 			}
 			else if(SP_centroids[i].GetType()=="both") {
-				Both_occupancies.SetPoint(Both_occupancies.GetN(),SPE[i],OCC[i]);	
+				Both_occupancies.SetPoint(Both_occupancies.GetN(),SPE[i]/1000,OCC[i]);	
 			}
 		}
-		if(min_E>SPE[i]) {
-			min_E=SPE[i];
-		}
-		if(max_E<SPE[i]) {
-			max_E=SPE[i];
-		}
-		if(min_OCC>OCC[i]) {
-			min_OCC=OCC[i];
-		}
-		if(max_OCC<OCC[i]) {
-			max_OCC=OCC[i];
-		}
+		if(min_E>SPE[i]) min_E=SPE[i];
+		if(max_E<SPE[i]) max_E=SPE[i];
+		if(min_OCC>OCC[i]) min_OCC=OCC[i];
+		if(max_OCC<OCC[i]) max_OCC=OCC[i];
 	}
 	
 	SetTGraphLimits(Pickup_occupancies,min_E,max_E,min_OCC,max_OCC);
@@ -186,12 +175,10 @@ void CoupleOfExperiments::CalcSPE_and_OCC() {//функция рассчитыв
 	SetTGraphLimits(Stripping_occupancies,min_E,max_E,min_OCC,max_OCC);
 	Stripping_occupancies.SetMarkerColor(2);
 	SetTGraphLimits(Both_occupancies,min_E,max_E,min_OCC,max_OCC);
-	Both_occupancies.SetMarkerColor(1);
-	//occupancies.Draw("AP");	
+	Both_occupancies.SetMarkerColor(1);	
 	occupancies.SetMarkerStyle(28);
 	occupancies.SetMarkerSize(2);
 	occupancies.Fit(&BCS,"M");//профитируем функцией в приближении БКШ
-	//BCS.Draw("l same");
 	
 	Ef=BCS.GetParameter(0);
 	Ef_error=BCS.GetParError(0);
@@ -421,14 +408,11 @@ void NormalisedCoupleOfExperiments::ReCalcSPE_and_OCC() {
 	///применяем расчитанные коэффициенты нормировки n_m, n_p:
 	this->ClearCalcResults();
 	//рассчитываем величины и заполняем вектора заново:
-	cout<<"SP.size() = "<<SP.size()<<endl;
-	for(int i=0;i<SP.size();i++)//цикл for; для каждой подоболочки:
-	{
+	for(int i=0;i<SP.size();i++) {//цикл for; для каждой подоболочки:
 		double C_pickup=Pickup.GetCentroid(SP[i]);//записываем значение центроида для эксперимента по подхвату в переменную C_pickup
 		double C_stripping=Stripping.GetCentroid(SP[i]);//записываем значение центроида для эксперимента по срыву в переменную C_stripping	
 		cout<<"C_pickup = "<<C_pickup<<"; C_stripping = "<<C_stripping<<endl;		
-		if((C_stripping!=-1)&&(C_pickup!=-1)&&(!isnan(C_stripping))&&(!isnan(C_pickup)))//индусский fix, потом проверить, что генерирует nan
-		{
+		if((C_stripping!=-1)&&(C_pickup!=-1)&&(!isnan(C_stripping))&&(!isnan(C_pickup))) {//индусский fix, потом проверить, что генерирует nan
 			double E_pickup=-Pickup.BA-C_pickup;//Диплом Марковой М.Л., ф-ла 4//вычисление "одночастичной" для подхвата с использованием энергии отрыва нуклона
 			double E_stripping=-Stripping.BA1+C_stripping;//Диплом Марковой М.Л., ф-ла 5//вычисление "одночастичной" для срыва с использованием энергии отрыва нуклона
 			double SPE_tmp=(Pickup.GetSumSF(SP[i])*E_pickup*n_m+Stripping.GetSumSF(SP[i])*E_stripping*n_p)/(Pickup.GetSumSF(SP[i])*n_m+Stripping.GetSumSF(SP[i])*n_p);//Диплом Марковой М.Л., ф-ла 17 //вычисление одночастичной энергии после нормировки
@@ -438,55 +422,37 @@ void NormalisedCoupleOfExperiments::ReCalcSPE_and_OCC() {
 			SPE.push_back(SPE_tmp);//Диплом Марковой М.Л., ф-ла 17
 			OCC.push_back(OCC_tmp);//Диплом Марковой М.Л., ф-ла 18
 			SP_centroids.push_back(SP[i]);
-			if(par.CheckBelonging(SP[i],par.SubShellsUsedForOccupancyFit))
-			{
+			if(par.CheckBelonging(SP[i],par.SubShellsUsedForOccupancyFit)) {
 				OccupanciesForBCSFit.push_back(OCC_tmp);//отдельные векторы заселенностей для аппроксимации БКШ
-				EnergiesForBCSFit.push_back(SPE_tmp);
+				EnergiesForBCSFit.push_back(SPE_tmp/1000);
 			}
 		}
-		else//если проверка на существование центроидов у экспериментов (индусский fix) не вернёт истину, то
-		{
+		else {//если проверка на существование центроидов у экспериментов (индусский fix) не вернёт истину, то
 			SPE.push_back(0);//добавляем в вектор одночастичных энергий 0, вместо рассчитанного значения
 			OCC.push_back(0);//добавляем в вектор заселённостей 0, вместо рассчитанного значения
 		}
 	}//конец цикла for
-	cout<<"SPE.size() = "<<SPE.size()<<endl;
 	occupancies=TGraph(OccupanciesForBCSFit.size(),&EnergiesForBCSFit[0],&OccupanciesForBCSFit[0]);
-	BCS=TF1("BCS_norm","0.5*(1-(x-[0])/(sqrt((x-[0])^2+[1]^2)))",-50000,0);
-	BCS.SetParameter(0,-8000);
-	BCS.SetParameter(1,15000);
+	BCS=TF1("BCS_norm","0.5*(1-(x-[0])/(sqrt((x-[0])^2+[1]^2)))",-50,0);
+	BCS.SetParameter(0,-8);
+	BCS.SetParameter(1,15);
 	float min_E,max_E,min_OCC,max_OCC;
-	for(unsigned int i=0;i<OCC.size();i++)
-	{
-		if(SP_centroids[i].GetType()=="pickup")
-		{
-			cout<<"Pickup_occupancies.SetPoint( worked! "<<endl;
-			Pickup_occupancies.SetPoint(Pickup_occupancies.GetN(),SPE[i],OCC[i]);
-		}
-		else if(SP_centroids[i].GetType()=="stripping")
-		{
-			Stripping_occupancies.SetPoint(Stripping_occupancies.GetN(),SPE[i],OCC[i]);
-		}
-		else if(SP_centroids[i].GetType()=="both")
-		{
-			Both_occupancies.SetPoint(Both_occupancies.GetN(),SPE[i],OCC[i]);
-		}
-		if(min_E>SPE[i])
-		{
-			min_E=SPE[i];
-		}
-		if(max_E<SPE[i])
-		{
-			max_E=SPE[i];
-		}
-		if(min_OCC>OCC[i])
-		{
-			min_OCC=OCC[i];
-		}
-		if(max_OCC<OCC[i])
-		{
-			max_OCC=OCC[i];
-		}
+	for(unsigned int i=0;i<OCC.size();i++) {
+		if (SP_centroids[i].GetToBeDrawnFlag()) {	
+			if(SP_centroids[i].GetType()=="pickup") {
+				Pickup_occupancies.SetPoint(Pickup_occupancies.GetN(),SPE[i]/1000,OCC[i]);
+			}
+			else if(SP_centroids[i].GetType()=="stripping") {
+				Stripping_occupancies.SetPoint(Stripping_occupancies.GetN(),SPE[i]/1000,OCC[i]);
+			}
+			else if(SP_centroids[i].GetType()=="both") {
+				Both_occupancies.SetPoint(Both_occupancies.GetN(),SPE[i]/1000,OCC[i]);
+			}
+		}	
+		if(min_E>SPE[i]) min_E=SPE[i];
+		if(max_E<SPE[i]) max_E=SPE[i];
+		if(min_OCC>OCC[i]) min_OCC=OCC[i];
+		if(max_OCC<OCC[i]) max_OCC=OCC[i];
 	}
 	
 	SetTGraphLimits(Pickup_occupancies,min_E,max_E,min_OCC,max_OCC);
@@ -506,8 +472,7 @@ void NormalisedCoupleOfExperiments::ReCalcSPE_and_OCC() {
 	Delta=BCS.GetParameter(1);
 	Delta_error=BCS.GetParError(1);
 	
-	for(int i=0;i<SP.size();i++)//цикл for; для каждой подоболочки:
-	{
+	for(int i=0;i<SP.size();i++) {//цикл for; для каждой подоболочки:
 		Gp_c.push_back(Stripping.GetSumSF(SP[i]));//формируем вектор из сумм СС срыва для каждой подоболочки
 		Gm_c.push_back(Pickup.GetSumSF(SP[i]));//формируем вектор из сумм СС подхвата для каждой подоболочки
 		er_Gp_c.push_back(Stripping.GetErSumSF(SP[i]));//формируем вектор из ошибок сумм СС срыва для каждой подоболочки
@@ -517,7 +482,6 @@ void NormalisedCoupleOfExperiments::ReCalcSPE_and_OCC() {
 		er_Gp_alt_c.push_back(Stripping.GetErSumSF(SP[i])/(2*abs(SP[i].JP)+1));//формируем вектор из делённых на (2j+1) ошибок сумм СС срыва для каждой подоболочки
 		er_Gm_alt_c.push_back(Pickup.GetErSumSF(SP[i])/(2*abs(SP[i].JP)+1));//формируем вектор из делённых на (2j+1) сумм СС подхвата для каждой подоболочки
 	}
-	cout<<"SPE.size() = "<<SPE.size()<<endl;
 	cout<<"NormalisedCoupleOfExperiments::ReCalcSPE_and_OCC has ended!"<<endl;
 }
 

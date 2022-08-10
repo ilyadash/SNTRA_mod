@@ -189,8 +189,8 @@ int main(int argc, char** argv)//главная функция, принимае
 {//argc (argument count) и argv (argument vector) - число переданных строк в main через argv и массив переданных в main строк
 	gStyle->SetLabelSize(0.05,"xyz");
 	gStyle->SetTextSize(0.05);
-	gStyle->SetLegendTextSize(0.06);
-	gStyle->SetTitleSize(0.03,"xyz");//*/
+	gStyle->SetLegendTextSize(0.04);
+	gStyle->SetTitleSize(0.04,"xyz");//*/
 	TString output_dir=argv[3];
 	if(output_dir=="") output_dir="output"; 
 	TString output_dir_cmd=TString::Format("mkdir -v %s",output_dir.Data());

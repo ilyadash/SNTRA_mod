@@ -149,11 +149,11 @@ void SetOfExpCouples::PrintCalculationResult(string OutputFileName, string outpu
 		mgr->Add(&data[i].Pickup_occupancies);
 		mgr->Add(&data[i].Stripping_occupancies);
 		mgr->Add(&data[i].Both_occupancies);
-		mgr->SetTitle("Occupancy; E, keV; v^{2}");
+		mgr->SetTitle("Occupancy with BCS fit; E, MeV; v^{2}");
 		mgr->Draw("ap");
 		data[i].occupancies.Draw("p same");//отрисуем заселённости, которые использовались в фите БКШ поверх остальных (выделим их крестами)
 		data[i].BCS.Draw("l same");//отрисуем кривую фита БКШ на том же Pad
-		mgr->SetTitle("Occupancy; E, keV; v^{2}");
+		mgr->SetTitle("Occupancy with BCS fit; E, MeV; v^{2}");
 		gPad->Modified();
 		gPad->Update();
 		
@@ -173,19 +173,18 @@ void SetOfExpCouples::PrintCalculationResult(string OutputFileName, string outpu
 		TGraph* gr=new TGraph();//"h1","Calculated shell scheme;1 ;E, keV",10,0,1);
 		gr->SetTitle("Calculated shell scheme;  ;E, keV");
 		gr->SetPoint(0,0,0);
-		gr->SetMinimum(GetMinimum(data[i].SPE)-1000);
-		gr->SetMaximum(GetMaximum(data[i].SPE)+1000);
+		gr->SetMinimum(GetMinimum(data[i].SPE)/1000-1);
+		gr->SetMaximum(GetMaximum(data[i].SPE)/1000*1.1);
 		gr->Draw("ap");
 		for(unsigned int j=0;j<data[i].SPE.size();j++){
 			TLine line;
 			TText txt;
 			int color=data[i].SP_centroids[j].GetColor();
 			line.SetLineColor(color);
-			if(data[i].SP_centroids[j].GetToBeDrawnFlag()==1)
-			{
-				line.DrawLine(0.1,data[i].SPE[j],0.7,data[i].SPE[j]);
+			if(data[i].SP_centroids[j].GetToBeDrawnFlag()==1) {
+				line.DrawLine(0.1,data[i].SPE[j]/1000,0.7,data[i].SPE[j]/1000);
 				txt.SetTextColor(color);
-				txt.DrawText(0.8,data[i].SPE[j], NLJToString(data[i].SP_centroids[j].n,data[i].SP_centroids[j].l,data[i].SP_centroids[j].JP).c_str());
+				txt.DrawText(0.8,data[i].SPE[j]/1000, data[i].SP_centroids[j].GetNLJ().Data());
 			}
 		}
 
@@ -320,7 +319,7 @@ void SetOfNormalisedExpCouples::PrintCalculationResult(string OutputFileName, st
 		cc1->cd(1);//переходим к Pad1
 		HistPickup.PrintSpectroscopicFactorHistogram();//рисуем гистограмму для эксперимента подхвата
 		cc1->cd(2);//переходим к Pad2
-		data[i].occupancies.SetTitle("Occupancy;E,keV;v^2");
+		data[i].occupancies.SetTitle("Occupancy with BCS fit;E, MeV;v^2");
 		//mgr->SetTitle("Occupancy;E, keV;v^{2}");
 		mgr->Add(&data[i].Pickup_occupancies);
 		mgr->Add(&data[i].Stripping_occupancies);
@@ -328,7 +327,7 @@ void SetOfNormalisedExpCouples::PrintCalculationResult(string OutputFileName, st
 		mgr->Draw("ap");
 		data[i].occupancies.Draw("p same");//отрисуем заселённости, которые использовались в фите БКШ поверх остальных (выделим их крестами)
 		data[i].BCS.Draw("l same");//отрисуем кривую фита БКШ на том же Pad
-		mgr->SetTitle("Occupancy; E, keV; v^{2}");
+		mgr->SetTitle("Occupancy with BCS fit; E, MeV; v^{2}");
 		gPad->Modified();
 		gPad->Update();
 		cc1->cd(3);
@@ -343,10 +342,10 @@ void SetOfNormalisedExpCouples::PrintCalculationResult(string OutputFileName, st
 		OutputTextFile<<TextOutput<<"\n";//записывем в текстовый файл результаты расчёта
 		cc1->cd(5);//переходим к Pad5
 		TGraph* gr=new TGraph();//"h1","Calculated shell scheme;1 ;E, keV",10,0,1);
-		gr->SetTitle("Calculated shell scheme;  ;E, keV");
+		gr->SetTitle("Calculated shell scheme;  ;E, MeV");
 		gr->SetPoint(0,0,0);
-		gr->SetMinimum(GetMinimum(data[i].SPE)-1000);
-		gr->SetMaximum(GetMaximum(data[i].SPE)+1000);
+		gr->SetMinimum(GetMinimum(data[i].SPE)/1000-1);
+		gr->SetMaximum(GetMaximum(data[i].SPE)/1000*1.1);
 		gr->Draw("ap");
 		for(unsigned int j=0;j<data[i].SPE.size();j++)
 		{
@@ -356,9 +355,9 @@ void SetOfNormalisedExpCouples::PrintCalculationResult(string OutputFileName, st
 			line.SetLineColor(color);
 			if(data[i].SP_centroids[j].GetToBeDrawnFlag()==1)
 			{
-				line.DrawLine(0.1,data[i].SPE[j],0.7,data[i].SPE[j]);
+				line.DrawLine(0.1,data[i].SPE[j]/1000,0.7,data[i].SPE[j]/1000);
 				txt.SetTextColor(color);
-				txt.DrawText(0.8,data[i].SPE[j], NLJToString(data[i].SP_centroids[j].n,data[i].SP_centroids[j].l,data[i].SP_centroids[j].JP).c_str());
+				txt.DrawText(0.8,data[i].SPE[j]/1000, data[i].SP_centroids[j].GetNLJ().Data());
 			}
 		}
 		cc1->cd(6);//переходим к Pad6
@@ -369,6 +368,7 @@ void SetOfNormalisedExpCouples::PrintCalculationResult(string OutputFileName, st
 	cc1->Print((OutputFileName+".pdf]").c_str(),"pdf");
 	cout<<"void PrintCalculationResult has ended!"<<"\n";
 }
+//*/
 void SetOfNormalisedExpCouples::PrintFitCalculationResult(string OutputFileName, string output_dir) {//функция записывает результаты нормировки в выходные файлы .txt и .pdf
 //на вход подаётся вектор пар экспериментов (вектор объектов CoupleOfExperiments)
 	//и название выходных файлов .pdf .txt OutputFileName

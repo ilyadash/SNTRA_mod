@@ -15,35 +15,27 @@ const int Z_number[]={1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,2
 const string Atomic_symbols[]={"H","He","Li","Be","B","C","N","O","F","Ne","Na","Mg","Al","Si","P","S","Cl","Ar","K","Ca","Sc","Ti","V","Cr","Mn","Fe","Co","Ni","Cu","Zn","Ga","Ge","As","Se","Br","Kr","Rb","Sr","Y","Zr","Nb","Mo","Tc","Ru","Rh","Pd","Ag","Cd","In","Sn","Sb","Te","I","Xe","Cs","Ba","La","Ce","Pr","Nd","Pm","Sm","Eu","Gd","Tb","Dy","Ho","Er","Tm","Yb","Lu","Hf","Ta","W","Re","Os","Ir","Pt","Au","Hg","Tl","Pb","Bi","Po","At","Rn","Fr","Ra","Ac","Th","Pa","U","Np","Pu","Am","Cm","Bk","Cf","Es","Fm","Md","No","Lr","Rf","Db","Sg","Bh","Hs","Mt","Ds","Rg"};
 const char AngularMomentum[]={'s','p','d','f','g','h','i'};
 
-int FindInVector(int element,vector<int> v)
-{
-	for(unsigned int i=0;i<v.size();i++)
-	{
-		if(v[i]==element)
-		{
+int FindInVector(int element,vector<int> v) {
+	for(unsigned int i=0;i<v.size();i++) {
+		if(v[i]==element) {
 			return i;
 		}
 	}
 	return -1;
 }
 
-string NLJToString(int n, int L, float J)
-{
+string NLJToString(int n, int L, float J) {
 	string result;
 	J=abs(J);
-	if(abs(L-J)!=0.5)
-	{
+	if(abs(L-J)!=0.5) {
 		result=sprintf("Error!n=%d l=%d j=%d/2",n,L,(int)(J*2));
 		return result;
 	}
-	else
-	{
-		if((L>6)||(L<0))
-		{
+	else {
+		if((L>6)||(L<0)) {
 			result=sprintf("Unknown L!n=%d l=%d j=%d/2",n,L,(int)(J*2));
 		}
-		else
-		{
+		else {
 			result=sprintf("%d%c%d/2",n,AngularMomentum[L],(int)(J*2));
 		}
 		return result;

@@ -11,7 +11,7 @@
 using namespace std;
 
 class SpectroscopicFactorHistogram
-{//класс гистограмм спектроскопических сил (?)
+{//класс гистограмм спектроскопических сил 
 	public:
 	vector<TH1F> Histograms;//
 	vector<int> n;
@@ -45,7 +45,7 @@ class parameters//класс пользовательских параметро
 };
 
 class Experiment
-{//класс набора экспериментальных данных из одной работы (?)
+{//класс набора экспериментальных данных из одной работы 
 	public:
 	string reference;
 	string reaction;
