@@ -6,10 +6,8 @@ int SearchInVector(vector<double> vec, double value)//Функция, возвр
 {
 	int length=vec.size();
 	int return_value=-1;
-	if(length!=0)
-	{
-		for(int i=0;i<length;i++)
-		{
+	if(length!=0) {
+		for(int i=0;i<length;i++) {
 			if(vec[i]==value)
 			{
 				return_value=i;
