@@ -2,11 +2,10 @@
 #include "TLine.h"
 
 void SetOfExpCouples::CreateCouplesOfExperiments(vector<Experiment> &Pickup,
-vector<Experiment> &Stripping, parameters &par)
-{	//функция создаёт вектор всех вариантов пар экспириментов срыв-подхват (вектор объектов CoupleOfExperiments);
+vector<Experiment> &Stripping, parameters &par) {
+	//функция создаёт вектор всех вариантов пар экспириментов срыв-подхват (вектор объектов CoupleOfExperiments);
 	//функции на вход подаются вектор всех экспериментов срыва и вектор всех экспериментов подхвата (их адреса?)
-	cout<<"CreateCouplesOfExperiments has started!"<<endl;
-	vector<CoupleOfExperiments> result;
+	cout<<"void SetOfExpCouples::CreateCouplesOfExperiments has started!"<<endl;
 	for(unsigned int i=0;i<Pickup.size();i++)
 	{
 		cout<<"Got number "<<i+1<<" pickup "<<Pickup[i].reference<<"\n";
@@ -15,10 +14,9 @@ vector<Experiment> &Stripping, parameters &par)
 			cout<<"Got number "<<j+1<<" stripping "<<Stripping[j].reference<<"\n";
 			CoupleOfExperiments CE(Pickup[i],Stripping[j]);
 			CE.par=par;
-			result.push_back(CE);
+			data.push_back(CE);
 		}
 	}
-	data = result;//сохраняем результирующий вектор пар
 	cout<<"CreateCouplesOfExperiments has ended!"<<endl;
 }//конец функции vector<CoupleOfExperiments> CreateCouplesOfExperiments
 ///перебор по возрастанию штрафной функции не изменялся,
@@ -29,6 +27,7 @@ void SetOfExpCouples::ArrangeByPenalty() {
 	//функция сортирует пары экспериментов в поданном векторе по убыванию соответсвующей штрафной функции
 	//двойной перебор нужен чтобы сравнить каждый элемент вектора с каждым, происходит сортировка
 	//по значению штрафной функции
+	cout<<"void SetOfExpCouples::ArrangeByPenalty() has started!"<<"\n";
 	for(unsigned int i=0;i<data.size();i++) {//для каждого элемента i массива
 		int NumberOfExcanges=0;//переменная для числа перестановок
 		for(unsigned int j=0;j<data.size()-i-1;j++)//для каждого элемента массива j, который имеет номер в векторе меньше i
@@ -47,16 +46,15 @@ void SetOfExpCouples::ArrangeByPenalty() {
 		}
 	}
 }//конец void ArrangeByPenalty
-
-
 void SetOfExpCouples::CalcSPE_and_OCC() {
-	for(unsigned int i=0;i<data.size();i++)//для каждой пары срыв-подхват в векторе CE
-	{	
+	cout<<"void SetOfExpCouples::CalcSPE_and_OCC() has started!"<<"\n";
+	cout<<"data.size() = "<<data.size()<<"\n";
+	for(unsigned int i=0;i<data.size();i++) {//для каждой пары срыв-подхват в векторе CE
 		data[i].CalcSPE_and_OCC();
 	}
 }
 void SetOfExpCouples::CalculatePenaltyFunction() {//функция для расчёта штрафной функции
-cout<<"void CalculatePenaltyFunction() has started!"<<"\n";
+cout<<"void SetOfExpCouples::CalculatePenaltyFunction() has started!"<<"\n";
 	float MaxEfError,MaxDeltaError;
 	int NumberOfPickupStatesMax=0, NumberOfStrippingStatesMax=0, AverageNumberOfCalculatedStates=0;
 	for(int i=0;i<data.size();i++)
@@ -132,7 +130,7 @@ void SetOfExpCouples::PrintCalculationResult(string OutputFileName, string outpu
 	//на вход подаётся вектор пар экспериментов и название выходных
 	//файлов .pdf .txt OutputFileName(вектор объектов CoupleOfExperiments),
 	//функция записывает результаты нормировки в выходные файлы .txt и .pdf
-	cout<<"void PrintCalculationResult has started!"<<"\n";
+	cout<<"void SetOfExpCouples::PrintCalculationResult() has started!"<<"\n";
 	OutputFileName=string(output_dir)+"/"+OutputFileName;
 	ofstream OutputTextFile((OutputFileName+".txt").c_str());//создаём .txt файл с выходными данными
 	cc1->Print((OutputFileName+".pdf[").c_str(),"pdf");//создаём .pdf файл с выходными данными, который сейчас будем наполнять графиками и текстом
@@ -204,8 +202,7 @@ void SetOfNormalisedExpCouples::CreateNormalisedCouplesOfExperiments(vector<Expe
 vector<Experiment> &Stripping, parameters &par) {
 	//функция создаёт вектор всех вариантов пар экспириментов срыв-подхват (вектор объектов CoupleOfExperiments);
 	//функции на вход подаются вектор всех экспериментов срыва и вектор всех экспериментов подхвата (их адреса?)
-	cout<<"CreateNormalisedCouplesOfExperiments has started!"<<endl;
-	vector<NormalisedCoupleOfExperiments> result;
+	cout<<"void SetOfNormalisedExpCouples::CreateNormalisedCouplesOfExperiments has started!"<<endl;
 	if (Pickup.size()==0) cerr<<"	*** Error! There are no Pickup experiments!"<<endl;
 	for(unsigned int i=0;i<Pickup.size();i++)
 	{
@@ -215,14 +212,21 @@ vector<Experiment> &Stripping, parameters &par) {
 			cout<<"Got number "<<j+1<<" stripping "<<Stripping[j].reference<<"\n";
 			NormalisedCoupleOfExperiments CE(Pickup[i],Stripping[j]);
 			CE.par=par;
-			result.push_back(CE);
+			data.push_back(CE);
 		}
 	}
-	data = result;//возвращаем результирующий вектор пар
-	cout<<"CreateNormalisedCouplesOfExperiments has ended!"<<endl;
-}//конец функции vector<CoupleOfExperiments> CreateCouplesOfExperiments
+	cout<<"data.size() = "<<data.size()<<"\n";
+	cout<<"void SetOfNormalisedExpCouples::CreateNormalisedCouplesOfExperiments has ended!"<<endl;
+}
+void SetOfNormalisedExpCouples::CalcSPE_and_OCC() {
+	cout<<"void SetOfNormalisedExpCouples::CalcSPE_and_OCC() has started!"<<"\n";
+	cout<<"data.size() = "<<data.size()<<"\n";
+	for(unsigned int i=0;i<data.size();i++) {//для каждой пары срыв-подхват в векторе CE
+		data[i].CalcSPE_and_OCC();
+	}
+}
 void SetOfNormalisedExpCouples::CalculatePenaltyFunction() {//функция для расчёта штрафной функции
-cout<<"void CalculatePenaltyFunction() has started!"<<"\n";
+cout<<"void SetOfNormalisedExpCouples::CalculatePenaltyFunction() has started!"<<"\n";
 	float MaxEfError,MaxDeltaError;
 	int NumberOfPickupStatesMax=0, NumberOfStrippingStatesMax=0, AverageNumberOfCalculatedStates=0;
 	for(int i=0;i<data.size();i++)
@@ -302,7 +306,7 @@ cout<<"void CalculatePenaltyFunction() has started!"<<"\n";
 }//конец void CalculatePenaltyFunction
 void SetOfNormalisedExpCouples::PrintCalculationResult(string OutputFileName, string output_dir) {
 //на вход подаётся вектор пар экспериментов и название выходных файлов .pdf .txt OutputFileName(вектор объектов CoupleOfExperiments), функция записывает результаты нормировки в выходные файлы .txt и .pdf
-	cout<<"void PrintCalculationResult has started!"<<"\n";
+	cout<<"void SetOfNormalisedExpCouples::PrintCalculationResult has started!"<<"\n";
 	OutputFileName=string(output_dir)+"/"+OutputFileName;
 	ofstream OutputTextFile((OutputFileName+".txt").c_str());//создаём .txt файл с выходными данными
 	cc1->Print((OutputFileName+".pdf[").c_str(),"pdf");//создаём .pdf файл с выходными данными, который сейчас будем наполнять графиками и текстом
@@ -313,11 +317,8 @@ void SetOfNormalisedExpCouples::PrintCalculationResult(string OutputFileName, st
 		SpectroscopicFactorHistogram HistStrip=data[i].Stripping.BuildSpectroscopicFactorHistogram(data[i].n_p);//для срыва и подхвата, всего 2 гистограммы, итого 2 гистограммы на холсте
 		cc1->Clear();//Delete all pad primitives
 		cc1->Divide(3,2);//разделить Pad на 3 независимые области по вертикали и на 2 по горизонтали (всего 6 областей)
-		//cout<< "I divided pads!!!!\n";
-		
 		cc1->cd(1);//переходим к Pad1
 		HistPickup.PrintSpectroscopicFactorHistogram();//рисуем гистограмму для эксперимента подхвата
-		
 		cc1->cd(2);//переходим к Pad2
 		data[i].occupancies.SetTitle("Occupancy;E,keV;v^2");
 		//mgr->SetTitle("Occupancy;E, keV;v^{2}");
@@ -330,19 +331,16 @@ void SetOfNormalisedExpCouples::PrintCalculationResult(string OutputFileName, st
 		mgr->SetTitle("Occupancy; E, keV; v^{2}");
 		gPad->Modified();
 		gPad->Update();
-		
 		cc1->cd(3);
 		TH1F PenaltyComponents=data[i].BuildPenaltyComponentsHistogram();
 		gPad->SetLogy(1);
 		PenaltyComponents.Draw();
-		
 		cc1->cd(4);//переходим к Pad4
 		//gPad->SetLogy(1);
 		HistStrip.PrintSpectroscopicFactorHistogram();//рисуем гистограмму для эксперимента срыва
 		string TextOutput=data[i].ResultsInTextForm(1);
 		stringstream s(TextOutput);
 		OutputTextFile<<TextOutput<<"\n";//записывем в текстовый файл результаты расчёта
-		
 		cc1->cd(5);//переходим к Pad5
 		TGraph* gr=new TGraph();//"h1","Calculated shell scheme;1 ;E, keV",10,0,1);
 		gr->SetTitle("Calculated shell scheme;  ;E, keV");
@@ -374,7 +372,7 @@ void SetOfNormalisedExpCouples::PrintCalculationResult(string OutputFileName, st
 void SetOfNormalisedExpCouples::PrintFitCalculationResult(string OutputFileName, string output_dir) {//функция записывает результаты нормировки в выходные файлы .txt и .pdf
 //на вход подаётся вектор пар экспериментов (вектор объектов CoupleOfExperiments)
 	//и название выходных файлов .pdf .txt OutputFileName
-	cout<<"void PrintFitCalculationResult has started!"<<endl;
+	cout<<"void SetOfNormalisedExpCouples::PrintFitCalculationResult has started!"<<endl;
 	OutputFileName=string(output_dir)+"/"+OutputFileName;
 	cout<<"void PrintFitCalculationResult will save results in "<<OutputFileName<<endl;
 	ofstream OutputTextFile((OutputFileName+".txt").c_str());//создаём .txt файл с выходными данными
@@ -453,8 +451,8 @@ void SetOfNormalisedExpCouples::ArrangeByPenalty() {
 	//до тех пор, пока они не будут отранжированы по возрастанию функции ошибок
 	//функция сортирует пары экспериментов в поданном векторе по убыванию соответсвующей штрафной функции
 	//двойной перебор нужен чтобы сравнить каждый элемент вектора с каждым, происходит сортировка по значению штрафной функции
-	for(unsigned int i=0;i<data.size();i++)//для каждого элемента i массива
-	{
+	cout<<"void SetOfNormalisedExpCouples::ArrangeByPenalty() has started!"<<endl;
+	for(unsigned int i=0;i<data.size();i++) {//для каждого элемента i массива
 		int NumberOfExcanges=0;//переменная для числа перестановок
 		for(unsigned int j=0;j<data.size()-i-1;j++)//для каждого элемента массива j, который имеет номер в векторе меньше i
 		{
@@ -473,14 +471,14 @@ void SetOfNormalisedExpCouples::ArrangeByPenalty() {
 	}
 }//конец void ArrangeByPenalty
 void SetOfNormalisedExpCouples::InduceNormalisation() {
-	for(unsigned int i=0;i<data.size();i++)//для каждой пары срыв-подхват в векторе CE
-	{	
+	cout<<"void SetOfNormalisedExpCouples::InduceNormalisation() has started!"<<endl;
+	for(unsigned int i=0;i<data.size();i++) {//для каждой пары срыв-подхват в векторе CE
 		data[i].InduceNormalisation();
 	}
 }
 void SetOfNormalisedExpCouples::ReCalcSPE_and_OCC() {
-	for(unsigned int i=0;i<data.size();i++)//для каждой пары срыв-подхват в векторе CE
-	{	
+	cout<<"void SetOfNormalisedExpCouples::ReCalcSPE_and_OCC() has started!"<<endl;
+	for(unsigned int i=0;i<data.size();i++) {//для каждой пары срыв-подхват в векторе CE
 		data[i].ReCalcSPE_and_OCC();
 	}
 }

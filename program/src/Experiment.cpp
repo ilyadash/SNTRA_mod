@@ -1,8 +1,8 @@
 #include "Experiment.h"
 template <typename T>// объявление параметра шаблона функции
 
-string TurnFlagInString(T flag_ch, string opt="CouplesFlag")//функция просто переводит значение флага из unsigned char в string
-{ //all - использовать все//pickup - только из pickup//stripping - только из stripping//no - использовать только те состояния, которые есть и в pickup,и в stripping
+string TurnFlagInString(T flag_ch, string opt="CouplesFlag") {//функция просто переводит значение флага из unsigned char в string
+	//all - использовать все//pickup - только из pickup//stripping - только из stripping//no - использовать только те состояния, которые есть и в pickup,и в stripping
 	vector<string> results={""};
 	if (opt=="CouplesFlag") results = {"","all","pickup","stripping","no"};
 	if (opt=="PenaltyFunction") results = {"","a_ij","NPickupMax","NStrippingMax","EF_err","Delta_err"};
@@ -20,8 +20,7 @@ string TurnFlagInString(T flag_ch, string opt="CouplesFlag")//функция п�
 	}
 }
 
-void SetTGraphLimits(TGraph &gr,float xmin,float xmax,float ymin, float ymax)
-{
+void SetTGraphLimits(TGraph &gr,float xmin,float xmax,float ymin, float ymax) {
 	gr.Draw("AP");
 	gr.GetXaxis()->SetLimits(xmin*0.8,xmax*1.2);
 	gr.SetMinimum(ymin*0.8);
@@ -29,8 +28,7 @@ void SetTGraphLimits(TGraph &gr,float xmin,float xmax,float ymin, float ymax)
 	gr.SetMarkerStyle(8);
 }
 
-void SpectroscopicFactorHistogram::PrintSpectroscopicFactorHistogram()
-{
+void SpectroscopicFactorHistogram::PrintSpectroscopicFactorHistogram() {
 	Legend=new TLegend(0.7,0.7,0.9,0.9);
 	for(unsigned int j=0;j<Histograms.size();j++)
 	{
@@ -51,8 +49,7 @@ void SpectroscopicFactorHistogram::PrintSpectroscopicFactorHistogram()
 	}
 }
 
-parameters::parameters()
-{
+parameters::parameters() {
 	cout<<"parameters::parameters has started!"<<"\n";
 	IncompleteCouplesFlag=1;//all=1, pickup only=2, stripping only=3, no=4//флаг использования пар экпериментов разных типов для расчёта
 	LimitedSubShellsUsedInDrawing=0;//флаг отрисовки только выбранных пользователем в параметрах подоболочек
@@ -63,8 +60,7 @@ parameters::parameters()
 	UsedPenaltyFunctionComponents={1,2,3,4,5};
 }
 
-void parameters::ReadParameters(string filename)
-{
+void parameters::ReadParameters(string filename) {
 	cout<<"parameters::ReadParameters has for"<<filename<<" file!"<<"\n";
 	ifstream ifs(filename.c_str());
 	string line;//переменная считываемой строки
@@ -213,8 +209,7 @@ void parameters::ReadParameters(string filename)
 	}
 }
 
-void parameters::Cout()//метод выводит в терминал считанные в класс параметры расчёта
-{
+void parameters::Cout() {//метод выводит в терминал считанные в класс параметры расчёта
 	cout<<"parameters::CoutParameters() has started!"<<"\n";
 	cout<<"IncompleteCouplesFlag="<<(int)IncompleteCouplesFlag<<"\n";
 	cout<<"LimitedSubShellsUsedInDrawing="<<LimitedSubShellsUsedInDrawing<<"\n";
@@ -250,8 +245,7 @@ void parameters::Cout()//метод выводит в терминал счит�
 	}
 }
 
-bool parameters::CheckStateParameters(StateParameters &s)
-{
+bool parameters::CheckStateParameters(StateParameters &s) {
 	if((IncompleteCouplesFlag==1)&&(s.couple_flag==1||s.couple_flag==2||s.couple_flag==3))
 	{
 		return true;
@@ -274,8 +268,7 @@ bool parameters::CheckStateParameters(StateParameters &s)
 	}
 }
 
-bool parameters::CheckBelonging(StateParameters &s, vector<StateParameters> &v)
-{
+bool parameters::CheckBelonging(StateParameters &s, vector<StateParameters> &v) {
 	for(unsigned int i=0;i<v.size();i++)
 	{
 		if(v[i].CompareQN(s))
@@ -286,8 +279,7 @@ bool parameters::CheckBelonging(StateParameters &s, vector<StateParameters> &v)
 	return false;
 }
 
-void parameters::PrintUsedSubShells()
-{
+void parameters::PrintUsedSubShells() {
 	stringstream s;
 	for(unsigned int i=0;i<SubShellsUsedForOccupancyFit.size();i++)
 	{
@@ -295,8 +287,7 @@ void parameters::PrintUsedSubShells()
 	}
 }
 
-string parameters::GetComponentName(unsigned int iterator)
-{
+string parameters::GetComponentName(unsigned int iterator) {
 	if(iterator<UsedPenaltyFunctionComponents.size())
 	{
 		if(UsedPenaltyFunctionComponents[iterator]==1)
@@ -323,8 +314,7 @@ string parameters::GetComponentName(unsigned int iterator)
 	return "unknown";
 }
 
-int Experiment::GetColor(int L, float JP)
-{
+int Experiment::GetColor(int L, float JP) {
 	if(L==2)
 	{
 		if(abs(JP)==2.5)
@@ -377,13 +367,11 @@ int Experiment::GetColor(int L, float JP)
 	return kBlack;
 }
 
-Experiment::Experiment()
-{
+Experiment::Experiment() {
 	E_iterator=0; n_iterator=1; L_iterator=2; JP_iterator=3; SF_iterator=4;
 }
 
-string Experiment::GetType()
-{
+string Experiment::GetType() {
 	if(type==1)
 	{
 		return "stripping";
@@ -396,8 +384,8 @@ string Experiment::GetType()
 	return "error";
 }
 
-void Experiment::ReadInputFile(string filename)//просто чтение текстового файла с данными. 
-{//Сначала поиск ключевых слов, если их нет, то попытка считать строку как состояние, наблюдаемое в эксперименте
+void Experiment::ReadInputFile(string filename) {//просто чтение текстового файла с данными. 
+//Сначала поиск ключевых слов, если их нет, то попытка считать строку как состояние, наблюдаемое в эксперименте
 	ifstream ifs(filename.c_str());
 	string line;
 	while(getline(ifs,line))
@@ -487,12 +475,10 @@ void Experiment::ReadInputFile(string filename)//просто чтение те�
 					States[States.size()-1].JP0=JP0;
 				}					
 			}
-			else
-			{
+			else {
 				int iterator=0;
 				stringstream str_stream(line);
-				while(str_stream)
-				{
+				while(str_stream) {
 					string tmp_string;
 					str_stream>>tmp_string;
 					if(tmp_string=="E")
@@ -526,68 +512,64 @@ void Experiment::ReadInputFile(string filename)//просто чтение те�
 	}
 }
 
-void Experiment::ProcessExperimentalData()//надо будет добавить перебор n и j
-{
+void Experiment::ProcessExperimentalData() {//надо будет добавить перебор n и j
+
 	SSD.Calculate(States);
 }	
 
-double Experiment::GetCentroid(int n,int l,double JP_inp)//Возвращает центроид для данных JP
-{
+double Experiment::GetCentroid(int n,int l,double JP_inp) {//Возвращает центроид для данных JP
+
 	return SSD.GetState(n,l,JP_inp).C;
 }
 
-double Experiment::GetSumSF(int n,int l,double JP_inp)//Возвращает сумму СФ для данных JP
-{
+double Experiment::GetSumSF(int n,int l,double JP_inp) {//Возвращает сумму СФ для данных JP
+
 	return SSD.GetState(n,l,JP_inp).SumG;
 }
 
-double Experiment::GetSumSF(StateParameters &s)
-{
+double Experiment::GetSumSF(StateParameters &s) {
 	// if (SSD.GetState(s.n,s.l,s.JP).SumG<0.1) cout<<"Error Experiment::GetSumSF() SumG is less than 0.1!"<<endl;
 	return SSD.GetState(s.n,s.l,s.JP).SumG;
 }
 
-double Experiment::GetErSumSF(int n,int l,double JP_inp)//Возвращает ошибку суммы СФ для данных n,l,JP
-{
+double Experiment::GetErSumSF(int n,int l,double JP_inp) {//Возвращает ошибку суммы СФ для данных n,l,JP
+
 	return SSD.GetState(n,l,JP_inp).er_SumG;
 }
 
-double Experiment::GetErSumSF(StateParameters &s)
-{
+double Experiment::GetErSumSF(StateParameters &s) {
+
 	return SSD.GetState(s.n,s.l,s.JP).er_SumG;
 }
 
-double Experiment::GetCentroid(StateParameters &s)
-{
+double Experiment::GetCentroid(StateParameters &s) {
+
 	return SSD.GetState(s.n,s.l,s.JP).C;
 }
 
-int Experiment::GetNCalculatedLevels()//возвращает число уровней, для которых вычислены центроиды
-{
+int Experiment::GetNCalculatedLevels() {//возвращает число уровней, для которых вычислены центроиды
+
 	return SSD.size();
 }
 
-int Experiment::size()//возвращает число состояний, зарегистрированных в эксперименте
-{
+int Experiment::size() {//возвращает число состояний, зарегистрированных в эксперименте
+
 	return States.size();
 }
 
-SummarizedSpectroscopicState&  Experiment::operator [] (int index)
-{
-	if(index<SSD.States.size())
-	{
+SummarizedSpectroscopicState&  Experiment::operator [] (int index) {
+	if(index<SSD.States.size()) {
 		return SSD.States[index];
 	}
-	else
-	{
+	else {
 		cout<<reference<<" SummarizedSpectroscopicState index error: index="<<index<<" States.size()="<<SSD.States.size()<<"\n";
 		SummarizedSpectroscopicState s1;
 		return s1;
 	}
 }
 
-SpectroscopicFactorHistogram Experiment::BuildSpectroscopicFactorHistogram(double norma=1)//метод для заполнения гистограммы нормированными данными экперимента
-{	//возвращает объект класса SpectroscopicFactorHistogram с данными нормированного (*norma) объекта класса Experiment для дальнейшего построения
+SpectroscopicFactorHistogram Experiment::BuildSpectroscopicFactorHistogram(double norma=1) {//метод для заполнения гистограммы нормированными данными экперимента
+	//возвращает объект класса SpectroscopicFactorHistogram с данными нормированного (*norma) объекта класса Experiment для дальнейшего построения
 	SpectroscopicFactorHistogram SFHistograms;//создаём пустую гистограмму, которую будем заполнять данными
 	if (norma<0)
 	{
@@ -632,8 +614,7 @@ SpectroscopicFactorHistogram Experiment::BuildSpectroscopicFactorHistogram(doubl
 	return SFHistograms;//возвращает результирующую гистограмму
 }//конец метода BuildSpectroscopicFactorHistogram()
 
-vector<Experiment> SplitExperiment(Experiment &BExperiment)
-{
+vector<Experiment> SplitExperiment(Experiment &BExperiment) {
 	vector<Experiment> result;
 	int version_iterator=0;
 	for(unsigned i1=0;i1<BExperiment.IndexesOfMultipleStates.size();i1++)
@@ -677,8 +658,7 @@ vector<Experiment> SplitExperiment(Experiment &BExperiment)
 	return result;	
 }
 
-void SplitExperiments(vector<Experiment> &Experiments)
-{
+void SplitExperiments(vector<Experiment> &Experiments) {
 	int size=Experiments.size();
 	for(unsigned int i=0;i<size;i++)
 	{

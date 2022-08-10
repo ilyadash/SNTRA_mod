@@ -111,19 +111,18 @@ void CoupleOfExperiments::GenerateCommonNJPList()
 	cout<<"CoupleOfExperiments::GenerateCommonNJPList() has ended!"<<endl;
 }
 
-void CoupleOfExperiments::CalcSPE_and_OCC()//функция рассчитывает одночастичную энергию, 
-{//формирует графики для отрисовки и т.д.
+void CoupleOfExperiments::CalcSPE_and_OCC() {//функция рассчитывает одночастичную энергию, 
+//формирует графики для отрисовки и т.д.
 	cout<<"CoupleOfExperiments::CalcSPE_and_OCC has started!"<<endl;
 	GenerateCommonNJPList();//
 	vector<double> OccupanciesForBCSFit;//отдельные векторы заселенностей для аппроксимации БКШ
 	vector<double> EnergiesForBCSFit;
-	for(int i=0;i<SP.size();i++)
-	{
+	for(int i=0;i<SP.size();i++) {
 		double C_pickup=Pickup.GetCentroid(SP[i]);
 		double C_stripping=Stripping.GetCentroid(SP[i]);	
 		cout<<NLJToString(SP[i].n,SP[i].l,SP[i].JP)<<"C_pickup="<<C_pickup<<" C_stripping="<<C_stripping<<"\n"; 
-		if((C_stripping!=-1)&&(C_pickup!=-1)&&(!isnan(C_stripping))&&(!isnan(C_pickup)))//индусский fix, потом проверить, что генерирует nan
-		{
+		if((C_stripping!=-1)&&(C_pickup!=-1)&&(!isnan(C_stripping))&&(!isnan(C_pickup))) {	
+			//индусский fix, потом проверить, что генерирует nan
 			double E_pickup=-Pickup.BA-C_pickup;//Диплом Марковой М.Л., ф-ла 4
 			double E_stripping=-Stripping.BA1+C_stripping;//Диплом Марковой М.Л., ф-ла 5
 			cout<<NLJToString(SP[i].n,SP[i].l,SP[i].JP)<<"E_pickup="<<E_pickup<<" E_stripping="<<E_stripping<<"\n"; 
@@ -135,14 +134,12 @@ void CoupleOfExperiments::CalcSPE_and_OCC()//функция рассчитыва
 			OCC.push_back(OCC_tmp);//Диплом Марковой М.Л., ф-ла 18
 			ParticlesAndHolesSum.push_back((Pickup.GetSumSF(SP[i])+Stripping.GetSumSF(SP[i]))/(2*abs(SP[i].JP)+1));
 			SP_centroids.push_back(SP[i]);
-			if(par.CheckBelonging(SP[i],par.SubShellsUsedForOccupancyFit))
-			{
+			if(par.CheckBelonging(SP[i],par.SubShellsUsedForOccupancyFit)) {
 				OccupanciesForBCSFit.push_back(OCC_tmp);//отдельные векторы заселенностей для аппроксимации БКШ
 				EnergiesForBCSFit.push_back(SPE_tmp);
 			}
 		}
-		else
-		{
+		else {
 			cout<<"C_stripping or C_pickup is incorrect (not NaN or -1!?)! Add SPE = 0 and OCC = 0!\n"; 
 			SPE.push_back(0);
 			OCC.push_back(0);
@@ -153,47 +150,33 @@ void CoupleOfExperiments::CalcSPE_and_OCC()//функция рассчитыва
 	BCS.SetParameter(0,-8000);
 	BCS.SetParameter(1,15000);
 	float min_E,max_E,min_OCC,max_OCC;
-	for(unsigned int i=0;i<OCC.size();i++)
-	{
+	for(unsigned int i=0;i<OCC.size();i++) {
 		//cout<<"SP_centroids["<<i<<"]==";
 		//SP_centroids[i].Cout();
 		//cout<<"SP_centroids["<<i<<"].GetType()=="<<SP_centroids[i].GetType()<<endl;
 		//cout<<"SP_centroids["<<i<<"].GetToBeDrawnFlag()=="<<SP_centroids[i].GetToBeDrawnFlag()<<endl;
-		if(SP_centroids[i].GetType()=="pickup")
-		{
-			if (SP_centroids[i].GetToBeDrawnFlag()) 
-			{
+		if (SP_centroids[i].GetToBeDrawnFlag()) {
+			if(SP_centroids[i].GetType()=="pickup") {
+				cout<<"Pickup_occupancies.SetPoint( worked! "<<endl;
 				Pickup_occupancies.SetPoint(Pickup_occupancies.GetN(),SPE[i],OCC[i]);
 			}
-		}
-		else if(SP_centroids[i].GetType()=="stripping")
-		{
-			if (SP_centroids[i].GetToBeDrawnFlag()) 
-			{
+			else if(SP_centroids[i].GetType()=="stripping") {
 				Stripping_occupancies.SetPoint(Stripping_occupancies.GetN(),SPE[i],OCC[i]);
 			}
+			else if(SP_centroids[i].GetType()=="both") {
+				Both_occupancies.SetPoint(Both_occupancies.GetN(),SPE[i],OCC[i]);	
+			}
 		}
-		else if(SP_centroids[i].GetType()=="both")
-		{
-			if (SP_centroids[i].GetToBeDrawnFlag()) 
-			{
-				Both_occupancies.SetPoint(Both_occupancies.GetN(),SPE[i],OCC[i]);
-			}	
-		}
-		if(min_E>SPE[i])
-		{
+		if(min_E>SPE[i]) {
 			min_E=SPE[i];
 		}
-		if(max_E<SPE[i])
-		{
+		if(max_E<SPE[i]) {
 			max_E=SPE[i];
 		}
-		if(min_OCC>OCC[i])
-		{
+		if(min_OCC>OCC[i]) {
 			min_OCC=OCC[i];
 		}
-		if(max_OCC<OCC[i])
-		{
+		if(max_OCC<OCC[i]) {
 			max_OCC=OCC[i];
 		}
 	}
@@ -229,8 +212,7 @@ void CoupleOfExperiments::CalcSPE_and_OCC()//функция рассчитыва
 	cout<<"CoupleOfExperiments::CalcSPE_and_OCC has ended!"<<endl;
 }
 
-void CoupleOfExperiments::ClearCalcResults()
-{
+void CoupleOfExperiments::ClearCalcResults() {
 	cout<<"CoupleOfExperiments::ClearCalcResults() has started!"<<endl;
 	//очищаем аттрибуты объекта - вектора вычисленных величин:
 	//SP.resize(0);
@@ -258,8 +240,7 @@ void CoupleOfExperiments::ClearCalcResults()
 	cout<<"CoupleOfExperiments::ClearCalcResults() has ended!"<<endl;
 }
 
-string CoupleOfExperiments::ResultsInTextForm(char verbose_level)
-{
+string CoupleOfExperiments::ResultsInTextForm(char verbose_level) {
 	stringstream s;
 	if(verbose_level==0)
 	{
@@ -301,14 +282,13 @@ void CoupleOfExperiments::DrawResultsInTextForm(string str)
 }
 
 NormalisedCoupleOfExperiments::NormalisedCoupleOfExperiments(Experiment &InpPickup, Experiment &InpStripping)
-:CoupleOfExperiments(InpPickup, InpStripping)//уточняем,какой конструктор родительского класса нужно вызывать при использовании этого конструктора
-{
+:CoupleOfExperiments(InpPickup, InpStripping) {
+	//уточняем,какой конструктор родительского класса нужно вызывать при использовании этого конструктора
 	//Pickup=InpPickup;
 	//Stripping=InpStripping;
 }
 
-void NormalisedCoupleOfExperiments::InduceNormalisation()
-{
+void NormalisedCoupleOfExperiments::InduceNormalisation() {
 	cout<<"NormalisedCoupleOfExperiments::InduceNormalisation() has started!"<<endl;
 	NormalisationWasTried=1;
 	///подготовительная работа для реализации фитирования закончена, теперь фитируем:
@@ -433,8 +413,7 @@ void NormalisedCoupleOfExperiments::InduceNormalisation()
 	cout << "SP.size() = "<<SP.size()<<endl;
 }
 
-void NormalisedCoupleOfExperiments::ReCalcSPE_and_OCC()
-{
+void NormalisedCoupleOfExperiments::ReCalcSPE_and_OCC() {
 	cout<<"NormalisedCoupleOfExperiments::ReCalcSPE_and_OCC has started!"<<endl;
 	//GenerateCommonNJPList();///эта штука удваивает вектор SP, записывая те же самые состояния
 	vector<double> OccupanciesForBCSFit;//отдельные векторы заселенностей для аппроксимации БКШ
@@ -481,6 +460,7 @@ void NormalisedCoupleOfExperiments::ReCalcSPE_and_OCC()
 	{
 		if(SP_centroids[i].GetType()=="pickup")
 		{
+			cout<<"Pickup_occupancies.SetPoint( worked! "<<endl;
 			Pickup_occupancies.SetPoint(Pickup_occupancies.GetN(),SPE[i],OCC[i]);
 		}
 		else if(SP_centroids[i].GetType()=="stripping")
