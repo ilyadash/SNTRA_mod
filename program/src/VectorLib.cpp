@@ -69,26 +69,25 @@ int SearchJP(vector<double> J,vector<int> P, double J_val, int P_val)//Функ�
 	return 0;
 }
 
-double Average(vector<double> &v, int NElements=0)
-{
+double Sum(vector<double> &v, unsigned int NElements=0) {
 	double result=0;
 	unsigned int NumberOfAnalysedElements=0;
-	if(NElements>0)
-	{
+	if(NElements>0){
 		NumberOfAnalysedElements=NElements;
 	}
-	else
-	{
+	else{
 		NumberOfAnalysedElements=v.size();
 	}
-	if(NumberOfAnalysedElements==0)
-	{
+	if(NumberOfAnalysedElements==0){
 		return 0;
 	}
-	for(unsigned int i=0;i<NumberOfAnalysedElements;i++)
-	{
+	for(unsigned int i=0;i<NumberOfAnalysedElements;i++){
 		result+=v[i];
 	}
-	return result/NumberOfAnalysedElements;
-	
+	return result;	
+}
+
+double Average(vector<double> &v, unsigned int NElements=0){
+	if(NElements>0) return Sum(v, NElements)/NElements;
+	else return Sum(v, 0)/v.size();
 }

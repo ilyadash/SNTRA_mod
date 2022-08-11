@@ -6,8 +6,7 @@
 #include <fstream>
 #include <cmath>
 
-double PrimitiveShellModelOccupancy(int Z, int A, int n, int l, float j, char Particle)
-{
+double PrimitiveShellModelOccupancy(int Z, int A, int n, int l, float j, char Particle) {
 	//подоболочки в ОМО с спин-орбитальным расщеплением:
 	//1s1/2 - 1p3/2 - 1p1/2
 	//1d5/2 - 2s1/2 - 1d3/2

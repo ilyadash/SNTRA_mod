@@ -4,8 +4,7 @@
 
 using namespace std;
 
-string InvertString(string line)
-{
+string InvertString(string line) {
 	string line2;
 	stringstream s;
 	for(unsigned int i=0;i<line.size();i++)

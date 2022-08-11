@@ -2,10 +2,8 @@
 #define G_CUT 0.8 //значение для ???
 using namespace std;
 
-class CoupleOfExperiments
-{//класс пары комплиментарных экспермиентов срыва-подхвата
+class CoupleOfExperiments {//класс пары комплиментарных экспермиентов срыва-подхвата
 	public:
-	
 	Experiment Pickup;//эксперимент подхвата
 	Experiment Stripping;//эксперимент срыва
 	parameters par;//считанные пользовательские параметры
@@ -14,6 +12,8 @@ class CoupleOfExperiments
 	vector<double> SPE;//одночастичные энергии
 	vector<double> OCC;//квадраты заселенностей
 	vector<double> ParticlesAndHolesSum;//
+	vector<double> Particles;//
+	vector<double> Holes;//
 	vector<double> PenaltyComponents;//
 	int Pickup_size;//
 	int Stripping_size;//

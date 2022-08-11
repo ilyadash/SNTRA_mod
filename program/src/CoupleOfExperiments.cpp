@@ -11,8 +11,8 @@ TH1F CoupleOfExperiments::BuildPenaltyComponentsHistogram() {
 	return result;
 }
 
-CoupleOfExperiments::CoupleOfExperiments(Experiment &InpPickup,Experiment &InpStripping)//конструктор, аргументы которого представляют из себя эксперименты по подхвату и срыву
-{
+CoupleOfExperiments::CoupleOfExperiments(Experiment &InpPickup,Experiment &InpStripping){
+	//конструктор, аргументы которого представляют из себя эксперименты по подхвату и срыву
 	Pickup=InpPickup;
 	Stripping=InpStripping;
 }
@@ -131,6 +131,8 @@ void CoupleOfExperiments::CalcSPE_and_OCC() {//функция рассчитыв
 			SPE.push_back(SPE_tmp);//Диплом Марковой М.Л., ф-ла 17
 			OCC.push_back(OCC_tmp);//Диплом Марковой М.Л., ф-ла 18
 			ParticlesAndHolesSum.push_back((Pickup.GetSumSF(SP[i])+Stripping.GetSumSF(SP[i]))/(2*abs(SP[i].JP)+1));
+			Particles.push_back(Pickup.GetSumSF(SP[i]));
+			Holes.push_back(Stripping.GetSumSF(SP[i]));
 			SP_centroids.push_back(SP[i]);
 			if(par.CheckBelonging(SP[i],par.SubShellsUsedForOccupancyFit)) {
 				OccupanciesForBCSFit.push_back(OCC_tmp);//отдельные векторы заселенностей для аппроксимации БКШ

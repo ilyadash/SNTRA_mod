@@ -57,7 +57,7 @@ parameters::parameters() {
 	SubShellsUsedForOccupancyFit=AllPrimitiveSubShells;// подоболочки, которые используются в фите БКШ
 	SubShellsUsedInDrawing=AllPrimitiveSubShells;//подоболочки, которые должны отрисовываться на холсте (в энергетическом спектре, в фите БКШ)
 	SubShellsUsedForNormalisation=VectorConvertTStringToStateParameters({"2s1/2","1d5/2","1d3/2"});//подоболочки, для которых выписываются и решаются уравнения, нужные для нахождения нормировочных коэффициентов
-	UsedPenaltyFunctionComponents={1,2,3,4,5};
+	UsedPenaltyFunctionComponents={1,2,3,4,5,6,7};
 }
 void parameters::ReadParameters(string filename) {
 	cout<<"parameters::ReadParameters has for"<<filename<<" file!"<<"\n";
@@ -71,98 +71,81 @@ void parameters::ReadParameters(string filename) {
 		//cout<<"after line = "<<line<<endl;
 		stringstream s(line);
 		TString tmp;
+		unsigned int buf_int;
 		s>>tmp;
-		//cout<<"tmp = "<<tmp<<endl;
-		if(tmp=="UseIncompleteCouples:")//чтение критерия отбора пар экспериментов по полноте
-		{
+		if(tmp=="UseIncompleteCouples:"){//чтение критерия отбора пар экспериментов по полноте
 			s>>tmp;
-			if(tmp=="all")
-			{
+			if(tmp=="all"){
 				IncompleteCouplesFlag=1;
 			}
-			else if(tmp=="pickup")
-			{
+			else if(tmp=="pickup"){
 				IncompleteCouplesFlag=2;
 			}
-			else if(tmp=="stripping")
-			{
+			else if(tmp=="stripping"){
 				IncompleteCouplesFlag=3;
 			}
-			else if(tmp=="no")
-			{
+			else if(tmp=="no"){
 				IncompleteCouplesFlag=4;
 			}
 		}
-		else if(tmp=="UsedPenaltyFunctionComponents:")//чтение параметра компонент штрафной функции
-		{
+		else if(tmp=="UsedPenaltyFunctionComponents:"){//чтение параметра компонент штрафной функции
 			UsedPenaltyFunctionComponents.resize(0);
 			string tmp2;
-			while(s)
-			{
+			while(s){
 				tmp2.resize(0);
 				s>>tmp2;
 				cout<<"Found component "<<tmp2<<" of penalty function."<<endl;
-				if(tmp2=="a_ij")
-				{
+				if(tmp2=="a_ij"){
 					UsedPenaltyFunctionComponents.push_back(1);
 				}
-				if(tmp2=="NPickupMax")
-				{
+				if(tmp2=="NPickupMax"){
 					UsedPenaltyFunctionComponents.push_back(2);
 				}
-				if(tmp2=="NStrippingMax")
-				{
+				if(tmp2=="NStrippingMax"){
 					UsedPenaltyFunctionComponents.push_back(3);
 				}
-				if(tmp2=="EF_err")
-				{
+				if(tmp2=="EF_err"){
 					UsedPenaltyFunctionComponents.push_back(4);
 				}
-				if(tmp2=="Delta_err")
-				{
+				if(tmp2=="Delta_err"){
 					UsedPenaltyFunctionComponents.push_back(5);
 				}
-				if(tmp2=="NumberOfParticlesInUsedShell")
-				{
+				if(tmp2=="ParticlesInShell"){
 					UsedPenaltyFunctionComponents.push_back(6);
 				}
+				if(tmp2=="HolesInShell"){
+					UsedPenaltyFunctionComponents.push_back(7);
+				}
 			}
-			for(unsigned int i=0;i<UsedPenaltyFunctionComponents.size();i++)
-			{
+			for(unsigned int i=0;i<UsedPenaltyFunctionComponents.size();i++) {
 				cout<<"Component of penalty function no."<<int(UsedPenaltyFunctionComponents[i])<<" will be used."<<endl;
 			}
 		}
-		else if(tmp=="SubShellsUsedForOccupancyFit:")//чтение параметра подоболочек, используемых в фите БКШ
-		{
+		else if(tmp=="SubShellsUsedForOccupancyFit:") {//чтение параметра подоболочек, используемых в фите БКШ
 			SubShellsUsedForOccupancyFit.resize(0);
 			string tmp2;
-			while(s)
-			{
+			while(s) {
 				s>>tmp2;
 				int n,l;
 				float JP;
 				//cout<<"tmp2 = "<<tmp2<<endl;
-				if(StringToNLJ(tmp2,n,l,JP))
-				{
+				if(StringToNLJ(tmp2,n,l,JP)) {
 					StateParameters sp(n,l,JP,"both");
-					if(CheckBelonging(sp,this->SubShellsUsedForOccupancyFit)==0)
-					{
+					if(CheckBelonging(sp,this->SubShellsUsedForOccupancyFit)==0){
 						SubShellsUsedForOccupancyFit.push_back(sp);
 					}
 				}
 			}
-			for(unsigned int i=0;i<SubShellsUsedForOccupancyFit.size();i++)
-			{
+			for(unsigned int i=0;i<SubShellsUsedForOccupancyFit.size();i++){
 				cout<<SubShellsUsedForOccupancyFit[i].GetNLJ()<<" will be used in BCS fit."<<endl;
 			}
 		}
-		else if(tmp=="SubShellsUsedInDrawing:")//чтение параметра подоболочек, используемых в отрисовке на холсте
-		{
+		else if(tmp=="SubShellsUsedInDrawing:"){
+			//чтение параметра подоболочек, используемых в отрисовке на холсте
 			SubShellsUsedInDrawing.resize(0);
 			LimitedSubShellsUsedInDrawing=1;
 			string tmp2;
-			while(s)
-			{
+			while(s){
 				s>>tmp2;
 				int n,l;
 				float JP;
@@ -181,29 +164,31 @@ void parameters::ReadParameters(string filename) {
 				cout<<SubShellsUsedInDrawing[i].GetNLJ()<<" will be drawn in pdf files."<<endl;
 			}
 		}
-		else if(tmp=="SubShellsUsedForNormalisation:")//чтение параметра подоболочек, используемых в отрисовке на холсте
-		{
+		else if(tmp=="SubShellsUsedForNormalisation:"){
+			//чтение параметра подоболочек, используемых в отрисовке на холсте
 			SubShellsUsedForNormalisation.resize(0);
 			string tmp2;
-			while(s)
-			{
+			while(s){
 				s>>tmp2;
 				int n,l;
 				float JP;
 				//cout<<"tmp2 = "<<tmp2<<endl;
-				if(StringToNLJ(tmp2,n,l,JP))
-				{
+				if(StringToNLJ(tmp2,n,l,JP)){
 					StateParameters sp(n,l,JP,"both");
-					if(CheckBelonging(sp,this->SubShellsUsedForNormalisation)==0)
-					{
+					if(CheckBelonging(sp,this->SubShellsUsedForNormalisation)==0){
 						SubShellsUsedForNormalisation.push_back(sp);
 					}
 				}
 			}
-			for(unsigned int i=0;i<SubShellsUsedForNormalisation.size();i++)
-			{
+			for(unsigned int i=0;i<SubShellsUsedForNormalisation.size();i++){
 				cout<<SubShellsUsedForNormalisation[i].GetNLJ()<<" will be used in normalisation procedure."<<endl;
 			}
+		}
+		else if(tmp=="NParticles:"){
+			s>>NParticlesInShell;
+		}
+		else if(tmp=="NHoles:"){
+			s>>NHolesInShell;
 		}
 	}
 }
@@ -282,27 +267,27 @@ void parameters::PrintUsedSubShells() {
 	}
 }
 string parameters::GetComponentName(unsigned int iterator) {
-	if(iterator<UsedPenaltyFunctionComponents.size())
-	{
-		if(UsedPenaltyFunctionComponents[iterator]==1)
-		{
-			return "a_ij";
+	if(iterator<UsedPenaltyFunctionComponents.size()){
+		if(UsedPenaltyFunctionComponents[iterator]==1){
+			return "a_{ij}";
 		}
-		if(UsedPenaltyFunctionComponents[iterator]==2)
-		{
+		if(UsedPenaltyFunctionComponents[iterator]==2){
 			return "NPickupMax";
 		}
-		if(UsedPenaltyFunctionComponents[iterator]==3)
-		{
+		if(UsedPenaltyFunctionComponents[iterator]==3){
 			return "NStrippingMax";
 		}
-		if(UsedPenaltyFunctionComponents[iterator]==4)
-		{
-			return "EF_err";
+		if(UsedPenaltyFunctionComponents[iterator]==4){
+			return "E_{F}^{err}";
 		}
-		if(UsedPenaltyFunctionComponents[iterator]==5)
-		{
-			return "Delta_err";
+		if(UsedPenaltyFunctionComponents[iterator]==5){
+			return "#Delta^{err}";
+		}
+		if(UsedPenaltyFunctionComponents[iterator]==6){
+			return "Part.";
+		}
+		if(UsedPenaltyFunctionComponents[iterator]==7){
+			return "Holes";
 		}
 	}
 	return "unknown";

@@ -33,6 +33,8 @@ class parameters//класс пользовательских параметро
 	vector<StateParameters> SubShellsUsedInDrawing;//подоболочки, которые должны отрисовываться на холсте (в энергетическом спектре, в фите БКШ)
 	vector<StateParameters> SubShellsUsedForNormalisation;//подоболочки, для которых выписываются и решаются уравнения, нужные для нахождения нормировочных коэффициентов
 	vector<unsigned char> UsedPenaltyFunctionComponents;
+	unsigned int NParticlesInShell;
+	unsigned int NHolesInShell;
 
 	parameters();
 

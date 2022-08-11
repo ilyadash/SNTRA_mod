@@ -6,11 +6,9 @@ vector<Experiment> &Stripping, parameters &par) {
 	//функция создаёт вектор всех вариантов пар экспириментов срыв-подхват (вектор объектов CoupleOfExperiments);
 	//функции на вход подаются вектор всех экспериментов срыва и вектор всех экспериментов подхвата (их адреса?)
 	cout<<"void SetOfExpCouples::CreateCouplesOfExperiments has started!"<<endl;
-	for(unsigned int i=0;i<Pickup.size();i++)
-	{
+	for(unsigned int i=0;i<Pickup.size();i++) {
 		cout<<"Got number "<<i+1<<" pickup "<<Pickup[i].reference<<"\n";
-		for(unsigned int j=0;j<Stripping.size();j++)
-		{
+		for(unsigned int j=0;j<Stripping.size();j++) {
 			cout<<"Got number "<<j+1<<" stripping "<<Stripping[j].reference<<"\n";
 			CoupleOfExperiments CE(Pickup[i],Stripping[j]);
 			CE.par=par;
@@ -57,69 +55,64 @@ void SetOfExpCouples::CalculatePenaltyFunction() {//функция для рас
 cout<<"void SetOfExpCouples::CalculatePenaltyFunction() has started!"<<"\n";
 	float MaxEfError,MaxDeltaError;
 	int NumberOfPickupStatesMax=0, NumberOfStrippingStatesMax=0, AverageNumberOfCalculatedStates=0;
-	for(int i=0;i<data.size();i++)
-	{//определяем в этом цикле максималные ошибки, кол-ва состояний, для дальнейшей оценки каждой пары относительно максимума
-		if(MaxEfError<data[i].Ef_error)
-		{
+	for(int i=0;i<data.size();i++) {
+		//определяем в этом цикле максималные ошибки, кол-ва состояний,
+		//для дальнейшей оценки каждой пары относительно максимума
+		if(MaxEfError<data[i].Ef_error){
 			MaxEfError=data[i].Ef_error;
 		}
-		if(MaxDeltaError<data[i].Delta_error)
-		{
+		if(MaxDeltaError<data[i].Delta_error){
 			MaxDeltaError=data[i].Delta_error;
 		}
-		if(NumberOfPickupStatesMax<data[i].Pickup.size())//GetNCalculatedLevels())
-		{
+		if(NumberOfPickupStatesMax<data[i].Pickup.size()){//GetNCalculatedLevels())
 			//NumberOfPickupStatesMax=data[i].Pickup.GetNCalculatedLevels();
 			NumberOfPickupStatesMax=data[i].Pickup.size();
 		}
-		if(NumberOfStrippingStatesMax<data[i].Stripping.size())//GetNCalculatedLevels())
-		{
+		if(NumberOfStrippingStatesMax<data[i].Stripping.size()){//GetNCalculatedLevels())
 			NumberOfStrippingStatesMax=data[i].Stripping.size();//)//GetNCalculatedLevels();
 		}
 		AverageNumberOfCalculatedStates+=data[i].SPE.size();
 	}
 	if(data.size()>0)
 	AverageNumberOfCalculatedStates=round(AverageNumberOfCalculatedStates/data.size());
-	else
-	{
+	else{
 		cerr<<"	*** Error! CalculatePenaltyFunction() got empty input vector!"<<"\n";
 		return;
 	}
-	
-	for(unsigned int i=0;i<data.size();i++)
-	{
+	for(unsigned int i=0;i<data.size();i++) {
 		data[i].PenaltyComponents.resize(0);
-		for(unsigned int j=0;j<data[i].par.UsedPenaltyFunctionComponents.size();j++)
-		{
-			if(data[i].par.UsedPenaltyFunctionComponents[j]==1)
-			{
+		for(unsigned int j=0;j<data[i].par.UsedPenaltyFunctionComponents.size();j++) {
+			if(data[i].par.UsedPenaltyFunctionComponents[j]==1){//отклонение измеренного числа вакансий на подоболочах от ОМО
 				data[i].PenaltyComponents.push_back(abs(1-Average(data[i].ParticlesAndHolesSum)));
 			}
-			else if(data[i].par.UsedPenaltyFunctionComponents[j]==2)
-			{
+			else if(data[i].par.UsedPenaltyFunctionComponents[j]==2) {
 				data[i].PenaltyComponents.push_back(1-((float)data[i].Pickup.size()/NumberOfPickupStatesMax));
 			}
-			else if(data[i].par.UsedPenaltyFunctionComponents[j]==3)
-			{
+			else if(data[i].par.UsedPenaltyFunctionComponents[j]==3) {
 				data[i].PenaltyComponents.push_back(1-((float)data[i].Stripping.size()/NumberOfStrippingStatesMax));
 			}
-			else if(data[i].par.UsedPenaltyFunctionComponents[j]==4)
-			{
-				if((MaxEfError!=0)&&(MaxDeltaError!=0))
-				{
+			else if(data[i].par.UsedPenaltyFunctionComponents[j]==4) {
+				if((MaxEfError!=0)&&(MaxDeltaError!=0)){
 					data[i].PenaltyComponents.push_back(data[i].Ef_error/MaxEfError);
 				}
 			}
-			else if(data[i].par.UsedPenaltyFunctionComponents[j]==5)
-			{
-				if((MaxEfError!=0)&&(MaxDeltaError!=0))
-				{
+			else if(data[i].par.UsedPenaltyFunctionComponents[j]==5) {
+				if((MaxEfError!=0)&&(MaxDeltaError!=0)){
 					data[i].PenaltyComponents.push_back(data[i].Delta_error/MaxDeltaError);
 				}
 			}
+			else if(data[i].par.UsedPenaltyFunctionComponents[j]==6) {
+				if(data[i].par.NParticlesInShell>0){
+					data[i].PenaltyComponents.push_back(abs(1-Sum(data[i].Particles))/data[i].par.NParticlesInShell);
+				}
+			}
+			else if(data[i].par.UsedPenaltyFunctionComponents[j]==7) {
+				if(data[i].par.NHolesInShell>0){
+					data[i].PenaltyComponents.push_back(abs(1-Sum(data[i].Holes))/data[i].par.NHolesInShell);
+				}
+			}
 		}
-		for(unsigned int j=0;j<data[i].PenaltyComponents.size();j++)
-		{
+		for(unsigned int j=0;j<data[i].PenaltyComponents.size();j++){
 			data[i].penalty+=data[i].PenaltyComponents[j];
 		}
 		data[i].penalty=data[i].penalty/data[i].PenaltyComponents.size();

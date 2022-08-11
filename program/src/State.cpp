@@ -14,20 +14,16 @@ StateParameters::StateParameters(int n, int l, double JP, string couple_flag, bo
 	this->JP=JP;
 	ToBeDrawn=to_be_drawn;
 	//получим флаг принадлежности состояния эксперименат срыв и/или подхвата:
-	if(couple_flag=="pickup")
-	{
+	if(couple_flag=="pickup"){
 		this->couple_flag=1;
 	}
-	else if(couple_flag=="stripping")
-	{
+	else if(couple_flag=="stripping"){
 		this->couple_flag=2;
 	}
-	else if(couple_flag=="both")
-	{
+	else if(couple_flag=="both"){
 		this->couple_flag=3;
 	}
-	else
-	{
+	else{
 		this->couple_flag=0;//неопределённое состояние флага
 	}
 }
