@@ -112,7 +112,7 @@ cout<<"void SetOfExpCouples::CalculatePenaltyFunction() has started!"<<"\n";
 				}
 			}
 		}
-		for(unsigned int j=0;j<data[i].PenaltyComponents.size();j++){
+		for(unsigned int j=0;j<data[i].PenaltyComponents.size();j++) {
 			data[i].penalty+=data[i].PenaltyComponents[j];
 		}
 		data[i].penalty=data[i].penalty/data[i].PenaltyComponents.size();
