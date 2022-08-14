@@ -90,6 +90,6 @@ class Experiment
 	int GetNCalculatedLevels();//возвращает число уровней, для которых вычислены центроиды
 	int size();//возвращает число состояний, зарегистрированных в эксперименте
 	SummarizedSpectroscopicState& operator [] (int index);
-	SpectroscopicFactorHistogram BuildSpectroscopicFactorHistogram(double norma);
+	SpectroscopicFactorHistogram BuildSpectroscopicFactorHistogram(double norma=1);
 };
 

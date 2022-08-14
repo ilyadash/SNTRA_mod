@@ -77,7 +77,7 @@ cout<<"void SetOfExpCouples::CalculatePenaltyFunction() has started!"<<"\n";
 	}
 	if(data.size()>0)
 	AverageNumberOfCalculatedStates=round(AverageNumberOfCalculatedStates/data.size());
-	else{
+	else {
 		cerr<<"	*** Error! CalculatePenaltyFunction() got empty input vector!"<<"\n";
 		return;
 	}
@@ -134,8 +134,8 @@ void SetOfExpCouples::PrintCalculationResult(string OutputFileName, string outpu
 	ofstream OutputTextFile((OutputFileName+".txt").c_str());//создаём .txt файл с выходными данными
 	cc1->Print((OutputFileName+".pdf[").c_str(),"pdf");//создаём .pdf файл с выходными данными, который сейчас будем наполнять графиками и текстом
 	for(unsigned int i=0;i<data.size();i++) {//для каждой пары экспериментов во входном векторе v
-		SpectroscopicFactorHistogram HistPickup=data[i].Pickup.BuildSpectroscopicFactorHistogram(data[i].n_m);//создаём гистограммы нормированных спектроскопических факторов, которые будем отрисовывать на холсте
-		SpectroscopicFactorHistogram HistStrip=data[i].Stripping.BuildSpectroscopicFactorHistogram(data[i].n_p);//для срыва и подхвата, всего 2 гистограммы, итого 2 гистограммы на холсте
+		SpectroscopicFactorHistogram HistPickup=data[i].Pickup.BuildSpectroscopicFactorHistogram();//создаём гистограммы нормированных спектроскопических факторов, которые будем отрисовывать на холсте
+		SpectroscopicFactorHistogram HistStrip=data[i].Stripping.BuildSpectroscopicFactorHistogram();//для срыва и подхвата, всего 2 гистограммы, итого 2 гистограммы на холсте
 		cc1->Clear();//Delete all pad primitives
 		cc1->Divide(3,2);//разделить Pad на 3 независимые области по вертикали и на 2 по горизонтали (всего 6 областей)
 
@@ -197,12 +197,11 @@ vector<Experiment> &Stripping, parameters &par) {
 	//функция создаёт вектор всех вариантов пар экспириментов срыв-подхват (вектор объектов CoupleOfExperiments);
 	//функции на вход подаются вектор всех экспериментов срыва и вектор всех экспериментов подхвата (их адреса?)
 	cout<<"void SetOfNormalisedExpCouples::CreateNormalisedCouplesOfExperiments has started!"<<endl;
+	//SetOfExpCouples::CreateCouplesOfExperiments();
 	if (Pickup.size()==0) cerr<<"	*** Error! There are no Pickup experiments!"<<endl;
-	for(unsigned int i=0;i<Pickup.size();i++)
-	{
+	for(unsigned int i=0;i<Pickup.size();i++) {
 		cout<<"Got number "<<i+1<<" pickup "<<Pickup[i].reference<<"\n";
-		for(unsigned int j=0;j<Stripping.size();j++)
-		{
+		for(unsigned int j=0;j<Stripping.size();j++) {
 			cout<<"Got number "<<j+1<<" stripping "<<Stripping[j].reference<<"\n";
 			NormalisedCoupleOfExperiments CE(Pickup[i],Stripping[j]);
 			CE.par=par;
@@ -212,147 +211,22 @@ vector<Experiment> &Stripping, parameters &par) {
 	cout<<"data.size() = "<<data.size()<<"\n";
 	cout<<"void SetOfNormalisedExpCouples::CreateNormalisedCouplesOfExperiments has ended!"<<endl;
 }
-void SetOfNormalisedExpCouples::CalcSPE_and_OCC() {
-	cout<<"void SetOfNormalisedExpCouples::CalcSPE_and_OCC() has started!"<<"\n";
-	cout<<"data.size() = "<<data.size()<<"\n";
-	for(unsigned int i=0;i<data.size();i++) {//для каждой пары срыв-подхват в векторе CE
-		data[i].CalcSPE_and_OCC();
+void SetOfNormalisedExpCouples::UpdateCouplesOfExperiments() {
+	cout<<"SetOfNormalisedExpCouples::UpdateCouplesOfExperiments() has started!"<<endl;
+	SetOfExpCouples::data.resize(data.size());
+	for(unsigned int i=0;i<SetOfExpCouples::data.size();i++) {
+		SetOfExpCouples::data[i] = data[i];
 	}
 }
-void SetOfNormalisedExpCouples::CalculatePenaltyFunction() {//функция для расчёта штрафной функции
-cout<<"void SetOfNormalisedExpCouples::CalculatePenaltyFunction() has started!"<<"\n";
-	float MaxEfError,MaxDeltaError;
-	int NumberOfPickupStatesMax=0, NumberOfStrippingStatesMax=0, AverageNumberOfCalculatedStates=0;
-	for(int i=0;i<data.size();i++)
-	{//определяем в этом цикле максималные ошибки, кол-ва состояний, для дальнейшей оценки каждой пары относительно максимума
-		if(MaxEfError<data[i].Ef_error)
-		{
-			MaxEfError=data[i].Ef_error;
-		}
-		if(MaxDeltaError<data[i].Delta_error)
-		{
-			MaxDeltaError=data[i].Delta_error;
-		}
-		if(NumberOfPickupStatesMax<data[i].Pickup.size())//GetNCalculatedLevels())
-		{
-			//NumberOfPickupStatesMax=data[i].Pickup.GetNCalculatedLevels();
-			NumberOfPickupStatesMax=data[i].Pickup.size();
-		}
-		if(NumberOfStrippingStatesMax<data[i].Stripping.size())//GetNCalculatedLevels())
-		{
-			NumberOfStrippingStatesMax=data[i].Stripping.size();//)//GetNCalculatedLevels();
-		}
-		AverageNumberOfCalculatedStates+=data[i].SPE.size();
+void SetOfNormalisedExpCouples::UpdateNormalisedCouplesOfExperiments() {
+	cout<<"SetOfNormalisedExpCouples::UpdateNormalisedCouplesOfExperiments() has started!"<<endl;
+	data.resize(SetOfExpCouples::data.size());
+	cout<<"UpdateNormalisedCouplesOfExperiments(): data.size() = "<<data.size()<<endl;
+	for(unsigned int i=0;i<data.size();i++) {
+		cout<<"UpdateNormalisedCouplesOfExperiments(): using '=' for data["<<i<<"]"<<endl;
+		data[i] = SetOfExpCouples::data[i];
 	}
-	if(data.size()>0)
-	AverageNumberOfCalculatedStates=round(AverageNumberOfCalculatedStates/data.size());
-	else{
-		cerr<<"	*** Error! CalculatePenaltyFunction() got empty input vector!"<<"\n";
-		return;
-	};
-	
-	for(unsigned int i=0;i<data.size();i++){
-		data[i].PenaltyComponents.resize(0);
-		//cout<<"data[i].PenaltyComponents.size() = "<<data[i].PenaltyComponents.size()<<"\n";
-		//cout<<"size to be = "<<data[i].par.UsedPenaltyFunctionComponents.size()<<"\n";
-		for(unsigned int j=0;j<data[i].par.UsedPenaltyFunctionComponents.size();j++){
-			//cout<<"comp "<<(int)data[i].par.UsedPenaltyFunctionComponents[j]<<"\n";
-			if(data[i].par.UsedPenaltyFunctionComponents[j]==1) {
-				data[i].PenaltyComponents.push_back(abs(1-Average(data[i].ParticlesAndHolesSum)));
-			}
-			else if(data[i].par.UsedPenaltyFunctionComponents[j]==2) {
-				data[i].PenaltyComponents.push_back(1-((float)data[i].Pickup.size()/NumberOfPickupStatesMax));
-			}
-			else if(data[i].par.UsedPenaltyFunctionComponents[j]==3) {
-				data[i].PenaltyComponents.push_back(1-((float)data[i].Stripping.size()/NumberOfStrippingStatesMax));
-			}
-			else if(data[i].par.UsedPenaltyFunctionComponents[j]==4) {
-				if((MaxEfError!=0)&&(MaxDeltaError!=0)) {
-					data[i].PenaltyComponents.push_back(data[i].Ef_error/MaxEfError);
-				}
-			}
-			else if(data[i].par.UsedPenaltyFunctionComponents[j]==5) {
-				if((MaxEfError!=0)&&(MaxDeltaError!=0)) {
-					data[i].PenaltyComponents.push_back(data[i].Delta_error/MaxDeltaError);
-				}
-			}
-		}
-		for(unsigned int j=0;j<data[i].PenaltyComponents.size();j++) {
-			data[i].PenaltyComponents[j]=(data[i].PenaltyComponents[j]+1/data[i].PenaltyComponents.size())*
-			data[i].par.weights[j];///to do: продумать формулу для применения весов штрафной функции
-		}
-		for(unsigned int j=0;j<data[i].PenaltyComponents.size();j++) {
-			data[i].penalty+=data[i].PenaltyComponents[j];
-		}
-		//data[i].penalty=data[i].penalty/data[i].PenaltyComponents.size();
-	}
-	
-}//конец void CalculatePenaltyFunction
-void SetOfNormalisedExpCouples::PrintCalculationResult(string OutputFileName, string output_dir) {
-//на вход подаётся вектор пар экспериментов и название выходных файлов .pdf .txt OutputFileName(вектор объектов CoupleOfExperiments), функция записывает результаты нормировки в выходные файлы .txt и .pdf
-	cout<<"void SetOfNormalisedExpCouples::PrintCalculationResult has started!"<<"\n";
-	OutputFileName=string(output_dir)+"/"+OutputFileName;
-	ofstream OutputTextFile((OutputFileName+".txt").c_str());//создаём .txt файл с выходными данными
-	cc1->Print((OutputFileName+".pdf[").c_str(),"pdf");//создаём .pdf файл с выходными данными, который сейчас будем наполнять графиками и текстом
-	for(unsigned int i=0;i<data.size();i++)//для каждой пары экспериментов во входном векторе v
-	{	//cout<< "I started pdf writing for the pair!!!!\n";
-		TMultiGraph* mgr=new TMultiGraph();
-		SpectroscopicFactorHistogram HistPickup=data[i].Pickup.BuildSpectroscopicFactorHistogram(data[i].n_m);//создаём гистограммы нормированных спектроскопических факторов, которые будем отрисовывать на холсте
-		SpectroscopicFactorHistogram HistStrip=data[i].Stripping.BuildSpectroscopicFactorHistogram(data[i].n_p);//для срыва и подхвата, всего 2 гистограммы, итого 2 гистограммы на холсте
-		cc1->Clear();//Delete all pad primitives
-		cc1->Divide(3,2);//разделить Pad на 3 независимые области по вертикали и на 2 по горизонтали (всего 6 областей)
-		cc1->cd(1);//переходим к Pad1
-		HistPickup.PrintSpectroscopicFactorHistogram();//рисуем гистограмму для эксперимента подхвата
-		cc1->cd(2);//переходим к Pad2
-		data[i].occupancies.SetTitle("Occupancy with BCS fit;E, MeV;v^2");
-		//mgr->SetTitle("Occupancy;E, keV;v^{2}");
-		mgr->Add(&data[i].Pickup_occupancies);
-		mgr->Add(&data[i].Stripping_occupancies);
-		mgr->Add(&data[i].Both_occupancies);
-		mgr->Draw("ap");
-		data[i].occupancies.Draw("p same");//отрисуем заселённости, которые использовались в фите БКШ поверх остальных (выделим их крестами)
-		data[i].BCS.Draw("l same");//отрисуем кривую фита БКШ на том же Pad
-		mgr->SetTitle("Occupancy with BCS fit; E, MeV; v^{2}");
-		gPad->Modified();
-		gPad->Update();
-		cc1->cd(3);
-		data[i].BuildPenaltyComponentsHistogram();
-		data[i].DrawPenaltyComponentsHistogram("logy");
-		cc1->cd(4);//переходим к Pad4
-		//gPad->SetLogy(1);
-		HistStrip.PrintSpectroscopicFactorHistogram();//рисуем гистограмму для эксперимента срыва
-		string TextOutput=data[i].ResultsInTextForm(1);
-		stringstream s(TextOutput);
-		OutputTextFile<<TextOutput<<"\n";//записывем в текстовый файл результаты расчёта
-		cc1->cd(5);//переходим к Pad5
-		TGraph* gr=new TGraph();//"h1","Calculated shell scheme;1 ;E, keV",10,0,1);
-		gr->SetTitle("Calculated shell scheme;  ;E, MeV");
-		gr->SetPoint(0,0,0);
-		gr->SetMinimum(GetMinimum(data[i].SPE)/1000-1);
-		gr->SetMaximum(GetMaximum(data[i].SPE)/1000*1.1);
-		gr->Draw("ap");
-		for(unsigned int j=0;j<data[i].SPE.size();j++)
-		{
-			TLine line;
-			TText txt;
-			int color=data[i].SP_centroids[j].GetColor();
-			line.SetLineColor(color);
-			if(data[i].SP_centroids[j].GetToBeDrawnFlag()==1)
-			{
-				line.DrawLine(0.1,data[i].SPE[j]/1000,0.7,data[i].SPE[j]/1000);
-				txt.SetTextColor(color);
-				txt.DrawText(0.8,data[i].SPE[j]/1000, data[i].SP_centroids[j].GetNLJ().Data());
-			}
-		}
-		cc1->cd(6);//переходим к Pad6
-		data[i].DrawResultsInTextForm(data[i].ResultsInTextForm());
-		cc1->Print((OutputFileName+".pdf").c_str(),"pdf");
-		gPad->Update();
-	}
-	cc1->Print((OutputFileName+".pdf]").c_str(),"pdf");
-	cout<<"void PrintCalculationResult has ended!"<<"\n";
 }
-//*/
 void SetOfNormalisedExpCouples::PrintFitCalculationResult(string OutputFileName, string output_dir) {//функция записывает результаты нормировки в выходные файлы .txt и .pdf
 //на вход подаётся вектор пар экспериментов (вектор объектов CoupleOfExperiments)
 	//и название выходных файлов .pdf .txt OutputFileName
@@ -430,32 +304,9 @@ void SetOfNormalisedExpCouples::PrintFitCalculationResult(string OutputFileName,
 	}
 	cc2->Print((OutputFileName+".pdf]").c_str(),"pdf");//сохраняем всё в .pdf файл (в третий раз?)
 }
-void SetOfNormalisedExpCouples::ArrangeByPenalty() {
-	//функция меняяет соседние в векторе пары экспериментов,
-	//до тех пор, пока они не будут отранжированы по возрастанию функции ошибок
-	//функция сортирует пары экспериментов в поданном векторе по убыванию соответсвующей штрафной функции
-	//двойной перебор нужен чтобы сравнить каждый элемент вектора с каждым, происходит сортировка по значению штрафной функции
-	cout<<"void SetOfNormalisedExpCouples::ArrangeByPenalty() has started!"<<endl;
-	for(unsigned int i=0;i<data.size();i++) {//для каждого элемента i массива
-		int NumberOfExcanges=0;//переменная для числа перестановок
-		for(unsigned int j=0;j<data.size()-i-1;j++)//для каждого элемента массива j, который имеет номер в векторе меньше i
-		{
-			if(data[j].penalty>data[j+1].penalty)//если функция ошибок пары экспериментов j больше, чем у пары j+1
-			{//стандартные действия для смены мест двух соседних эелементов массива/вектора
-				NormalisedCoupleOfExperiments tmp=data[j];//создаём буферную пару для перемещения пар j и j+1, равную паре j, чтобы её сохранить
-				data[j]=data[j+1];//сохраняем в j пару j+1
-				data[j+1]=tmp;//сохраняем в j+1 буфер, который равен паре j
-				NumberOfExcanges++;//считаем число перестановок, увеличивая каждый раз NumberOfExcanges на 1
-			}
-		}
-		if(NumberOfExcanges==0)//если не было совершенно перестановок, NumberOfExcanges осталось равной 0
-		{
-			return;//то функция просто ничего не делает
-		}
-	}
-}//конец void ArrangeByPenalty
 void SetOfNormalisedExpCouples::InduceNormalisation() {
 	cout<<"void SetOfNormalisedExpCouples::InduceNormalisation() has started!"<<endl;
+	//this->UpdateNormalisedCouplesOfExperiments();
 	for(unsigned int i=0;i<data.size();i++) {//для каждой пары срыв-подхват в векторе CE
 		data[i].InduceNormalisation();
 	}

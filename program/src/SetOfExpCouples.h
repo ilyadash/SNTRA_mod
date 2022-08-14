@@ -22,11 +22,9 @@ class SetOfNormalisedExpCouples : public SetOfExpCouples
 	vector<NormalisedCoupleOfExperiments> data;
 	void CreateNormalisedCouplesOfExperiments(vector<Experiment> &Pickup, vector<Experiment> &Stripping,
 	parameters &par);
-	void CalcSPE_and_OCC();
-	void CalculatePenaltyFunction();
-	void PrintCalculationResult(string OutputFileName, string output_dir="output");
+	void UpdateCouplesOfExperiments();
+	void UpdateNormalisedCouplesOfExperiments();
 	void PrintFitCalculationResult(string OutputFileName, string output_dir="output");
-	void ArrangeByPenalty();
 	void InduceNormalisation();
 	void ReCalcSPE_and_OCC();
 };

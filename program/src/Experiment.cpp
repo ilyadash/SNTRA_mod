@@ -590,7 +590,7 @@ SummarizedSpectroscopicState&  Experiment::operator [] (int index) {
 		return s1;
 	}
 }
-SpectroscopicFactorHistogram Experiment::BuildSpectroscopicFactorHistogram(double norma=1) {//метод для заполнения гистограммы нормированными данными экперимента
+SpectroscopicFactorHistogram Experiment::BuildSpectroscopicFactorHistogram(double norma) {//метод для заполнения гистограммы нормированными данными экперимента
 	//возвращает объект класса SpectroscopicFactorHistogram с данными нормированного (*norma) объекта класса Experiment для дальнейшего построения
 	SpectroscopicFactorHistogram SFHistograms;//создаём пустую гистограмму, которую будем заполнять данными
 	if (norma<0)

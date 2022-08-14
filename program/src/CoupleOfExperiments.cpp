@@ -1,5 +1,12 @@
 #include "CoupleOfExperiments.h"
 
+CoupleOfExperiments::CoupleOfExperiments() {
+	
+}
+CoupleOfExperiments::CoupleOfExperiments(Experiment &InpPickup,Experiment &InpStripping){
+	Pickup=InpPickup;
+	Stripping=InpStripping;
+}
 void CoupleOfExperiments::BuildPenaltyComponentsHistogram() {
 	TH1F result("PFC","Penalty function components",PenaltyComponents.size(),0,PenaltyComponents.size()+1);
 	for(unsigned int i=0;i<PenaltyComponents.size();i++) {
@@ -8,7 +15,6 @@ void CoupleOfExperiments::BuildPenaltyComponentsHistogram() {
 	}
 	PenaltyComponentsHistogram = result;
 }
-
 void CoupleOfExperiments::DrawPenaltyComponentsHistogram(TString opt) {
 	if(opt == "logy") {
 		PenaltyComponentsHistogram.GetYaxis()->SetRangeUser(10e-4,1);
@@ -17,104 +23,79 @@ void CoupleOfExperiments::DrawPenaltyComponentsHistogram(TString opt) {
 	else PenaltyComponentsHistogram.GetYaxis()->SetRangeUser(0,1);
 	PenaltyComponentsHistogram.Draw();
 }
-
-CoupleOfExperiments::CoupleOfExperiments(Experiment &InpPickup,Experiment &InpStripping){
-	//конструктор, аргументы которого представляют из себя эксперименты по подхвату и срыву
-	Pickup=InpPickup;
-	Stripping=InpStripping;
-}
-
 void CoupleOfExperiments::GenerateCommonNJPList() {
 	cout<<"CoupleOfExperiments::GenerateCommonNJPList() has started!"<<endl;
 	par.Cout();
-	for(int i=0;i<Pickup.GetNCalculatedLevels();i++)
-	{
+	for(int i=0;i<Pickup.GetNCalculatedLevels();i++) {
 		unsigned char flag=0;
-		for(int j=0;j<Stripping.GetNCalculatedLevels();j++)
-		{
-			if(Pickup[i].Compare(Stripping[j]))
-			{
+		for(int j=0;j<Stripping.GetNCalculatedLevels();j++) {
+			if(Pickup[i].Compare(Stripping[j])) {
 				StateParameters s(Pickup[i].n,Pickup[i].L,Pickup[i].JP,"both");
-				if (par.LimitedSubShellsUsedInDrawing==1)//если пользователь указывал в файле параметров подоболочки для отрисовки
-				{
-					cout<<"Check no "<<i<<":"<<endl;
+				if (par.LimitedSubShellsUsedInDrawing==1) {//если пользователь указывал в файле параметров подоболочки для отрисовки
+					//cout<<"Check no "<<i<<":"<<endl;
 					s.Cout();
-					if(s.CheckIfIncludedIn(par.SubShellsUsedInDrawing)) 
-					{
-						cout<<"s is included in par.SubShellsUsedInDrawing!"<<endl;
-						//cout<<"SP_centroids["<<i<<"].GetToBeDrawnFlag()=="<<SP_centroids[i].GetToBeDrawnFlag()<<endl;
+					if(s.CheckIfIncludedIn(par.SubShellsUsedInDrawing)) {
+						//cout<<"s is included in par.SubShellsUsedInDrawing!"<<endl;
 						s.SetToBeDrawnFlag(1);//средни указанных для отрисовки есть данное состояние, то выставим ему флаг, что его нужно отрисовывать
-						cout<<"s.GetToBeDrawnFlag()=="<<s.GetToBeDrawnFlag()<<endl;
+						//cout<<"s.GetToBeDrawnFlag()=="<<s.GetToBeDrawnFlag()<<endl;
 					}
 					else  {
-						cout<<"s is NOT included in par.SubShellsUsedInDrawing!"<<endl;
+						//cout<<"s is NOT included in par.SubShellsUsedInDrawing!"<<endl;
 						s.SetToBeDrawnFlag(0);//иначе укажем флаг, что отрисовывать не надо
-						cout<<"s.GetToBeDrawnFlag()=="<<s.GetToBeDrawnFlag()<<endl;
+						//cout<<"s.GetToBeDrawnFlag()=="<<s.GetToBeDrawnFlag()<<endl;
 					}
 				}
 				SP.push_back(s);
 				flag=1;
 			}
 		}
-		if((flag==0)&&((par.IncompleteCouplesFlag==2)||(par.IncompleteCouplesFlag==1)))
-		{
+		if((flag==0)&&((par.IncompleteCouplesFlag==2)||(par.IncompleteCouplesFlag==1))) {
 			StateParameters s(Pickup[i].n,Pickup[i].L,Pickup[i].JP,"pickup");
 			cout<<"Check no "<<i<<":"<<endl;
 			s.Cout();
-			if(s.CheckIfIncludedIn(par.SubShellsUsedInDrawing)) 
-			{
-				cout<<"s is included in par.SubShellsUsedInDrawing!"<<endl;
-				//cout<<"SP_centroids["<<i<<"].GetToBeDrawnFlag()=="<<SP_centroids[i].GetToBeDrawnFlag()<<endl;
+			if(s.CheckIfIncludedIn(par.SubShellsUsedInDrawing)) {
+				//cout<<"s is included in par.SubShellsUsedInDrawing!"<<endl;
 				s.SetToBeDrawnFlag(1);//средни указанных для отрисовки есть данное состояние, то выставим ему флаг, что его нужно отрисовывать
-				cout<<"s.GetToBeDrawnFlag()=="<<s.GetToBeDrawnFlag()<<endl;
+				//cout<<"s.GetToBeDrawnFlag()=="<<s.GetToBeDrawnFlag()<<endl;
 			}
-			else  
-			{
-				cout<<"s is NOT included in par.SubShellsUsedInDrawing!"<<endl;
+			else {
+				//cout<<"s is NOT included in par.SubShellsUsedInDrawing!"<<endl;
 				s.SetToBeDrawnFlag(0);//иначе укажем флаг, что отрисовывать не надо
-				cout<<"s.GetToBeDrawnFlag()=="<<s.GetToBeDrawnFlag()<<endl;
+				//cout<<"s.GetToBeDrawnFlag()=="<<s.GetToBeDrawnFlag()<<endl;
 			}
 			SP.push_back(s);
 		}
 		
 	}//не особо эффективный алгоритм поиска отсутствия совпадений, но сейчас скорость не особо принципиальна
-	for(int i=0;i<Stripping.GetNCalculatedLevels();i++)
-	{
+	for(int i=0;i<Stripping.GetNCalculatedLevels();i++) {
 		unsigned char flag=0;
-		for(int j=0;j<Pickup.GetNCalculatedLevels();j++)
-		{
-			if(Pickup[j].Compare(Stripping[i]))
-			{
+		for(int j=0;j<Pickup.GetNCalculatedLevels();j++) {
+			if(Pickup[j].Compare(Stripping[i])) {
 				flag=1;
 			}
 		}
-		if((flag==0)&&((par.IncompleteCouplesFlag==3)||(par.IncompleteCouplesFlag==1)))
-		{
+		if((flag==0)&&((par.IncompleteCouplesFlag==3)||(par.IncompleteCouplesFlag==1))) {
 			StateParameters s(Stripping[i].n,Stripping[i].L,Stripping[i].JP,"stripping");
-			cout<<"Check no "<<i<<":"<<endl;
+			//cout<<"Check no "<<i<<":"<<endl;
 			s.Cout();
-			if (par.LimitedSubShellsUsedInDrawing==1)//если пользователь указывал в файле параметров подоболочки для отрисовки
-			{
-				if(s.CheckIfIncludedIn(par.SubShellsUsedInDrawing)) 
-				{
-					cout<<"s is included in par.SubShellsUsedInDrawing!"<<endl;
+			if (par.LimitedSubShellsUsedInDrawing==1) {//если пользователь указывал в файле параметров подоболочки для отрисовки
+				if(s.CheckIfIncludedIn(par.SubShellsUsedInDrawing)) {
+					//cout<<"s is included in par.SubShellsUsedInDrawing!"<<endl;
 					//cout<<"SP_centroids["<<i<<"].GetToBeDrawnFlag()=="<<SP_centroids[i].GetToBeDrawnFlag()<<endl;
 					s.SetToBeDrawnFlag(1);//средни указанных для отрисовки есть данное состояние, то выставим ему флаг, что его нужно отрисовывать
-					cout<<"s.GetToBeDrawnFlag()=="<<s.GetToBeDrawnFlag()<<endl;
+					//cout<<"s.GetToBeDrawnFlag()=="<<s.GetToBeDrawnFlag()<<endl;
 				}
-				else  
-				{
-					cout<<"s is NOT included in par.SubShellsUsedInDrawing!"<<endl;
+				else {
+					//cout<<"s is NOT included in par.SubShellsUsedInDrawing!"<<endl;
 					s.SetToBeDrawnFlag(0);//иначе укажем флаг, что отрисовывать не надо
-					cout<<"s.GetToBeDrawnFlag()=="<<s.GetToBeDrawnFlag()<<endl;
+					//cout<<"s.GetToBeDrawnFlag()=="<<s.GetToBeDrawnFlag()<<endl;
 				}
 			}
 			SP.push_back(s);
 		}		
 	}
-	cout<<"CoupleOfExperiments::GenerateCommonNJPList() has ended!"<<endl;
+	cout<<"CoupleOfExperiments::GenerateCommonNJPList() has ended! SP.size()="<<SP.size()<<endl;
 }
-
 void CoupleOfExperiments::CalcSPE_and_OCC() {//функция рассчитывает одночастичную энергию, 
 //формирует графики для отрисовки и т.д.
 	cout<<"CoupleOfExperiments::CalcSPE_and_OCC has started!"<<endl;
@@ -193,8 +174,7 @@ void CoupleOfExperiments::CalcSPE_and_OCC() {//функция рассчитыв
 	Delta=BCS.GetParameter(1);
 	Delta_error=BCS.GetParError(1);
 	
-	for(int i=0;i<SP.size();i++)//цикл for; для каждой подоболочки:
-	{
+	for(int i=0;i<SP.size();i++){//цикл for; для каждой подоболочки:
 		Gp_c.push_back(Stripping.GetSumSF(SP[i]));//формируем вектор из сумм СС срыва для каждой подоболочки
 		Gm_c.push_back(Pickup.GetSumSF(SP[i]));//формируем вектор из сумм СС подхвата для каждой подоболочки
 		er_Gp_c.push_back(Stripping.GetErSumSF(SP[i]));//формируем вектор из ошибок сумм СС срыва для каждой подоболочки
@@ -204,9 +184,8 @@ void CoupleOfExperiments::CalcSPE_and_OCC() {//функция рассчитыв
 		er_Gp_alt_c.push_back(Stripping.GetErSumSF(SP[i])/(2*abs(SP[i].JP)+1));//формируем вектор из делённых на (2j+1) ошибок сумм СС срыва для каждой подоболочки
 		er_Gm_alt_c.push_back(Pickup.GetErSumSF(SP[i])/(2*abs(SP[i].JP)+1));//формируем вектор из делённых на (2j+1) сумм СС подхвата для каждой подоболочки
 	}
-	cout<<"CoupleOfExperiments::CalcSPE_and_OCC has ended!"<<endl;
+	cout<<"CoupleOfExperiments::CalcSPE_and_OCC has ended! SP.size()="<<SP.size()<<endl;
 }
-
 void CoupleOfExperiments::ClearCalcResults() {
 	cout<<"CoupleOfExperiments::ClearCalcResults() has started!"<<endl;
 	//очищаем аттрибуты объекта - вектора вычисленных величин:
@@ -234,7 +213,6 @@ void CoupleOfExperiments::ClearCalcResults() {
 	Both_occupancies=TGraph();
 	cout<<"CoupleOfExperiments::ClearCalcResults() has ended!"<<endl;
 }
-
 string CoupleOfExperiments::ResultsInTextForm(char verbose_level) {
 	stringstream s;
 	if(verbose_level==0)
@@ -260,9 +238,7 @@ string CoupleOfExperiments::ResultsInTextForm(char verbose_level) {
 	}
 	return s.str();
 }
-
-void CoupleOfExperiments::DrawResultsInTextForm(string str)
-{
+void CoupleOfExperiments::DrawResultsInTextForm(string str) {
 	//stringstream s(ResultsInTextForm());
 	stringstream s(str);
 	///
@@ -276,40 +252,85 @@ void CoupleOfExperiments::DrawResultsInTextForm(string str)
 	}
 }
 
+NormalisedCoupleOfExperiments::NormalisedCoupleOfExperiments(){}
 NormalisedCoupleOfExperiments::NormalisedCoupleOfExperiments(Experiment &InpPickup, Experiment &InpStripping)
-:CoupleOfExperiments(InpPickup, InpStripping) {
-	//уточняем,какой конструктор родительского класса нужно вызывать при использовании этого конструктора
-	//Pickup=InpPickup;
-	//Stripping=InpStripping;
+:CoupleOfExperiments(InpPickup, InpStripping) {}
+NormalisedCoupleOfExperiments& NormalisedCoupleOfExperiments::operator= (const CoupleOfExperiments &cop) {
+	cout<<"NormalisedCoupleOfExperiments operator= CoupleOfExperiments has started!"<<endl;
+	Pickup = cop.Pickup;
+	cout<<"Pickup = cop.Pickup; finished!"<<endl;
+	Stripping = cop.Stripping;//эксперимент срыва
+	cout<<"Stripping = cop.Stripping; finished!"<<endl;
+	par = cop.par;//считанные пользовательские параметры
+	cout<<"par = cop.par; finished!"<<endl;
+	SP = cop.SP;//все состояния, которые указаны в паре экспериментов. каждое состояние знает, где он встречалось, в strip, pickup или обоих (?)
+	SP_centroids = cop.SP_centroids;//состояния, для которых были вычеслены центроиды C_nlm
+	SPE = cop.SPE;//одночастичные энергии
+	OCC = cop.OCC;//квадраты заселенностей
+	ParticlesAndHolesSum = cop.ParticlesAndHolesSum;//
+	Particles = cop.Particles;//
+	Holes = cop.Holes;//
+	PenaltyComponents = cop.PenaltyComponents;//
+	Pickup_size = cop.Pickup_size;//
+	Stripping_size = cop.Stripping_size;//
+	cout<<"Stripping_size = cop.Stripping_size; finished!"<<endl;
+	Gp_c = cop.Gp_c;//вектор спектроскопических сил срыва подоболочек 
+	Gm_c = cop.Gm_c;//вектор спектроскопических сил подхвата подоболочек 
+	er_Gp_c = cop.er_Gp_c;//вектор ошибок спектроскопических сил срыва подоболочек для расчёта нормированных Gp_norm_c
+	er_Gm_c = cop.er_Gm_c;//вектор ошибок спектроскопических сил подхвата подоболочек для расчёта нормированных Gm_norm_c
+	Gp_alt_c = cop.Gp_alt_c;//вектор спектроскопических сил  подоболочек для расчёта через МНК, делённых на 2j+1 (они должны быть близки к 1)
+	Gm_alt_c = cop.Gm_alt_c;//вектор спектроскопических сил подоболочек для расчёта через МНК, делённых на 2j+1 (они должны быть близки к 1)
+	er_Gp_alt_c = cop.er_Gp_alt_c;//вектор ошибок спектроскопических сил подоболочек для расчёта через МНК, делённых на 2j+1
+	er_Gm_alt_c = cop.er_Gm_alt_c;//вектор ошибок спектроскопических сил подоболочек для расчёта через МНК, делённых на 2j+1 
+	
+	points_G = cop.points_G;//объект points_G класса TGraphErrors, точки G+- (спектроскопических сил) в графике
+	p_size = cop.p_size;//кол-во точек в графиках ,которые должны использоваться в нормировке
+	cout<<"p_size = cop.p_size; finished!"<<endl;
+	Ef = cop.Ef;//энергия Ферми, получаемая в фите БКШ
+	Delta = cop.Delta ;//\Delta^2//дельта в квадрате, получаемая в фите БКШ
+	Ef_error = cop.Ef_error;//ошибка энергии Ферми, получаемая в фите БКШ
+	Delta_error = cop.Delta_error;//ошибка дельты в квадрате, получаемая в фите БКШ
+	Ef_error_max = cop.Ef_error_max;//максимальная ошибка энергии Ферми, получаемая в фите БКШ
+	Delta_error_max = cop.Delta_error_max;	//максимальная ошибка дельты в квадрате, получаемая в фите БКШ
+	penalty = cop.penalty;
+	cout<<"penalty = cop.penalty;; finished!"<<endl;
+	//графики заселённостей состояний от энергии, использованных для фита БКШ:
+	occupancies = cop.occupancies;
+	Pickup_occupancies = cop.Pickup_occupancies;
+	Stripping_occupancies = cop.Stripping_occupancies;
+	Both_occupancies = cop.Both_occupancies;
+	cout<<"Both_occupancies = cop.Both_occupancies; finished!"<<endl;
+	BCS = cop.BCS;//фит заселённостей в зависисмости от энергии (фит БКШ)
+	cout<<"BCS = cop.BCS; finished!"<<endl;
+	PenaltyComponentsHistogram = cop.PenaltyComponentsHistogram;
+	cout<<"PenaltyComponentsHistogram = cop.PenaltyComponentsHistogram; finished!"<<endl;
+	PenaltyFunction = cop.PenaltyFunction;//
+	cout<<"PenaltyFunction = cop.PenaltyFunction; finished!"<<endl;
+	return *this;
 }
-
 void NormalisedCoupleOfExperiments::InduceNormalisation() {
 	cout<<"NormalisedCoupleOfExperiments::InduceNormalisation() has started!"<<endl;
 	NormalisationWasTried=1;
-	///подготовительная работа для реализации фитирования закончена, теперь фитируем:
-	vector<double> OccupanciesForNormFit;//отдельный вектор заселённостей для аппроксимации нормировки (пока совпадают с набором для аппроксимации БКШ)
-	vector<double> EnergiesForNormFit;//отдельный вектор энергий для аппроксимации нормировки (пока совпадают с набором для аппроксимации БКШ)
-	//cout << "||||||| solveLinear_mod started working!" << endl;//оглашает, что эта подпрограмма начала работать
-	//cout << "Perform the fit  y = a + b * x in Minuit" << endl;//оглашает с помощью какой Root штуки берём фит (Minuit)
-	//int size = SP.size();//число G нормированных на 2j+1 в векторе (т.е. число подоболочек)
-	//int p_size = OccupanciesForNormFit.size();//число фитируемых точек совпадает с числом учитываемых подоболочек
-	cout << "par.SubShellsUsedForNormalisation.size() = "<<par.SubShellsUsedForNormalisation.size()<<endl;
-	cout << "SP.size() = "<<SP.size()<<endl;
-	for(int i=0;i<SP.size();i++)//цикл for; для каждой подоболочки:
-	{	
-		if(par.CheckBelonging(SP[i],par.SubShellsUsedForNormalisation))///здесь можно заменить на отдельную функцию проверки подоболочки на принадлежность к списку для участия в фите нормировки
-		{
+	vector<double> OccupanciesForNormFit;//отдельный вектор заселённостей для
+	//аппроксимации нормировки (пока совпадают с набором для аппроксимации БКШ)
+	vector<double> EnergiesForNormFit;//отдельный вектор энергий для
+	//аппроксимации нормировки (пока совпадают с набором для аппроксимации БКШ)
+	cout << "NormalisedCoupleOfExperiments::InduceNormalisation(): par.SubShellsUsedForNormalisation.size() = "<<par.SubShellsUsedForNormalisation.size()<<endl;
+	cout << "NormalisedCoupleOfExperiments::InduceNormalisation(): SP.size() = "<<SP.size()<<endl;
+	for(int i=0;i<SP.size();i++) {//цикл for; для каждой подоболочки:
+		if(par.CheckBelonging(SP[i],par.SubShellsUsedForNormalisation)) {
+			///здесь можно заменить на отдельную функцию проверки подоболочки
+			///на принадлежность к списку для участия в фите нормировки
 			cout << "Got state parameters included in UsedForNormalisation list."<<endl;
 			p_size++;
 		}
 	}
-	if ((p_size < 2) || (p_size>SP.size()))//но если точек оказалось меньше двух или точек полагается больше, чем есть подоболочек
-	{
+	if ((p_size < 2) || (p_size>SP.size())) {
+		//но если точек оказалось меньше двух или точек полагается больше, чем есть подоболочек
 		cout << "Note: Wrong number of Normalisation FIT points: "<<p_size<<". Fit will not be performed! Return!"<<endl;
 		return;
 	}//то возьмём число точек равным числу подооболочек во входных данных
-	else
-	{
+	else{
 		cout << "Number of Normalisation FIT points: "<<p_size<<". Fit will be performed! Continue!"<<endl;
 	}
 	cout << "Creating arrays with points."<<endl;
@@ -319,10 +340,8 @@ void NormalisedCoupleOfExperiments::InduceNormalisation() {
 	Double_t xe[p_size], xe2[p_size];//ошибки по x 
 	Double_t ye[p_size], ye2[p_size];//ошибки по y
     cout << "Filling arrays with points."<<endl;
-	for(int i=0;i<SP.size();i++)//цикл для заполнения координат точек и их ошибок
-	{
-		if(par.CheckBelonging(SP[i],par.SubShellsUsedForNormalisation))
-		{
+	for(int i=0;i<SP.size();i++) {//цикл для заполнения координат точек и их ошибок
+		if(par.CheckBelonging(SP[i],par.SubShellsUsedForNormalisation)) {
 			x[i] = Gm_alt_c[i]; 
 			y[i] = Gp_alt_c[i];
 			xe[i] = er_Gm_alt_c[i]; 
@@ -357,16 +376,16 @@ void NormalisedCoupleOfExperiments::InduceNormalisation() {
 	n_p = (1/fit_a-fit_b2/fit_a2)/2;//находим первый нормировочный параметр n+ через среднее двух фитов
 	n_m = (1/fit_a2-fit_b/fit_a)/2;//находим второй нормировочный параметр n- через среднее двух фитов
 		
-	if ((n_p < 0.5) || (n_m < 0.5) || (isnan(n_p)) || (isnan(n_m)))//если фит вышел плохой, то n+ и n- не имеют смысла, 
-	{//так что приравниваем их к 1
+	if ((n_p < 0.5) || (n_m < 0.5) || (isnan(n_p)) || (isnan(n_m))) {
+		//если фит вышел плохой, то n+ и n- не имеют смысла, 
+		//так что приравниваем их к 1
 		cout<<"	Note: NormalisedCoupleOfExperiments::InduceNormalisation() normalisation procedure has failed!"<<endl;
 		cout<<"n_p = "<<n_p<<"; n_m = "<<n_m<<endl;
 		n_p = 1.; 
 		n_m =1.;
 		cout<<"n_p and n_m will be turned into 1!"<<endl;
 	}
-	else
-	{
+	else {
 		cout<<"	Note: NormalisedCoupleOfExperiments::InduceNormalisation() normalisation procedure has been sucsesfull!"<<endl;
 	}	
 	er_n_p = 1/2*sqrt((er_fit_a/(fit_a*fit_a))*(er_fit_a/(fit_a*fit_a))+(er_fit_b2/fit_a2)*(er_fit_b2/fit_a2)+(fit_b2/(fit_a2*fit_a2)*er_fit_a2)*(fit_b2/(fit_a2*fit_a2)*er_fit_a2));//находим ошибку первого нормировочного параметра n+ 
@@ -377,15 +396,13 @@ void NormalisedCoupleOfExperiments::InduceNormalisation() {
 	er_fit_a = er_n_p/(n_p*n_p);//
 	er_fit_b = sqrt((er_n_p/n_p)*(er_n_p/n_p)+(er_n_m*n_m/n_p/n_p)*(er_n_m*n_m/n_p/n_p));
 		
-	for(int j=0;j<p_size;j++)//цикл для заполнения векторов новых координат для нормированных сил
-	{
+	for(int j=0;j<p_size;j++) {//цикл для заполнения векторов новых координат для нормированных сил
 		x2[j] = Gm_alt_c[j]*n_m; 
 		y2[j] = Gp_alt_c[j]*n_p;
 		xe2[j] = er_Gm_alt_c[j]*n_m; 
 		ye2[j] = er_Gp_alt_c[j]*n_p;
 	}
-	for(int j=0;j<SP.size();j++)//цикл для заполнения векторов новых, нормированных СС
-	{
+	for(int j=0;j<SP.size();j++) {//цикл для заполнения векторов новых, нормированных СС
 		Gp_c[j]=n_p*Gp_c[j];//вычисляем вектор новых, нормированных СС для срыва
 		cout << "G+_norm[" << j << "] = " << Gp_c[j] << endl;
 		Gm_c[j]=n_m*Gm_c[j];//вычисляем вектор новых, нормированных СС для подхвата
@@ -407,7 +424,6 @@ void NormalisedCoupleOfExperiments::InduceNormalisation() {
 	FIT3.SetParameter(1,-n_m/n_p);//устанавливаем коэффициента наклона прямой, которую будем строить
 	cout << "SP.size() = "<<SP.size()<<endl;
 }
-
 void NormalisedCoupleOfExperiments::ReCalcSPE_and_OCC() {
 	cout<<"NormalisedCoupleOfExperiments::ReCalcSPE_and_OCC has started!"<<endl;
 	//GenerateCommonNJPList();///эта штука удваивает вектор SP, записывая те же самые состояния
@@ -420,12 +436,16 @@ void NormalisedCoupleOfExperiments::ReCalcSPE_and_OCC() {
 		double C_pickup=Pickup.GetCentroid(SP[i]);//записываем значение центроида для эксперимента по подхвату в переменную C_pickup
 		double C_stripping=Stripping.GetCentroid(SP[i]);//записываем значение центроида для эксперимента по срыву в переменную C_stripping	
 		cout<<"C_pickup = "<<C_pickup<<"; C_stripping = "<<C_stripping<<endl;		
-		if((C_stripping!=-1)&&(C_pickup!=-1)&&(!isnan(C_stripping))&&(!isnan(C_pickup))) {//индусский fix, потом проверить, что генерирует nan
+		if((C_stripping!=-1)&&(C_pickup!=-1)&&(!isnan(C_stripping))&&(!isnan(C_pickup))) {
+			//индусский fix, потом проверить, что генерирует nan
 			double E_pickup=-Pickup.BA-C_pickup;//Диплом Марковой М.Л., ф-ла 4//вычисление "одночастичной" для подхвата с использованием энергии отрыва нуклона
 			double E_stripping=-Stripping.BA1+C_stripping;//Диплом Марковой М.Л., ф-ла 5//вычисление "одночастичной" для срыва с использованием энергии отрыва нуклона
-			double SPE_tmp=(Pickup.GetSumSF(SP[i])*E_pickup*n_m+Stripping.GetSumSF(SP[i])*E_stripping*n_p)/(Pickup.GetSumSF(SP[i])*n_m+Stripping.GetSumSF(SP[i])*n_p);//Диплом Марковой М.Л., ф-ла 17 //вычисление одночастичной энергии после нормировки
-			double OCC_tmp=(Pickup.GetSumSF(SP[i])*n_m-Stripping.GetSumSF(SP[i])*n_p+2*abs(SP[i].JP)+1)/(2*(2*abs(SP[i].JP)+1));//Диплом Марковой М.Л., ф-ла 18 //это v^2_{nlj} после нормировки	
-			ParticlesAndHolesSum.push_back((n_m*Pickup.GetSumSF(SP[i])+n_p*Stripping.GetSumSF(SP[i]))/(2*abs(SP[i].JP)+1));
+			double SPE_tmp=(Pickup.GetSumSF(SP[i])*E_pickup*n_m+Stripping.GetSumSF(SP[i])*E_stripping*n_p)
+			/(Pickup.GetSumSF(SP[i])*n_m+Stripping.GetSumSF(SP[i])*n_p);//Диплом Марковой М.Л., ф-ла 17 //вычисление одночастичной энергии после нормировки
+			double OCC_tmp=(Pickup.GetSumSF(SP[i])*n_m-Stripping.GetSumSF(SP[i])*n_p+2*abs(SP[i].JP)+1)
+			/(2*(2*abs(SP[i].JP)+1));//Диплом Марковой М.Л., ф-ла 18 //это v^2_{nlj} после нормировки	
+			ParticlesAndHolesSum.push_back((n_m*Pickup.GetSumSF(SP[i])+n_p*Stripping.GetSumSF(SP[i]))
+			/(2*abs(SP[i].JP)+1));
 			cout<<"SPE_tmp = "<<SPE_tmp<<endl;	
 			SPE.push_back(SPE_tmp);//Диплом Марковой М.Л., ф-ла 17
 			OCC.push_back(OCC_tmp);//Диплом Марковой М.Л., ф-ла 18
@@ -492,18 +512,15 @@ void NormalisedCoupleOfExperiments::ReCalcSPE_and_OCC() {
 	}
 	cout<<"NormalisedCoupleOfExperiments::ReCalcSPE_and_OCC has ended!"<<endl;
 }
-
-string NormalisedCoupleOfExperiments::FitResultsInTextForm(char verbose_level)//функция записывает в строку результаты нормировки и принятые параметры (строка оказывается слева внизу каждого выходного pdf файла)
-{
+string NormalisedCoupleOfExperiments::FitResultsInTextForm(char verbose_level) {
+	//функция записывает в строку результаты нормировки и принятые параметры (строка оказывается слева внизу каждого выходного pdf файла)
 	cout<<"FitResultsInTextForm has started!"<<endl;
 	stringstream s;//задаём строку, куда всё будем сохранять
-	if(verbose_level==0)
-	{
+	if(verbose_level==0){
 		s<<"Experiment: "<<Pickup.reference<<" ("<<Pickup.size()<<") "
 		<<Stripping.reference<<" ("<<Stripping.size()<<") \n";
 	}
-	else if(verbose_level==1)
-	{
+	else if(verbose_level==1){
 		s<<"Experiment(pickup): "<<Pickup.reference<<" ("<<Pickup.size()<<")\n";
 		s<<Pickup.ChangesLog<<"\n";
 		s<<"Experiment(stripping): "<<Stripping.reference<<" ("<<Stripping.size()<<")\n";
@@ -515,14 +532,9 @@ string NormalisedCoupleOfExperiments::FitResultsInTextForm(char verbose_level)//
 	cout<<"Will draw n^{+}G*^{+} + n^{-}G*^{-} = 1 equations"<<endl;
 	cout<<"SPE.size() = "<<SPE.size()<<endl;
 	cout<<"SP_centroids.size() = "<<SP_centroids.size()<<endl;
-	for(unsigned int i=0;i<SP_centroids.size();i++)
-	{//выведем все уравнения для подоболочек, которые мы должны были использовать для нахождения n+ и n-:
-		//cout<<"Got n="<<SP_centroids[i].n<<"; l="<<SP_centroids[i].l<<"; JP="<<SP_centroids[i].JP<<endl;
-		//cout<<"par.SubShellsUsedForNormalisation.size() = "<<par.SubShellsUsedForNormalisation.size()<<endl;
-		//cout<<"par.CheckBelonging(SP["<<i<<"],par.SubShellsUsedForNormalisation = "<<
-		//par.CheckBelonging(SP[i],par.SubShellsUsedForNormalisation)<<endl;
-		if(par.CheckBelonging(SP[i],par.SubShellsUsedForNormalisation))
-		{	
+	for(unsigned int i=0;i<SP_centroids.size();i++){
+		//выведем все уравнения для подоболочек, которые мы должны были использовать для нахождения n+ и n-:
+		if(par.CheckBelonging(SP[i],par.SubShellsUsedForNormalisation)){	
 			k++;
 			//cout<<"Got n="<<SP_centroids[i].n<<"; l="<<SP_centroids[i].l<<"; JP="<<SP_centroids[i].JP<<endl;
 			s<<NLJToString(SP_centroids[i].n,SP_centroids[i].l,SP_centroids[i].JP)<<": n^{+} "
@@ -553,35 +565,28 @@ string NormalisedCoupleOfExperiments::FitResultsInTextForm(char verbose_level)//
 	}
 	return s.str();//вернём строку, где всё сохранили
 }//конец метода FitResultsInTextForm
-	
-string NormalisedCoupleOfExperiments::ResultsInTextForm(char verbose_level)//функция записывает в строку результаты и принятые параметры (строка оказывается слева внизу каждого выходного pdf файла)
-{//cout<< "FitResultsInTextForm2 started working!!!!!\n";
-	if(NormalisationWasTried==0)
-	{
+string NormalisedCoupleOfExperiments::ResultsInTextForm(char verbose_level) {//функция записывает в строку результаты и принятые параметры (строка оказывается слева внизу каждого выходного pdf файла)
+	if(NormalisationWasTried==0){
 		return CoupleOfExperiments::ResultsInTextForm(verbose_level);
 	}
-	else
-	{
+	else {
 		stringstream s;//задаём строку, куда всё будем сохранять
-		if(verbose_level==0)
-		{
+		if(verbose_level==0) {
 			s<<"Experiment: "<<Pickup.reference<<" ("<<Pickup.size()<<") "<<Stripping.reference<<" ("
 			<<Stripping.size()<<") \n";
 		}
-		else if(verbose_level==1)
-		{
+		else if(verbose_level==1) {
 			s<<"Experiment(pickup): "<<Pickup.reference<<" ("<<Pickup.size()<<")\n";
 			s<<Pickup.ChangesLog<<"\n";
 			s<<"Experiment(stripping): "<<Stripping.reference<<" ("<<Stripping.size()<<")\n";
 			s<<Stripping.ChangesLog<<"\n";
 		}
-		if ((n_p==1.)&&(n_m==1.))
-		{//если нормировочные колэффициенты равны 1, то логично, что нормировки не происходило	
+		if ((n_p==1.)&&(n_m==1.)) {
+			//если нормировочные колэффициенты равны 1, то логично, что нормировки не происходило	
 			s<<"penalty: "<<penalty<<"\n";
 			s<<"Normalization was not perfomed.\n";
 		}//сообщим об этом в .pdf файле
-		else
-		{	
+		else {	
 			s<<Pickup.particle<<" transfer\n";
 			//выведем n+ и n- с их ошибками:
 			s<<"n^{+} = "<<TString::Format("%0.2f",n_p)<<" #pm "<<TString::Format("%0.2f",er_n_p)

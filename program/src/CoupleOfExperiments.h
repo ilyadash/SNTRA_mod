@@ -2,7 +2,7 @@
 #define G_CUT 0.8 //значение для ???
 using namespace std;
 
-class CoupleOfExperiments {//класс пары комплиментарных экспермиентов срыва-подхвата
+class CoupleOfExperiments {//базовый класс пары комплиментарных экспермиентов срыва-подхвата
 	public:
 	Experiment Pickup;//эксперимент подхвата
 	Experiment Stripping;//эксперимент срыва
@@ -18,9 +18,6 @@ class CoupleOfExperiments {//класс пары комплиментарных 
 	int Pickup_size;//
 	int Stripping_size;//
 
-	double n_p = 1.;//значение нормировочного коэффициента n+ для данной пары экспериментов
-	double n_m = 1.;//значение нормировочного коэффициента n- для данной пары экспериментов
-	
 	vector<double> Gp_c;//вектор спектроскопических сил срыва подоболочек 
 	vector<double> Gm_c;//вектор спектроскопических сил подхвата подоболочек 
 	vector<double> er_Gp_c;//вектор ошибок спектроскопических сил срыва подоболочек для расчёта нормированных Gp_norm_c
@@ -50,11 +47,12 @@ class CoupleOfExperiments {//класс пары комплиментарных 
 	TF1 BCS;//фит заселённостей в зависисмости от энергии (фит БКШ)
 	TH1F PenaltyComponentsHistogram;
 	string PenaltyFunction;//
+
+	CoupleOfExperiments();
+	CoupleOfExperiments(Experiment &InpPickup,Experiment &InpStripping);//конструктор, аргументы которого представляют из себя эксперименты по подхвату и срыву
+
 	void BuildPenaltyComponentsHistogram();
 	void DrawPenaltyComponentsHistogram(TString opt="logy");
-
-	CoupleOfExperiments(Experiment &InpPickup,Experiment &InpStripping);//конструктор, аргументы которого представляют из себя эксперименты по подхвату и срыву
-	
 	void GenerateCommonNJPList();//метод заполняет vector<StateParameters> SP данного объекта, генерирует список совпадающих состояний в экспериментах срыва подхвата
 	void CalcSPE_and_OCC();
 	void ClearCalcResults();
@@ -71,14 +69,17 @@ class NormalisedCoupleOfExperiments: public CoupleOfExperiments
 	double fit_b;//сохраняем в объекте класса подобранный 2-ой параметр прямой y = a + b * x
 	double er_fit_a;//сохраняем в объекте класса ошибку подобранного 1-го параметра прямой y = a + b * x
 	double er_fit_b;//сохраняем в объекте класса ошибку подобранного 2-го параметра прямой y = a + b * x
+	double n_p = 1.;//значение нормировочного коэффициента n+ для данной пары экспериментов
+	double n_m = 1.;//значение нормировочного коэффициента n- для данной пары экспериментов
 	double er_n_p=0;//значение ошибки нормировочного коэффициента n+ для данной пары экспериментов
 	double er_n_m=0;//значение ошибки нормировочного коэффициента n- для данной пары экспериментов
 
 	TGraphErrors points_G_norm;
 	TF1 FIT,FIT2,FIT3;//прямые фитов, использованные в процессе нормировки (для отрисовки в файле нормировки)
 
+	NormalisedCoupleOfExperiments();
 	NormalisedCoupleOfExperiments(Experiment &InpPickup,Experiment &InpStripping);
-
+	NormalisedCoupleOfExperiments& operator= (const CoupleOfExperiments &cop);
 	void InduceNormalisation();//функция, которая нормализует данную пару экспериментов, обновляя значения аргументов
 	void ReCalcSPE_and_OCC();//функция дял перерасчёта величин одночастичных энергий, заселённостей после нормализации
 	string FitResultsInTextForm(char verbose_level=0);

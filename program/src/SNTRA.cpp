@@ -145,8 +145,9 @@ void SNTRA(string PathToFiles, string particle="", int ListFilesFlag=0, string o
 	//par.Cout();//выведем считанные параметры в терминал
 	
 	SetOfNormalisedExpCouples Analysis;
-	Analysis.CreateNormalisedCouplesOfExperiments(Pickup,Stripping,par);
-	cout<<"Analysis.data.size() = "<<Analysis.data.size()<<endl;
+	Analysis.CreateCouplesOfExperiments(Pickup,Stripping,par);
+	//cout<<"Analysis.data.size() = "<<Analysis.data.size()<<endl;
+	//cout<<"Analysis.SetOfExpCouples::data.size() = "<<Analysis.SetOfExpCouples::data.size()<<endl;
 	Analysis.CalcSPE_and_OCC();
 	
 	string OutputFileName;//создаём строку с именем выходного файла для результата расчёта SNTRA до нормировки
@@ -165,10 +166,12 @@ void SNTRA(string PathToFiles, string particle="", int ListFilesFlag=0, string o
 	Analysis.ArrangeByPenalty();//применяем функцию для сортировки нашего вывода по возрастанию значения штрафной функции
 	Analysis.PrintCalculationResult(OutputFileName,output_dir_path);//записывает результат ранжировки для пары экспериментов CE в выходные файлы .txt и .pdf
 
+	Analysis.UpdateNormalisedCouplesOfExperiments();
 	Analysis.InduceNormalisation();
 	Analysis.ReCalcSPE_and_OCC();
 	Analysis.PrintFitCalculationResult(OutputFileName2,output_dir_path);//записывает результат нормировки для пары экспериментов CE в выходные файлы .txt и .pdf
-	
+
+	Analysis.UpdateCouplesOfExperiments();
 	Analysis.CalculatePenaltyFunction();//применяем функцию для вычисления штрафной функции
 	Analysis.ArrangeByPenalty();//применяем функцию для сортировки нашего вывода по возрастанию значения штрафной функции
 	Analysis.PrintCalculationResult(OutputFileName3,output_dir_path);//записывает результат воздействия нормировки для пары экспериментов CE в выходные файлы .txt и .pdf
