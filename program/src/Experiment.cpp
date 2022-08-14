@@ -1,6 +1,5 @@
 #include "Experiment.h"
 template <typename T>// объявление параметра шаблона функции
-
 string TurnFlagInString(T flag_ch, string opt="CouplesFlag") {//функция просто переводит значение флага из unsigned char в string
 	//all - использовать все//pickup - только из pickup//stripping - только из stripping//no - использовать только те состояния, которые есть и в pickup,и в stripping
 	vector<string> results={""};
@@ -63,12 +62,9 @@ void parameters::ReadParameters(string filename) {
 	cout<<"parameters::ReadParameters has for"<<filename<<" file!"<<"\n";
 	ifstream ifs(filename.c_str());
 	string line;//переменная считываемой строки
-	while(getline(ifs,line))//для каждой строки в файле на диске
-	{
-		//cout<<"before line = "<<line<<endl;
+	while(getline(ifs,line)){//для каждой строки в файле на диске
 		TString Tline=TString(line);
 		if(Tline.Contains("#")) line=line.substr(0,Tline.First('#'));
-		//cout<<"after line = "<<line<<endl;
 		stringstream s(line);
 		TString tmp;
 		unsigned int buf_int;
@@ -119,6 +115,18 @@ void parameters::ReadParameters(string filename) {
 			}
 			for(unsigned int i=0;i<UsedPenaltyFunctionComponents.size();i++) {
 				cout<<"Component of penalty function no."<<int(UsedPenaltyFunctionComponents[i])<<" will be used."<<endl;
+			}
+		}
+		else if(tmp=="SubShellsUsedForPenaltyFunction:") {
+			string tmp2;
+			while(s){
+				s>>tmp2;
+				int n,l;
+				float JP;
+				if(StringToNLJ(tmp2,n,l,JP)){
+					StateParameters sp(n,l,JP,"both");
+					SubShellsUsedForPenaltyFunction.push_back(sp);
+				}
 			}
 		}
 		else if(tmp=="SubShellsUsedForOccupancyFit:") {//чтение параметра подоболочек, используемых в фите БКШ
@@ -190,7 +198,22 @@ void parameters::ReadParameters(string filename) {
 		else if(tmp=="NHoles:"){
 			s>>NHolesInShell;
 		}
+		else if(tmp=="Weights:") {
+			while(s) {
+				float w;
+				s>>w;
+				weights.push_back(std::abs(w));
+			}
+		}
 	}
+	if(weights.size()>UsedPenaltyFunctionComponents.size()) weights.resize(UsedPenaltyFunctionComponents.size());
+	//Normalize(weights);///to do: понять, почему он не видит этой функции для vector!
+	if (weights.size()==0) return;
+	float max = GetMaximum(weights);
+	for(unsigned i=0;i<weights.size();i++) {
+		weights[i]=weights[i]/max;
+	}
+	if (weights.size()<UsedPenaltyFunctionComponents.size()) weights.resize(UsedPenaltyFunctionComponents.size(),1);
 }
 void parameters::Cout() {//метод выводит в терминал считанные в класс параметры расчёта
 	cout<<"parameters::CoutParameters() has started!"<<"\n";
@@ -291,6 +314,39 @@ string parameters::GetComponentName(unsigned int iterator) {
 		}
 	}
 	return "unknown";
+}
+bool parameters::CheckOccupancy(StateParameters &s) {
+	if(SubShellsUsedForOccupancyFit.size()==0) {
+		return true;//если состояния, для которых фитируется заселенность, не определены, используем все состояния
+	}
+	for(unsigned int i=0;i<SubShellsUsedForOccupancyFit.size();i++) {
+		if(SubShellsUsedForOccupancyFit[i].CompareQN(s)) {
+			return true;
+		}
+	}
+	return false;
+}
+bool parameters::CheckSatesForPenaltyFunction(StateParameters &s) {
+	if(SubShellsUsedForPenaltyFunction.size()==0) {
+		return true;//если состояния, для которых считается штраф.функция, не определены, используем все состояния
+	}
+	for(unsigned int i=0;i<SubShellsUsedForPenaltyFunction.size();i++) {
+		if(SubShellsUsedForPenaltyFunction[i].CompareQN(s)) {
+			return true;
+		}
+	}
+	return false;
+}
+bool parameters::CheckSatesForPenaltyFunction(State &s) {
+	/*if(SubShellsUsedForPenaltyFunction.size()==0) {
+		return true;//если состояния, для которых считается штраф.функция, не определены, используем все состояния
+	}
+	for(unsigned int i=0;i<SubShellsUsedForPenaltyFunction.size();i++) {
+		if(SubShellsUsedForPenaltyFunction[i].CompareQN(s.GetN(),s.GetL(),s.GetJP())) {
+			return true;
+		}
+	}
+	return false;*/
 }
 
 int Experiment::GetColor(int L, float JP) {

@@ -3,8 +3,10 @@
 
 void SetOfExpCouples::CreateCouplesOfExperiments(vector<Experiment> &Pickup,
 vector<Experiment> &Stripping, parameters &par) {
-	//функция создаёт вектор всех вариантов пар экспириментов срыв-подхват (вектор объектов CoupleOfExperiments);
-	//функции на вход подаются вектор всех экспериментов срыва и вектор всех экспериментов подхвата (их адреса?)
+	//функция создаёт вектор всех вариантов пар экспириментов срыв-подхват
+	//(вектор объектов CoupleOfExperiments);
+	//функции на вход подаются вектор всех экспериментов срыва и вектор всех
+	//экспериментов подхвата (их адреса?)
 	cout<<"void SetOfExpCouples::CreateCouplesOfExperiments has started!"<<endl;
 	for(unsigned int i=0;i<Pickup.size();i++) {
 		cout<<"Got number "<<i+1<<" pickup "<<Pickup[i].reference<<"\n";
@@ -113,9 +115,13 @@ cout<<"void SetOfExpCouples::CalculatePenaltyFunction() has started!"<<"\n";
 			}
 		}
 		for(unsigned int j=0;j<data[i].PenaltyComponents.size();j++) {
+			data[i].PenaltyComponents[j]=(data[i].PenaltyComponents[j]+1/data[i].PenaltyComponents.size())*
+			data[i].par.weights[j]/Sum(data[i].par.weights);///to do: продумать формулу для применения весов штрафной функции
+		}
+		for(unsigned int j=0;j<data[i].PenaltyComponents.size();j++) {
 			data[i].penalty+=data[i].PenaltyComponents[j];
 		}
-		data[i].penalty=data[i].penalty/data[i].PenaltyComponents.size();
+		//data[i].penalty=data[i].penalty/data[i].PenaltyComponents.size();
 	}
 	
 }//конец void CalculatePenaltyFunction
@@ -149,19 +155,15 @@ void SetOfExpCouples::PrintCalculationResult(string OutputFileName, string outpu
 		mgr->SetTitle("Occupancy with BCS fit; E, MeV; v^{2}");
 		gPad->Modified();
 		gPad->Update();
-		
 		cc1->cd(3);
-		TH1F PenaltyComponents=data[i].BuildPenaltyComponentsHistogram();
-		gPad->SetLogy(1);
-		PenaltyComponents.Draw();
-		
+		data[i].BuildPenaltyComponentsHistogram();
+		data[i].DrawPenaltyComponentsHistogram("logy");
 		cc1->cd(4);//переходим к Pad4
 		//gPad->SetLogy(1);
 		HistStrip.PrintSpectroscopicFactorHistogram();//рисуем гистограмму для эксперимента срыва
 		string TextOutput=data[i].ResultsInTextForm(1);
 		stringstream s(TextOutput);
 		OutputTextFile<<TextOutput<<"\n";//записывем в текстовый файл результаты расчёта
-		
 		cc1->cd(5);//переходим к Pad5
 		TGraph* gr=new TGraph();//"h1","Calculated shell scheme;1 ;E, keV",10,0,1);
 		gr->SetTitle("Calculated shell scheme;  ;E, keV");
@@ -244,55 +246,45 @@ cout<<"void SetOfNormalisedExpCouples::CalculatePenaltyFunction() has started!"<
 	}
 	if(data.size()>0)
 	AverageNumberOfCalculatedStates=round(AverageNumberOfCalculatedStates/data.size());
-	else
-	{
+	else{
 		cerr<<"	*** Error! CalculatePenaltyFunction() got empty input vector!"<<"\n";
 		return;
 	};
 	
-	for(unsigned int i=0;i<data.size();i++)
-	{
+	for(unsigned int i=0;i<data.size();i++){
 		data[i].PenaltyComponents.resize(0);
 		//cout<<"data[i].PenaltyComponents.size() = "<<data[i].PenaltyComponents.size()<<"\n";
 		//cout<<"size to be = "<<data[i].par.UsedPenaltyFunctionComponents.size()<<"\n";
-		for(unsigned int j=0;j<data[i].par.UsedPenaltyFunctionComponents.size();j++)
-		{
+		for(unsigned int j=0;j<data[i].par.UsedPenaltyFunctionComponents.size();j++){
 			//cout<<"comp "<<(int)data[i].par.UsedPenaltyFunctionComponents[j]<<"\n";
-			if(data[i].par.UsedPenaltyFunctionComponents[j]==1)
-			{
+			if(data[i].par.UsedPenaltyFunctionComponents[j]==1) {
 				data[i].PenaltyComponents.push_back(abs(1-Average(data[i].ParticlesAndHolesSum)));
 			}
-			else if(data[i].par.UsedPenaltyFunctionComponents[j]==2)
-			{
+			else if(data[i].par.UsedPenaltyFunctionComponents[j]==2) {
 				data[i].PenaltyComponents.push_back(1-((float)data[i].Pickup.size()/NumberOfPickupStatesMax));
 			}
-			else if(data[i].par.UsedPenaltyFunctionComponents[j]==3)
-			{
+			else if(data[i].par.UsedPenaltyFunctionComponents[j]==3) {
 				data[i].PenaltyComponents.push_back(1-((float)data[i].Stripping.size()/NumberOfStrippingStatesMax));
 			}
-			else if(data[i].par.UsedPenaltyFunctionComponents[j]==4)
-			{
-				if((MaxEfError!=0)&&(MaxDeltaError!=0))
-				{
+			else if(data[i].par.UsedPenaltyFunctionComponents[j]==4) {
+				if((MaxEfError!=0)&&(MaxDeltaError!=0)) {
 					data[i].PenaltyComponents.push_back(data[i].Ef_error/MaxEfError);
 				}
 			}
-			else if(data[i].par.UsedPenaltyFunctionComponents[j]==5)
-			{
-				if((MaxEfError!=0)&&(MaxDeltaError!=0))
-				{
+			else if(data[i].par.UsedPenaltyFunctionComponents[j]==5) {
+				if((MaxEfError!=0)&&(MaxDeltaError!=0)) {
 					data[i].PenaltyComponents.push_back(data[i].Delta_error/MaxDeltaError);
 				}
 			}
 		}
-		
-		//cout<<data[i].Pickup.reference<<" "<<data[i].Stripping.reference<<"\n";
-		for(unsigned int j=0;j<data[i].PenaltyComponents.size();j++)
-		{
-			//cout<<"p["<<j<<"]="<<data[i].PenaltyComponents[j]<<" "<<Average(data[i].ParticlesAndHolesSum)<<"\n";
+		for(unsigned int j=0;j<data[i].PenaltyComponents.size();j++) {
+			data[i].PenaltyComponents[j]=(data[i].PenaltyComponents[j]+1/data[i].PenaltyComponents.size())*
+			data[i].par.weights[j];///to do: продумать формулу для применения весов штрафной функции
+		}
+		for(unsigned int j=0;j<data[i].PenaltyComponents.size();j++) {
 			data[i].penalty+=data[i].PenaltyComponents[j];
 		}
-		data[i].penalty=data[i].penalty/data[i].PenaltyComponents.size();
+		//data[i].penalty=data[i].penalty/data[i].PenaltyComponents.size();
 	}
 	
 }//конец void CalculatePenaltyFunction
@@ -324,9 +316,8 @@ void SetOfNormalisedExpCouples::PrintCalculationResult(string OutputFileName, st
 		gPad->Modified();
 		gPad->Update();
 		cc1->cd(3);
-		TH1F PenaltyComponents=data[i].BuildPenaltyComponentsHistogram();
-		gPad->SetLogy(1);
-		PenaltyComponents.Draw();
+		data[i].BuildPenaltyComponentsHistogram();
+		data[i].DrawPenaltyComponentsHistogram("logy");
 		cc1->cd(4);//переходим к Pad4
 		//gPad->SetLogy(1);
 		HistStrip.PrintSpectroscopicFactorHistogram();//рисуем гистограмму для эксперимента срыва

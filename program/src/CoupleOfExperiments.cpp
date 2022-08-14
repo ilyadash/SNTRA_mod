@@ -1,14 +1,21 @@
 #include "CoupleOfExperiments.h"
 
-TH1F CoupleOfExperiments::BuildPenaltyComponentsHistogram() {
+void CoupleOfExperiments::BuildPenaltyComponentsHistogram() {
 	TH1F result("PFC","Penalty function components",PenaltyComponents.size(),0,PenaltyComponents.size()+1);
-	result.GetYaxis()->SetRangeUser(10e-4,1);
-	for(unsigned int i=0;i<PenaltyComponents.size();i++)
-	{
+	for(unsigned int i=0;i<PenaltyComponents.size();i++) {
 		result.SetBinContent(i+1,PenaltyComponents[i]);
 		result.GetXaxis()->SetBinLabel(i+1,par.GetComponentName(i).c_str());
 	}
-	return result;
+	PenaltyComponentsHistogram = result;
+}
+
+void CoupleOfExperiments::DrawPenaltyComponentsHistogram(TString opt) {
+	if(opt == "logy") {
+		PenaltyComponentsHistogram.GetYaxis()->SetRangeUser(10e-4,1);
+		gPad->SetLogy(1);
+	}
+	else PenaltyComponentsHistogram.GetYaxis()->SetRangeUser(0,1);
+	PenaltyComponentsHistogram.Draw();
 }
 
 CoupleOfExperiments::CoupleOfExperiments(Experiment &InpPickup,Experiment &InpStripping){
@@ -39,8 +46,7 @@ void CoupleOfExperiments::GenerateCommonNJPList() {
 						s.SetToBeDrawnFlag(1);//средни указанных для отрисовки есть данное состояние, то выставим ему флаг, что его нужно отрисовывать
 						cout<<"s.GetToBeDrawnFlag()=="<<s.GetToBeDrawnFlag()<<endl;
 					}
-					else  
-					{
+					else  {
 						cout<<"s is NOT included in par.SubShellsUsedInDrawing!"<<endl;
 						s.SetToBeDrawnFlag(0);//иначе укажем флаг, что отрисовывать не надо
 						cout<<"s.GetToBeDrawnFlag()=="<<s.GetToBeDrawnFlag()<<endl;

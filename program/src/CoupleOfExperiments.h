@@ -48,8 +48,10 @@ class CoupleOfExperiments {//класс пары комплиментарных 
 	TGraph Both_occupancies;;
 	
 	TF1 BCS;//фит заселённостей в зависисмости от энергии (фит БКШ)
+	TH1F PenaltyComponentsHistogram;
 	string PenaltyFunction;//
-	TH1F BuildPenaltyComponentsHistogram();
+	void BuildPenaltyComponentsHistogram();
+	void DrawPenaltyComponentsHistogram(TString opt="logy");
 
 	CoupleOfExperiments(Experiment &InpPickup,Experiment &InpStripping);//конструктор, аргументы которого представляют из себя эксперименты по подхвату и срыву
 	

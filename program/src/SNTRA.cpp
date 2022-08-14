@@ -18,8 +18,9 @@
 
 using namespace std;
 
-vector<string> ListFiles(string mask)//функция для считывания текстовых файлов без расширения(?)
-{cout<<"vector<string> ListFiles(string "<<mask<<") has started!"<<"\n";
+vector<string> ListFiles(string mask){
+	//функция для считывания текстовых файлов без расширения(?)
+	cout<<"vector<string> ListFiles(string "<<mask<<") has started!"<<"\n";
 	vector<string> FileNames;
 	string s;
 	FILE* fp;
@@ -39,31 +40,27 @@ vector<string> ListFiles(string mask)//функция для считывани�
 	cout<<"vector<string> ListFiles(string "<<mask<<") has ended!"<<"\n";
 }
 
-vector<string> ListFiles(string dirname, string ext) //функция ... , выводит названия входных файлов в терминал
-{cout<<"vector<string> ListFiles("<<dirname<<", "<<ext<<")  has started!"<<"\n";
+vector<string> ListFiles(string dirname, string ext) {//функция ... , выводит названия входных файлов в терминал
+	cout<<"vector<string> ListFiles("<<dirname<<", "<<ext<<")  has started!"<<"\n";
 	TSystemDirectory dir(dirname.c_str(), dirname.c_str()); 
 	TList *files = dir.GetListOfFiles(); 
 	vector<string> result;
-	if(files) 
-	{
+	if(files) {
 		//cout<<"ListFiles("<<dirname<<", "<<ext<<") found some file candidates \n";
 		TSystemFile *file; 
 		TString fname; 
 		TIter next(files);
-		while((file=(TSystemFile*)next()))
-		{
+		while((file=(TSystemFile*)next())) {
 			//cout<<"ListFiles("<<dirname<<", "<<ext<<") moving in candidates iteration\n";
 			fname = file->GetName(); 
 			//cout<<"ListFiles("<<dirname<<", "<<ext<<") chacking file "<<file->GetName()<<" extension\n";
-			if(!file->IsDirectory() && fname.EndsWith(ext.c_str()))
-			{ 
+			if(!file->IsDirectory() && fname.EndsWith(ext.c_str())) { 
 				result.push_back(dirname+(string)fname); 
 				//cout<<"ListFiles("<<dirname<<", "<<ext<<") found file "<<(string)fname<<"\n";
 			} 
 		} 
 	}
-	else
-	{
+	else {
 		cout<<" *** Error! ListFiles(): TList *files = dir.GetListOfFiles() returned false!"<<endl;
 	}
 	cout<<"vector<string> ListFiles("<<dirname<<", "<<ext<<") has ended!"<<"\n";
@@ -71,11 +68,10 @@ vector<string> ListFiles(string dirname, string ext) //функция ... , вы
 }
 
 void ReadFilesInDirectory(string PathToFiles, vector<Experiment> &Pickup, vector<Experiment> &Stripping,
-string particle, int ListFilesFlag=0)
-{cout<<"void ReadFilesInDirectory(...) has started!"<<"\n";
+string particle, int ListFilesFlag=0) {
+	cout<<"void ReadFilesInDirectory(...) has started!"<<"\n";
 	vector<string> FileNames;
-	if(ListFilesFlag==0)
-	{
+	if(ListFilesFlag==0) {
 		FileNames=ListFiles(PathToFiles);
 	}
 	else
@@ -109,14 +105,12 @@ string particle, int ListFilesFlag=0)
 		GetAZ(E.Nucleus,Z,A);
 		ParceReaction(E.reaction,type,ParticleType);
 				
-		if(ParticleType==1)
-		{///уже здесь энергии считываются неправильно:!!!
+		if(ParticleType==1) {
 			E.BA1=GetSeparationEnergy(Z+1, A+1, 1,1)*1000;
 			E.BA=GetSeparationEnergy(Z, A, 1,1)*1000;
 			E.particle="proton";
 		}
-		else
-		{
+		else {
 			E.BA1=GetSeparationEnergy(Z, A+1, 0,1)*1000;
 			E.BA=GetSeparationEnergy(Z, A, 0,1)*1000;
 			E.particle="neutron";
@@ -124,14 +118,11 @@ string particle, int ListFilesFlag=0)
 		
 		E.ProcessExperimentalData();
 		
-		if((E.particle==particle)||(particle==""))
-		{
-			if(E.GetType()=="pickup")
-			{
+		if((E.particle==particle)||(particle=="")) {
+			if(E.GetType()=="pickup") {
 				Pickup.push_back(E);
 			}
-			else if(E.GetType()=="stripping")
-			{
+			else if(E.GetType()=="stripping") {
 				Stripping.push_back(E);
 			}
 			SplitExperiments(Pickup);
@@ -167,8 +158,7 @@ void SNTRA(string PathToFiles, string particle="", int ListFilesFlag=0, string o
 		OutputFileName2=OutputFileName+"_norm";//OutputFileName2 равен название ядра _ налетающий нуклон_norm
 		OutputFileName3=OutputFileName+"_norm2";//OutputFileName3 равен название ядра _ налетающий нуклон_norm2
 	}//получаем для название типа "32S_neutron" для pdf и txt файлов
-	else//иначе
-	{
+	else {
 		return ;//заканчиваем нашу функцию SNTRA здесь
 	}
 	Analysis.CalculatePenaltyFunction();//применяем функцию для вычисления штрафной функции

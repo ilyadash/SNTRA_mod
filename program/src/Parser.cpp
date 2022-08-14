@@ -42,60 +42,41 @@ string NLJToString(int n, int L, float J) {
 	}
 }
 
-int StringToNLJ(string s, int &n, int &l, float &JP)
-{
-	//cout<<"StringToNLJ has started for "<<s<<"!"<<"\n";
-	if(s.size()>4)
-	{
-		if(s[0]>='1'&&s[0]<='9')
-		{
+int StringToNLJ(string s, int &n, int &l, float &JP) {
+	if(s.size()>4) {
+		if(s[0]>='1'&&s[0]<='9') {
 			n=atoi(&s[0]);
-			//cout<<"n = "<<n<<"\n";
 		}
-		else
-		{
+		else {
 			cout<<"	***Error! StringToNLJ has got too strange n="<<s[0]<<"! Return 0!"<<"\n";
 			return 0;
 		}
-		for(unsigned int i=0;i<7;i++)
-		{
-			if(s[1]==AngularMomentum[i])
-			{
-				//cout<<"s[1] = "<<s[1]<<"\n";
+		for(unsigned int i=0;i<7;i++) {
+			if(s[1]==AngularMomentum[i]) {
 				l=i;
-				//cout<<"l = "<<l<<"\n";
 			}
 		}
 		s.erase(0,2);
-		//cout<<"After erase:\n";
-		//cout<<"s = "<<s<<"\n";
-		if((s[2]>='1'&&s[2]<='9')&&(s[4]>='1'&&s[4]<='9'))
-		{
-			//cout<<"s[2]="<<s[2]<<"\n";
+		if((s[2]>='1'&&s[2]<='9')&&(s[4]>='1'&&s[4]<='9')) {
 			JP=pow(-1,l)*((float)atoi(&s[0]))/((float)atoi(&s[2]));
-			if (s[5]>='1'&&s[5]<='9')
-			{
+			if (s[5]>='1'&&s[5]<='9') {
 				JP=pow(-1,l)*((float)atoi(&s[0]))/(10*(float)atoi(&s[2])+(float)atoi(&s[3]));
 			}
-			//cout<<"JP="<<JP<<"\n";
 			return 1;
 		}
-		else
-		{
+		else {
 			cout<<"	***Error! StringToNLJ has got too strange JP! Return 0!"<<"\n";
 			return 0;
 		}
 	}
-	else
-	{
+	else {
 		cout<<"	***Error! StringToNLJ has got too short input string! Return 1!"<<"\n";
 		return 1;
 	}
 	
 }
 
-int TStringToNLJ(TString s, int &n, int &l, float &JP)
-{
+int TStringToNLJ(TString s, int &n, int &l, float &JP) {
 	//cout<<"TStringToNLJ has started!"<<"\n";
 	//cout<<"s.Data() == "<<s.Data()<<"\n";
 	string str(s.Data());
@@ -103,8 +84,7 @@ int TStringToNLJ(TString s, int &n, int &l, float &JP)
 	return StringToNLJ(str, n, l, JP);
 }
 
-string LToString(int L)
-{
+string LToString(int L) {
 	string result;
 	if((L>6)||(L<0))
 	{
@@ -117,8 +97,7 @@ string LToString(int L)
 	return result;
 }
 
-vector<int> StringLToInt(string L_string)
-{
+vector<int> StringLToInt(string L_string) {
 	vector<int> result;
 	for(unsigned int i=0;i<L_string.size();i++)
 	{
@@ -133,8 +112,7 @@ vector<int> StringLToInt(string L_string)
 	return result;
 }
 
-void GetAZ(string nucleus, int &Z, int &A)
-{
+void GetAZ(string nucleus, int &Z, int &A) {
 	string mass;
 	string name;
 	if(nucleus.size()==0)
@@ -185,8 +163,7 @@ void GetAZ(string nucleus, int &Z, int &A)
 	}
 }
 
-double GetNuclearMass(string nucleus)
-{
+double GetNuclearMass(string nucleus) {
 	int A,Z;
 	GetAZ(nucleus,Z,A);
 	ifstream MassFile(sprintf("audi/z%03d",Z).c_str());
@@ -201,8 +178,7 @@ double GetNuclearMass(string nucleus)
 	}
 }
 
-double GetNuclearMass(int Z, int A)
-{
+double GetNuclearMass(int Z, int A) {
 	ifstream MassFile(sprintf("audi/z%03d",Z).c_str());
 	if(!MassFile)
 	{
@@ -221,8 +197,7 @@ double GetNuclearMass(int Z, int A)
 	return 0;
 }
 
-double GetSeparationEnergy(string nucleus, string particle="n")
-{
+double GetSeparationEnergy(string nucleus, string particle="n") {
 	double nucleus_mass, particle_mass, product_mass;
 	
 	cout<<"1"<<nucleus<<"\n";
@@ -258,8 +233,7 @@ double GetSeparationEnergy(string nucleus, string particle="n")
 	return product_mass-nucleus_mass+particle_mass;
 }
 
-double GetSeparationEnergy(int nucleus_Z, int nucleus_A, int particle_Z, int particle_A)
-{
+double GetSeparationEnergy(int nucleus_Z, int nucleus_A, int particle_Z, int particle_A) {
 	double nucleus_mass, particle_mass, product_mass;
 	int product_A, product_Z;
 	particle_mass=GetNuclearMass(particle_Z, particle_A)-particle_Z*Me;
@@ -275,8 +249,7 @@ double GetSeparationEnergy(int nucleus_Z, int nucleus_A, int particle_Z, int par
 	return product_mass-nucleus_mass+particle_mass;
 }
 
-void ParceReaction(string reaction, string &type, int &ParticleType)
-{
+void ParceReaction(string reaction, string &type, int &ParticleType) {
 	string particles[2];
 	int iterator=0;
 	for(int i=0;i<reaction.size();i++)

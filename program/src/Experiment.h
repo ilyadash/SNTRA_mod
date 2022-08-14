@@ -28,11 +28,13 @@ class parameters//класс пользовательских параметро
 	public:
 	unsigned char IncompleteCouplesFlag;//all=1, pickup only=2, stripping only=3, no=4//флаг использования пар экпериментов разных типов для расчёта
 	bool LimitedSubShellsUsedInDrawing;//флаг отрисовки только выбранных пользователем в параметрах подоболочек
+	vector<StateParameters> SubShellsUsedForPenaltyFunction;
 	vector<StateParameters> SubShellsUsedInAllCalculations;// подоболочки, которые используются во всех вычислениях, а остальные будут игнорироваться (?)
 	vector<StateParameters> SubShellsUsedForOccupancyFit;// подоболочки, которые используются в фите БКШ
 	vector<StateParameters> SubShellsUsedInDrawing;//подоболочки, которые должны отрисовываться на холсте (в энергетическом спектре, в фите БКШ)
 	vector<StateParameters> SubShellsUsedForNormalisation;//подоболочки, для которых выписываются и решаются уравнения, нужные для нахождения нормировочных коэффициентов
 	vector<unsigned char> UsedPenaltyFunctionComponents;
+	vector<float> weights;
 	unsigned int NParticlesInShell;
 	unsigned int NHolesInShell;
 
@@ -40,8 +42,14 @@ class parameters//класс пользовательских параметро
 
 	string GetComponentName(unsigned int iterator);
 	void ReadParameters(string filename);//метод считывает параметры из файла на диске
+	bool Normalize();
+	int NumberOfParticlesInUsedShell;
+	int NumberOfHolesInUsedShell;
 	bool CheckStateParameters(StateParameters &s);// ?
 	bool CheckBelonging(StateParameters &s, vector<StateParameters> &v);// ?
+	bool CheckOccupancy(StateParameters &s);
+	bool CheckSatesForPenaltyFunction(StateParameters &s);
+	bool CheckSatesForPenaltyFunction(State &s);
 	void PrintUsedSubShells();
 	void Cout();//метод выводит в терминал считанные в класс параметры расчёта
 };
