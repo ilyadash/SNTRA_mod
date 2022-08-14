@@ -30,18 +30,16 @@ void SetOfExpCouples::ArrangeByPenalty() {
 	cout<<"void SetOfExpCouples::ArrangeByPenalty() has started!"<<"\n";
 	for(unsigned int i=0;i<data.size();i++) {//для каждого элемента i массива
 		int NumberOfExcanges=0;//переменная для числа перестановок
-		for(unsigned int j=0;j<data.size()-i-1;j++)//для каждого элемента массива j, который имеет номер в векторе меньше i
-		{
-			if(data[j].penalty>data[j+1].penalty)//если функция ошибок пары экспериментов j больше, чем у пары j+1
-			{//стандартные действия для смены мест двух соседних эелементов массива/вектора
+		for(unsigned int j=0;j<data.size()-i-1;j++) {//для каждого элемента массива j, который имеет номер в векторе меньше i
+			if(data[j].penalty>data[j+1].penalty) {//если функция ошибок пары экспериментов j больше, чем у пары j+1
+			//стандартные действия для смены мест двух соседних эелементов массива/вектора
 				CoupleOfExperiments tmp=data[j];//создаём буферную пару для перемещения пар j и j+1, равную паре j, чтобы её сохранить
 				data[j]=data[j+1];//сохраняем в j пару j+1
 				data[j+1]=tmp;//сохраняем в j+1 буфер, который равен паре j
 				NumberOfExcanges++;//считаем число перестановок, увеличивая каждый раз NumberOfExcanges на 1
 			}
 		}
-		if(NumberOfExcanges==0)//если не было совершенно перестановок, NumberOfExcanges осталось равной 0
-		{
+		if(NumberOfExcanges==0) {//если не было совершенно перестановок, NumberOfExcanges осталось равной 0
 			return;//то функция просто ничего не делает
 		}
 	}
