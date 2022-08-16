@@ -14,8 +14,7 @@ vector<TString> AllPrimitiveSubShellsList={
 	//"1j15/2"
 	};
 
-class StateParameters//класс параметров состояний, измеренных в эксперименте
-{
+class StateParameters{//класс параметров состояний, измеренных в эксперименте
 	public:
 	double JP;
 	int n,l;
@@ -38,28 +37,22 @@ class StateParameters//класс параметров состояний, из�
 	void Cout();
 };
 
-vector<StateParameters> VectorConvertTStringToStateParameters(vector<TString> v)
-{
-	//cout<<"VectorConvertTStringToStateParameters has started!\n";
+vector<StateParameters> VectorConvertTStringToStateParameters(vector<TString> v) {
 	vector<StateParameters> result;
 	for(unsigned int i=0;i<v.size();i++)
 	{
 		int n, l;
 		float JP;
 		TStringToNLJ(v[i], n, l, JP);
-		//cout<<"VectorConvertTStringToStateParameters creating StateParameters s!\n";
 		StateParameters s(n, l, JP, "0");
-		//cout<<"VectorConvertTStringToStateParameters creating pushing s!\n";
 		result.push_back(s);
 	}
-	//cout<<"VectorConvertTStringToStateParameters has finished!\n";
 	return result;
 }
 
 vector<StateParameters> AllPrimitiveSubShells=VectorConvertTStringToStateParameters(AllPrimitiveSubShellsList);
 
-class State //отдельное состояние, зарегистрированное в эксперименте
-{
+class State {//отдельное состояние, зарегистрированное в эксперименте
 	public:
 	char type;//тип: 0->pickup, 1->stripping
 	char UseFlag;
@@ -79,14 +72,12 @@ class State //отдельное состояние, зарегистриров�
 	int Good();
 };
 
-ostream& operator << (ostream &s, State &st)
-{
+ostream& operator << (ostream &s, State &st){
 	s<<(int)st.type<<" "<<st.Energy<<" "<<st.n[0]<<" "<<st.L[0]<<" "<<st.JP[0]<<" "<<st.SpectroscopicFactor[0]<<"\n";
 	return s;
 }
 
-class SummarizedSpectroscopicState
-{//класс обсчитанных значений для подоболочки данной пары экспериментов
+class SummarizedSpectroscopicState{//класс обсчитанных значений для подоболочки данной пары экспериментов
 	public:
 	int n, L;//главное квантовое число и орб.момент
 	double JP;//спин и четность уровня, соответствующего центроиду
@@ -105,8 +96,7 @@ class SummarizedSpectroscopicState
 	const bool operator == (SummarizedSpectroscopicState &v2);
 };
 
-class SummarizedSpectroscopicData
-{//класс резульаттов расчёта
+class SummarizedSpectroscopicData{//класс резульаттов расчёта
 	public:
 	vector<SummarizedSpectroscopicState> States;
 	void CreateJPList(State &s);

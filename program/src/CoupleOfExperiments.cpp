@@ -1,4 +1,5 @@
 #include "CoupleOfExperiments.h"
+#include "TLine.h"
 
 CoupleOfExperiments::CoupleOfExperiments() {
 	
@@ -22,6 +23,30 @@ void CoupleOfExperiments::DrawPenaltyComponentsHistogram(TString opt) {
 	}
 	else PenaltyComponentsHistogram.GetYaxis()->SetRangeUser(0,1);
 	PenaltyComponentsHistogram.Draw();
+}
+void CoupleOfExperiments::BuildSubShellsSpectrum() {
+	SubShellsSpectrum = new TGraph();//"h1","Calculated shell scheme;1 ;E, keV",10,0,1);
+	SubShellsSpectrum->SetTitle("Calculated shell scheme;  ;E, keV");
+	SubShellsSpectrum->SetPoint(0,0,0);
+	SubShellsSpectrum->SetMinimum(GetMinimum(SPE)/1000-1);
+	SubShellsSpectrum->SetMaximum(GetMaximum(SPE)/1000*1.1+1);
+	SubShellsSpectrum->GetYaxis()->SetRangeUser(GetMinimum(SPE)/1000-1,
+	GetMaximum(SPE)/1000*1.1+1);
+}
+void CoupleOfExperiments::DrawSubShellsSpectrum() {
+	SubShellsSpectrum->Draw("ap");
+	for(unsigned int j=0;j<SPE.size();j++){
+		TLine line;
+		TText txt;
+		int color=SP_centroids[j].GetColor();
+		line.SetLineColor(color);
+		if(SP_centroids[j].GetToBeDrawnFlag()==1) {
+			line.DrawLine(0.1,SPE[j]/1000,0.7,SPE[j]/1000);
+			txt.SetTextColor(color);
+			txt.DrawText(0.8,SPE[j]/1000, SP_centroids[j].GetNLJ().Data());
+		}
+	}
+	gPad->Update();
 }
 void CoupleOfExperiments::GenerateCommonNJPList() {
 	cout<<"CoupleOfExperiments::GenerateCommonNJPList() has started!"<<endl;

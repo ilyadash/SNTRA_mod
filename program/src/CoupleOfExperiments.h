@@ -46,6 +46,7 @@ class CoupleOfExperiments {//базовый класс пары комплиме
 	
 	TF1 BCS;//фит заселённостей в зависисмости от энергии (фит БКШ)
 	TH1F PenaltyComponentsHistogram;
+	TGraph* SubShellsSpectrum;
 	string PenaltyFunction;//
 
 	CoupleOfExperiments();
@@ -53,6 +54,8 @@ class CoupleOfExperiments {//базовый класс пары комплиме
 
 	void BuildPenaltyComponentsHistogram();
 	void DrawPenaltyComponentsHistogram(TString opt="logy");
+	void BuildSubShellsSpectrum();
+	void DrawSubShellsSpectrum();
 	void GenerateCommonNJPList();//метод заполняет vector<StateParameters> SP данного объекта, генерирует список совпадающих состояний в экспериментах срыва подхвата
 	void CalcSPE_and_OCC();
 	void ClearCalcResults();

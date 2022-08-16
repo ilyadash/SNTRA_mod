@@ -165,23 +165,6 @@ void SetOfExpCouples::PrintCalculationResult(string OutputFileName, string outpu
 		stringstream s(TextOutput);
 		OutputTextFile<<TextOutput<<"\n";//записывем в текстовый файл результаты расчёта
 		cc1->cd(5);//переходим к Pad5
-		/*TGraph* gr=new TGraph();//"h1","Calculated shell scheme;1 ;E, keV",10,0,1);
-		gr->SetTitle("Calculated shell scheme;  ;E, keV");
-		gr->SetPoint(0,0,0);
-		gr->SetMinimum(GetMinimum(data[i].SPE)/1000-1);
-		gr->SetMaximum(GetMaximum(data[i].SPE)/1000*1.1);
-		gr->Draw("ap");
-		for(unsigned int j=0;j<data[i].SPE.size();j++){
-			TLine line;
-			TText txt;
-			int color=data[i].SP_centroids[j].GetColor();
-			line.SetLineColor(color);
-			if(data[i].SP_centroids[j].GetToBeDrawnFlag()==1) {
-				line.DrawLine(0.1,data[i].SPE[j]/1000,0.7,data[i].SPE[j]/1000);
-				txt.SetTextColor(color);
-				txt.DrawText(0.8,data[i].SPE[j]/1000, data[i].SP_centroids[j].GetNLJ().Data());
-			}
-		}//*/
 		data[i].BuildSubShellsSpectrum();
 		data[i].DrawSubShellsSpectrum();
 		cc1->cd(6);//переходим к Pad6
