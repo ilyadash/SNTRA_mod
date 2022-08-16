@@ -18,7 +18,7 @@
 
 using namespace std;
 
-vector<string> ListFiles(string mask){
+vector<string> ListFiles(string mask) {
 	//функция для считывания текстовых файлов без расширения(?)
 	cout<<"vector<string> ListFiles(string "<<mask<<") has started!"<<"\n";
 	vector<string> FileNames;
@@ -67,6 +67,11 @@ vector<string> ListFiles(string dirname, string ext) {//функция ... , в�
 	return result;
 }
 
+void ParseCSVFile(string PathToFile) {
+	//функция будет парсить пользовательский файл csv, если в нём есть слова в "" с цифра,цифра внутри
+	//- удалить кавычки, заменить , на .
+}
+
 void ReadFilesInDirectory(string PathToFiles, vector<Experiment> &Pickup, vector<Experiment> &Stripping,
 string particle, int ListFilesFlag=0) {
 	cout<<"void ReadFilesInDirectory(...) has started!"<<"\n";
@@ -74,37 +79,34 @@ string particle, int ListFilesFlag=0) {
 	if(ListFilesFlag==0) {
 		FileNames=ListFiles(PathToFiles);
 	}
-	else
-	{
+	else {
 		stringstream ss(PathToFiles);
 		string path,ext;
 		ss>>path;
 		ss>>ext;
-		if(ext=="txt")
-		{
+		if(ext=="txt") {
 			//если файлы имеют формат txt, то запустить крипт в директории расположения по переводу xls в txt
 			///не готово, пользователь сам должен сконвертировать файлы заранее с помощью скрипта
-			/*TString output_dir_cmd1=TString::Format("cd ",dirname.c_str());
+			TString output_dir_cmd1=TString::Format("cd %s",path.c_str());
 			cout<<"ReadFilesInDirectory(...) executing terminal command '"<<output_dir_cmd1<<"'"<<"\n";
-			gSystem->Exec(output_dir_cmd1.Data());*/
+			gSystem->Exec(output_dir_cmd1.Data());
+			gSystem->Exec("pwd");
+			gSystem->Exec("./convertFiles.sh");
+			//gSystem->Exec("./convertFiles.sh");//*/
 			/*TString output_dir_cmd2=TString::Format(". %sconvertFiles.sh",dirname.c_str());
 			cout<<"ReadFilesInDirectory(...) executing terminal command '"<<output_dir_cmd2<<"'"<<"\n";
 			gSystem->Exec(output_dir_cmd2.Data());*/
 		}//*/
 		FileNames=ListFiles(path,ext); 
 	}
-	////cout<<"size="<<FileNames.size()<<"\n";
-	for(unsigned int i=0;i<FileNames.size();i++)
-	{
+	for(unsigned int i=0;i<FileNames.size();i++) {
 		cout<<"ReadFilesInDirectory() is reading file "<<FileNames[i]<<"\n";
 		Experiment E;
 		E.ReadInputFile(FileNames[i]);///нужно реализовать/модифицировать метод для csv файлов
-		//cout<<E.GetType()<<"\n";
 		int Z,A,ParticleType;//ParticleType-передача нейтрона (0) или протона(1)
 		string type;//pickup/stripping
 		GetAZ(E.Nucleus,Z,A);
-		ParceReaction(E.reaction,type,ParticleType);
-				
+		ParceReaction(E.reaction,type,ParticleType);		
 		if(ParticleType==1) {
 			E.BA1=GetSeparationEnergy(Z+1, A+1, 1,1)*1000;
 			E.BA=GetSeparationEnergy(Z, A, 1,1)*1000;
@@ -115,9 +117,7 @@ string particle, int ListFilesFlag=0) {
 			E.BA=GetSeparationEnergy(Z, A, 0,1)*1000;
 			E.particle="neutron";
 		}
-		
 		E.ProcessExperimentalData();
-		
 		if((E.particle==particle)||(particle=="")) {
 			if(E.GetType()=="pickup") {
 				Pickup.push_back(E);
@@ -184,6 +184,7 @@ int main(int argc, char** argv)//главная функция, принимае
 	gStyle->SetTextSize(0.05);
 	gStyle->SetLegendTextSize(0.04);
 	gStyle->SetTitleSize(0.04,"xyz");//*/
+	gStyle->SetOptStat("");
 	TString output_dir=argv[3];
 	if(output_dir=="") output_dir="output"; 
 	TString output_dir_cmd=TString::Format("mkdir -v %s",output_dir.Data());
