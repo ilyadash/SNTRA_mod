@@ -206,8 +206,9 @@ void parameters::ReadParameters(string filename) {
 			}
 		}
 	}
-	if(weights.size()>UsedPenaltyFunctionComponents.size()) weights.resize(UsedPenaltyFunctionComponents.size());
-	//Normalize(weights);///to do: понять, почему он не видит этой функции для vector!
+	if(weights.size()>UsedPenaltyFunctionComponents.size()) {
+		weights.resize(UsedPenaltyFunctionComponents.size());
+	}
 	if (weights.size()==0) return;
 	float max = GetMaximum(weights);
 	for(unsigned i=0;i<weights.size();i++) {

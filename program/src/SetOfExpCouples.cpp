@@ -103,12 +103,14 @@ cout<<"void SetOfExpCouples::CalculatePenaltyFunction() has started!"<<"\n";
 			}
 			else if(data[i].par.UsedPenaltyFunctionComponents[j]==6) {
 				if(data[i].par.NParticlesInShell>0){
-					data[i].PenaltyComponents.push_back(abs(1-Sum(data[i].Particles))/data[i].par.NParticlesInShell);
+					data[i].PenaltyComponents.push_back(
+					abs(data[i].par.NParticlesInShell-Sum(data[i].Particles))/data[i].par.NParticlesInShell);
 				}
 			}
 			else if(data[i].par.UsedPenaltyFunctionComponents[j]==7) {
 				if(data[i].par.NHolesInShell>0){
-					data[i].PenaltyComponents.push_back(abs(1-Sum(data[i].Holes))/data[i].par.NHolesInShell);
+					data[i].PenaltyComponents.push_back(
+					abs(data[i].par.NHolesInShell-Sum(data[i].Holes))/data[i].par.NHolesInShell);
 				}
 			}
 		}
@@ -163,7 +165,7 @@ void SetOfExpCouples::PrintCalculationResult(string OutputFileName, string outpu
 		stringstream s(TextOutput);
 		OutputTextFile<<TextOutput<<"\n";//записывем в текстовый файл результаты расчёта
 		cc1->cd(5);//переходим к Pad5
-		TGraph* gr=new TGraph();//"h1","Calculated shell scheme;1 ;E, keV",10,0,1);
+		/*TGraph* gr=new TGraph();//"h1","Calculated shell scheme;1 ;E, keV",10,0,1);
 		gr->SetTitle("Calculated shell scheme;  ;E, keV");
 		gr->SetPoint(0,0,0);
 		gr->SetMinimum(GetMinimum(data[i].SPE)/1000-1);
@@ -179,8 +181,9 @@ void SetOfExpCouples::PrintCalculationResult(string OutputFileName, string outpu
 				txt.SetTextColor(color);
 				txt.DrawText(0.8,data[i].SPE[j]/1000, data[i].SP_centroids[j].GetNLJ().Data());
 			}
-		}
-
+		}//*/
+		data[i].BuildSubShellsSpectrum();
+		data[i].DrawSubShellsSpectrum();
 		cc1->cd(6);//переходим к Pad6
 		data[i].DrawResultsInTextForm(data[i].ResultsInTextForm());
 		cc1->Print((OutputFileName+".pdf").c_str(),"pdf");
