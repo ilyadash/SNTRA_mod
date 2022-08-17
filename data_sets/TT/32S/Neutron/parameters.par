@@ -1,10 +1,9 @@
 UseIncompleteCouples: all #определяет, что делать с состояниями, в которых есть либо pickup,либо stripping. 
 UsedPenaltyFunctionComponents: a_ij NPickupMax NStrippingMax EF_err Delta_err ParticlesInShell HolesInShell
-Weights: 1 1 1 1 1 1 1 #веса слагаемых штрафной функции
+Weights: 1 0.1 0.1 1 1 1 1 #веса слагаемых штрафной функции
 SubShellsUsedForOccupancyFit: 1d5/2 2s1/2 1d3/2 #список подоболочек, которые используются для фита БКШ. 
 SubShellsUsedForPenaltyFunction: 1d5/2 2s1/2 1d3/2 #список подоболочек, которые используются для расчета штрафной функции
 SubShellsUsedForNormalisation: 1d5/2 2s1/2 1d3/2
 SubShellsUsedInDrawing: 1d5/2 2s1/2 1d3/2 1f7/2
 NParticles: 8 #число частиц на подоболочках, для которых считается штрафная функция
 NHoles: 4 #число дырок на подоболочках, для которых считается штрафная функция
-#Normalize
