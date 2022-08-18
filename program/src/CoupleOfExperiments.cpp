@@ -1,9 +1,7 @@
 #include "CoupleOfExperiments.h"
 #include "TLine.h"
 
-CoupleOfExperiments::CoupleOfExperiments() {
-	
-}
+CoupleOfExperiments::CoupleOfExperiments() {}
 CoupleOfExperiments::CoupleOfExperiments(Experiment &InpPickup,Experiment &InpStripping){
 	Pickup=InpPickup;
 	Stripping=InpStripping;
@@ -32,6 +30,8 @@ void CoupleOfExperiments::BuildSubShellsSpectrum() {
 	SubShellsSpectrum->SetMaximum(GetMaximum(SPE)/1000*1.1+1);
 	SubShellsSpectrum->GetYaxis()->SetRangeUser(GetMinimum(SPE)/1000-1,
 	GetMaximum(SPE)/1000*1.1+1);
+	SubShellsSpectrum->GetXaxis()->SetLabelSize(0.00);
+	SubShellsSpectrum->GetXaxis()->SetTickLength(0.00);
 }
 void CoupleOfExperiments::DrawSubShellsSpectrum() {
 	SubShellsSpectrum->Draw("ap");
@@ -56,18 +56,15 @@ void CoupleOfExperiments::GenerateCommonNJPList() {
 		for(int j=0;j<Stripping.GetNCalculatedLevels();j++) {
 			if(Pickup[i].Compare(Stripping[j])) {
 				StateParameters s(Pickup[i].n,Pickup[i].L,Pickup[i].JP,"both");
-				if (par.LimitedSubShellsUsedInDrawing==1) {//если пользователь указывал в файле параметров подоболочки для отрисовки
-					//cout<<"Check no "<<i<<":"<<endl;
+				if (par.LimitedSubShellsUsedInDrawing==1) {
+					//если пользователь указывал в файле параметров подоболочки для отрисовки
 					s.Cout();
 					if(s.CheckIfIncludedIn(par.SubShellsUsedInDrawing)) {
-						//cout<<"s is included in par.SubShellsUsedInDrawing!"<<endl;
-						s.SetToBeDrawnFlag(1);//средни указанных для отрисовки есть данное состояние, то выставим ему флаг, что его нужно отрисовывать
-						//cout<<"s.GetToBeDrawnFlag()=="<<s.GetToBeDrawnFlag()<<endl;
+						//средни указанных для отрисовки есть данное состояние, то выставим ему флаг, что его нужно отрисовывать:
+						s.SetToBeDrawnFlag(1);
 					}
 					else  {
-						//cout<<"s is NOT included in par.SubShellsUsedInDrawing!"<<endl;
 						s.SetToBeDrawnFlag(0);//иначе укажем флаг, что отрисовывать не надо
-						//cout<<"s.GetToBeDrawnFlag()=="<<s.GetToBeDrawnFlag()<<endl;
 					}
 				}
 				SP.push_back(s);
@@ -79,14 +76,10 @@ void CoupleOfExperiments::GenerateCommonNJPList() {
 			cout<<"Check no "<<i<<":"<<endl;
 			s.Cout();
 			if(s.CheckIfIncludedIn(par.SubShellsUsedInDrawing)) {
-				//cout<<"s is included in par.SubShellsUsedInDrawing!"<<endl;
 				s.SetToBeDrawnFlag(1);//средни указанных для отрисовки есть данное состояние, то выставим ему флаг, что его нужно отрисовывать
-				//cout<<"s.GetToBeDrawnFlag()=="<<s.GetToBeDrawnFlag()<<endl;
 			}
 			else {
-				//cout<<"s is NOT included in par.SubShellsUsedInDrawing!"<<endl;
 				s.SetToBeDrawnFlag(0);//иначе укажем флаг, что отрисовывать не надо
-				//cout<<"s.GetToBeDrawnFlag()=="<<s.GetToBeDrawnFlag()<<endl;
 			}
 			SP.push_back(s);
 		}
@@ -101,19 +94,13 @@ void CoupleOfExperiments::GenerateCommonNJPList() {
 		}
 		if((flag==0)&&((par.IncompleteCouplesFlag==3)||(par.IncompleteCouplesFlag==1))) {
 			StateParameters s(Stripping[i].n,Stripping[i].L,Stripping[i].JP,"stripping");
-			//cout<<"Check no "<<i<<":"<<endl;
 			s.Cout();
 			if (par.LimitedSubShellsUsedInDrawing==1) {//если пользователь указывал в файле параметров подоболочки для отрисовки
 				if(s.CheckIfIncludedIn(par.SubShellsUsedInDrawing)) {
-					//cout<<"s is included in par.SubShellsUsedInDrawing!"<<endl;
-					//cout<<"SP_centroids["<<i<<"].GetToBeDrawnFlag()=="<<SP_centroids[i].GetToBeDrawnFlag()<<endl;
 					s.SetToBeDrawnFlag(1);//средни указанных для отрисовки есть данное состояние, то выставим ему флаг, что его нужно отрисовывать
-					//cout<<"s.GetToBeDrawnFlag()=="<<s.GetToBeDrawnFlag()<<endl;
 				}
 				else {
-					//cout<<"s is NOT included in par.SubShellsUsedInDrawing!"<<endl;
 					s.SetToBeDrawnFlag(0);//иначе укажем флаг, что отрисовывать не надо
-					//cout<<"s.GetToBeDrawnFlag()=="<<s.GetToBeDrawnFlag()<<endl;
 				}
 			}
 			SP.push_back(s);
@@ -130,16 +117,16 @@ void CoupleOfExperiments::CalcSPE_and_OCC() {//функция рассчитыв
 	for(int i=0;i<SP.size();i++) {
 		double C_pickup=Pickup.GetCentroid(SP[i]);
 		double C_stripping=Stripping.GetCentroid(SP[i]);	
-		cout<<NLJToString(SP[i].n,SP[i].l,SP[i].JP)<<"C_pickup="<<C_pickup<<" C_stripping="<<C_stripping<<"\n"; 
+		cout<<NLJToString(SP[i].n, SP[i].l, SP[i].JP)<<"C_pickup = "<<C_pickup<<" C_stripping = "<<C_stripping<<"\n"; 
 		if((C_stripping!=-1)&&(C_pickup!=-1)&&(!isnan(C_stripping))&&(!isnan(C_pickup))) {	
 			//индусский fix, потом проверить, что генерирует nan
 			double E_pickup=-Pickup.BA-C_pickup;//Диплом Марковой М.Л., ф-ла 4
 			double E_stripping=-Stripping.BA1+C_stripping;//Диплом Марковой М.Л., ф-ла 5
-			cout<<NLJToString(SP[i].n,SP[i].l,SP[i].JP)<<"E_pickup="<<E_pickup<<" E_stripping="<<E_stripping<<"\n"; 
-			double SPE_tmp=(Pickup.GetSumSF(SP[i])*E_pickup+Stripping.GetSumSF(SP[i])*E_stripping)/(Pickup.GetSumSF(SP[i])+Stripping.GetSumSF(SP[i]));
-			double OCC_tmp=(Pickup.GetSumSF(SP[i])-Stripping.GetSumSF(SP[i])+2*abs(SP[i].JP)+1)/(2*(2*abs(SP[i].JP)+1));
-			cout<<NLJToString(SP[i].n,SP[i].l,SP[i].JP)<<" pickup_sumG = "<<Pickup.GetSumSF(SP[i])<<" stripping_sumG ="<<Stripping.GetSumSF(SP[i])<<"\n";
-			cout<<NLJToString(SP[i].n,SP[i].l,SP[i].JP)<<" pickup_C = "<<C_pickup<<" stripping_C = "<<C_stripping<<"\n";
+			cout<<NLJToString(SP[i].n,SP[i].l,SP[i].JP)<<"E_pickup = "<<E_pickup<<" E_stripping = "<<E_stripping<<"\n"; 
+			double SPE_tmp=(Pickup.GetSumSF(SP[i])*E_pickup + Stripping.GetSumSF(SP[i])*E_stripping)/(Pickup.GetSumSF(SP[i])+Stripping.GetSumSF(SP[i]));
+			double OCC_tmp=(Pickup.GetSumSF(SP[i]) - Stripping.GetSumSF(SP[i])+2*abs(SP[i].JP)+1)/(2*(2*abs(SP[i].JP)+1));
+			cout<<NLJToString(SP[i].n, SP[i].l, SP[i].JP)<<" pickup_sumG = "<<Pickup.GetSumSF(SP[i])<<" stripping_sumG ="<<Stripping.GetSumSF(SP[i])<<"\n";
+			cout<<NLJToString(SP[i].n, SP[i].l, SP[i].JP)<<" pickup_C = "<<C_pickup<<" stripping_C = "<<C_stripping<<"\n";
 			SPE.push_back(SPE_tmp);//Диплом Марковой М.Л., ф-ла 17
 			OCC.push_back(OCC_tmp);//Диплом Марковой М.Л., ф-ла 18
 			ParticlesAndHolesSum.push_back((Pickup.GetSumSF(SP[i])+Stripping.GetSumSF(SP[i]))/(2*abs(SP[i].JP)+1));
@@ -163,10 +150,6 @@ void CoupleOfExperiments::CalcSPE_and_OCC() {//функция рассчитыв
 	BCS.SetParameter(1,15);
 	float min_E,max_E,min_OCC,max_OCC;
 	for(unsigned int i=0;i<OCC.size();i++) {
-		//cout<<"SP_centroids["<<i<<"]==";
-		//SP_centroids[i].Cout();
-		//cout<<"SP_centroids["<<i<<"].GetType()=="<<SP_centroids[i].GetType()<<endl;
-		//cout<<"SP_centroids["<<i<<"].GetToBeDrawnFlag()=="<<SP_centroids[i].GetToBeDrawnFlag()<<endl;
 		if (SP_centroids[i].GetToBeDrawnFlag()) {
 			if(SP_centroids[i].GetType()=="pickup") {
 				Pickup_occupancies.SetPoint(Pickup_occupancies.GetN(),SPE[i]/1000,OCC[i]);
@@ -214,13 +197,10 @@ void CoupleOfExperiments::CalcSPE_and_OCC() {//функция рассчитыв
 void CoupleOfExperiments::ClearCalcResults() {
 	cout<<"CoupleOfExperiments::ClearCalcResults() has started!"<<endl;
 	//очищаем аттрибуты объекта - вектора вычисленных величин:
-	//SP.resize(0);
 	SP_centroids.resize(0);
 	SPE.resize(0);
 	OCC.resize(0);
 	ParticlesAndHolesSum.resize(0);
-	//OccupanciesForBCSFit.resize(0);//отдельные векторы заселенностей для аппроксимации БКШ
-	//EnergiesForBCSFit.resize(0);
 	
 	Gp_c.resize(0);//вектор спектроскопических сил срыва подоболочек 
 	Gm_c.resize(0);//вектор спектроскопических сил подхвата подоболочек 
@@ -240,38 +220,35 @@ void CoupleOfExperiments::ClearCalcResults() {
 }
 string CoupleOfExperiments::ResultsInTextForm(char verbose_level) {
 	stringstream s;
-	if(verbose_level==0)
-	{
-		s<<"Experiment: "<<Pickup.reference<<" ("<<Pickup.size()<<") "<<Stripping.reference<<" ("<<Stripping.size()<<") \n";
+	if(verbose_level==0){
+		s<<"Pair: "<<Pickup.reference<<" ("<<Pickup.size()<<") "<<Stripping.reference<<" ("<<Stripping.size()<<") \n";
 	}
-	else if(verbose_level==1)
-	{
+	else if(verbose_level==1){
 		s<<"Experiment(pickup): "<<Pickup.reference<<" ("<<Pickup.size()<<")\n";
 		s<<Pickup.ChangesLog<<"\n";
 		s<<"Experiment(stripping): "<<Stripping.reference<<" ("<<Stripping.size()<<")\n";
 		s<<Stripping.ChangesLog<<"\n";
 	}
 	
-	s<<Pickup.particle<<" transfer\n";
-	//s<<Pickup.particle[0]<<" separation energy A:"<<Pickup.BA<<", A+1: "<<Pickup.BA1<<"\n";
-	s<<"E_F: "<<Ef<<" #pm "<<Ef_error<<"  keV \n #Delta: "<<Delta<<" #pm "<<Delta_error<<" keV\n";
+	s<<"E^{BCS}_{F}: "<<TString::Format("%.2f",Ef)<<" #pm "<<TString::Format("%.2f",Ef_error)<<
+	" MeV; #Delta^{BCS}: "<<TString::Format("%.2f",Delta)<<" #pm "<<TString::Format("%.2f",Delta_error)<<" MeV\n";
+	s<<"E^{EXP}_{F}: "<<TString::Format("%.2f",Ef)<<"\n";
 	s<<"penalty: "<<penalty<<"\n";
-	s<<"SPE,keV nlj OCC #frac{G^{+}+G^{-}}{2J+1}\n";
-	for(unsigned int i=0;i<SPE.size();i++)
-	{
-		if (SP_centroids[i].GetToBeDrawnFlag()) s<<SPE[i]<<" "<<NLJToString(SP_centroids[i].n,SP_centroids[i].l,SP_centroids[i].JP)<<" "<<OCC[i]<<" "<<ParticlesAndHolesSum[i]<<"\n";
+	s<<"SPE, keV \t nlj \t OCC \t #frac{G^{+}+G^{-}}{2J+1}\n";
+	for(unsigned int i=0;i<SPE.size();i++){
+		if (SP_centroids[i].GetToBeDrawnFlag()) s<<SPE[i]<<" \t "
+		<<NLJToString(SP_centroids[i].n,SP_centroids[i].l,SP_centroids[i].JP)<<" \t "
+		<<TString::Format("%.2f",OCC[i])<<" \t "
+		<<TString::Format("%.2f",ParticlesAndHolesSum[i])<<"\n";
 	}
 	return s.str();
 }
 void CoupleOfExperiments::DrawResultsInTextForm(string str) {
-	//stringstream s(ResultsInTextForm());
 	stringstream s(str);
-	///
 	string LatexLineTmp;
 	TLatex latex;
 	float x=0.05,y=0.9, step=-0.08;
-	while(getline(s,LatexLineTmp))
-	{
+	while(getline(s,LatexLineTmp)){
 		latex.DrawLatexNDC(x,y,LatexLineTmp.c_str());
 		y+=step;
 	}
@@ -561,14 +538,11 @@ string NormalisedCoupleOfExperiments::FitResultsInTextForm(char verbose_level) {
 		//выведем все уравнения для подоболочек, которые мы должны были использовать для нахождения n+ и n-:
 		if(par.CheckBelonging(SP[i],par.SubShellsUsedForNormalisation)){	
 			k++;
-			//cout<<"Got n="<<SP_centroids[i].n<<"; l="<<SP_centroids[i].l<<"; JP="<<SP_centroids[i].JP<<endl;
 			s<<NLJToString(SP_centroids[i].n,SP_centroids[i].l,SP_centroids[i].JP)<<": n^{+} "
 			<<TString::Format("%1.2f",Gp_alt_c[i])<<" +"<<" n^{-} "<<TString::Format("%1.2f",Gm_alt_c[i])<<" = 1\n";
-			//cout<<"Drawing data for "<<NLJToString(SP_centroids[i].n,SP_centroids[i].l,SP_centroids[i].JP)<<endl;
 		}
 	}
-	if ((n_p==1.)&&(n_m==1.))//если нормировочные коэффициенты равны 1, то логично, что нормировки не происходило
-	{
+	if ((n_p==1.)&&(n_m==1.)){//если нормировочные коэффициенты равны 1, то логично, что нормировки не происходило
 		s<<"Normalization was not perfomed.\n";
 	}//сообщим об этом в .pdf файле
 	else
@@ -590,45 +564,3 @@ string NormalisedCoupleOfExperiments::FitResultsInTextForm(char verbose_level) {
 	}
 	return s.str();//вернём строку, где всё сохранили
 }//конец метода FitResultsInTextForm
-string NormalisedCoupleOfExperiments::ResultsInTextForm(char verbose_level) {//функция записывает в строку результаты и принятые параметры (строка оказывается слева внизу каждого выходного pdf файла)
-	if(NormalisationWasTried==0){
-		return CoupleOfExperiments::ResultsInTextForm(verbose_level);
-	}
-	else {
-		stringstream s;//задаём строку, куда всё будем сохранять
-		if(verbose_level==0) {
-			s<<"Experiment: "<<Pickup.reference<<" ("<<Pickup.size()<<") "<<Stripping.reference<<" ("
-			<<Stripping.size()<<") \n";
-		}
-		else if(verbose_level==1) {
-			s<<"Experiment(pickup): "<<Pickup.reference<<" ("<<Pickup.size()<<")\n";
-			s<<Pickup.ChangesLog<<"\n";
-			s<<"Experiment(stripping): "<<Stripping.reference<<" ("<<Stripping.size()<<")\n";
-			s<<Stripping.ChangesLog<<"\n";
-		}
-		if ((n_p==1.)&&(n_m==1.)) {
-			//если нормировочные колэффициенты равны 1, то логично, что нормировки не происходило	
-			s<<"penalty: "<<penalty<<"\n";
-			s<<"Normalization was not perfomed.\n";
-		}//сообщим об этом в .pdf файле
-		else {	
-			s<<Pickup.particle<<" transfer\n";
-			//выведем n+ и n- с их ошибками:
-			s<<"n^{+} = "<<TString::Format("%0.2f",n_p)<<" #pm "<<TString::Format("%0.2f",er_n_p)
-			<<" n^{-} = "<<TString::Format("%0.2f",n_m)<<" #pm "<<TString::Format("%0.2f",er_n_m)<<endl;
-			s<<"penalty: "<<penalty<<"\n";
-			s<<"E_F: "<<Ef<<" #pm "<<Ef_error<<"  keV \n #Delta: "<<Delta<<" #pm "<<Delta_error<<" keV\n";
-			s<<"SPE,keV nlj OCC #frac{G^{+}+G^{-}}{2J+1}\n";
-			for(unsigned int i=0;i<SPE.size();i++)
-			{//запишем одночастичную энергию, nlj подоболочки, заселённость,
-				//сумму частиц и дырок из экспериментов:
-				if(par.CheckBelonging(SP[i],par.SubShellsUsedInDrawing))
-				{
-					s<<SPE[i]<<" "<<NLJToString(SP_centroids[i].n,SP_centroids[i].l,SP_centroids[i].JP)<<" "
-					<<OCC[i]<<" "<<ParticlesAndHolesSum[i]<<"\n";
-				}
-			}
-		}
-		return s.str();//вернём строку, где всё сохранили
-	}
-}//конец метода ResultsInTextForm

@@ -418,74 +418,57 @@ string Experiment::GetType() {
 	return "error";
 }
 void Experiment::ReadInputFile(string filename) {//просто чтение текстового файла с данными. 
-//Сначала поиск ключевых слов, если их нет, то попытка считать строку как состояние, наблюдаемое в эксперименте
+//Сначала поиск ключевых слов, если их нет, то попытка считать строку как состояние,
+//наблюдаемое в эксперименте
 	ifstream ifs(filename.c_str());
 	string line;
-	while(getline(ifs,line))
-	{
-		//cout<<line<<"\n";
+	while(getline(ifs,line)){
 		std::stringstream sstr(line);
 		string line_tmp;
 		sstr>>line_tmp;
-		if((line_tmp=="Reference:")||(line_tmp=="Author:"))
-		{
+		if((line_tmp=="Reference:")||(line_tmp=="Author:")){
 			sstr>>reference;
 		}
-		if(line_tmp=="Nucleus:")
-		{
+		if(line_tmp=="Nucleus:"){
 			sstr>>Nucleus;
 		}
-		if(line_tmp=="Type:")
-		{
+		if(line_tmp=="Type:"){
 			string typeR;
 			sstr>>typeR;
-			if(typeR=="stripping")
-			{
+			if(typeR=="stripping"){
 				type=1;
 			}
-			if(typeR=="pickup")
-			{
+			if(typeR=="pickup"){
 				type=0;
 			}
 		}
-		else if(line_tmp=="Reaction:")
-		{
+		else if(line_tmp=="Reaction:"){
 			sstr>>reaction;
 		}
-		else if(line_tmp=="ProjectileEnergy:")
-		{
+		else if(line_tmp=="ProjectileEnergy:"){
 			sstr>>ProjectileEnergy;
 		}
-		else if(line_tmp=="BA:")
-		{
+		else if(line_tmp=="BA:"){
 			sstr>>BA;
-			if(BA<100)
-			{
+			if(BA<100){
 				BA=BA*1000;
 			}
 		}
-		else if(line_tmp=="BA1:")
-		{
+		else if(line_tmp=="BA1:"){
 			sstr>>BA1;
-			if(BA1<100)
-			{
+			if(BA1<100){
 				BA1=BA1*1000;
 			}
 		}
-		else if(line_tmp=="JP0:")
-		{
+		else if(line_tmp=="JP0:"){
 			sstr>>JP0;
 		}
-		else
-		{
-			if((line_tmp[0]>='0')&&(line_tmp[0]<='9')&&((line_tmp[0]!='*')))
-			{
+		else{
+			if((line_tmp[0]>='0')&&(line_tmp[0]<='9')&&((line_tmp[0]!='*'))){
 				State s_tmp(line);
 				s_tmp.UseFlag=1;
-				if(s_tmp.Good())
-				{	
-					if((s_tmp.JP.size()>1)||(s_tmp.L.size()>1)||(s_tmp.n.size()>1)||(s_tmp.SpectroscopicFactor.size()>1))
-					{
+				if(s_tmp.Good()){	
+					if((s_tmp.JP.size()>1)||(s_tmp.L.size()>1)||(s_tmp.n.size()>1)||(s_tmp.SpectroscopicFactor.size()>1)){
 						IndexesOfMultipleStates.push_back(States.size());
 						cout<<"Multiple"<<IndexesOfMultipleStates.size();
 					}
@@ -495,14 +478,11 @@ void Experiment::ReadInputFile(string filename) {//просто чтение т�
 				}
 			}
 			else if((line_tmp[1]>='0')&&(line_tmp[1]<='9')&&((line_tmp[0]=='*')))
-			{
 				line_tmp.erase(0,1);
-				
 				State s_tmp(line);
 				s_tmp.UseFlag=0;
 				cout<<s_tmp.Good()<<"*\n";
-				if(s_tmp.Good())
-				{	
+				if(s_tmp.Good()){	
 					States.push_back(s_tmp);
 					States[States.size()-1].type=type;
 					States[States.size()-1].JP0=JP0;
@@ -514,29 +494,23 @@ void Experiment::ReadInputFile(string filename) {//просто чтение т�
 				while(str_stream) {
 					string tmp_string;
 					str_stream>>tmp_string;
-					if(tmp_string=="E")
-					{
+					if(tmp_string=="E"){
 						E_iterator=iterator;
 					}
-					if(tmp_string=="n")
-					{
+					if(tmp_string=="n"){
 						n_iterator=iterator;
 					}
-					if(tmp_string=="l")
-					{
+					if(tmp_string=="l"){
 						L_iterator=iterator;
 					}
-					if(tmp_string=="JP")
-					{
+					if(tmp_string=="JP"){
 						JP_iterator=iterator;
 					}
-					if(tmp_string=="C2S")
-					{
+					if(tmp_string=="C2S"){
 						SF_iterator=iterator;
 					}
 					iterator++;
-					if(iterator>4)
-					{
+					if(iterator>4){
 						break;
 					}
 				}

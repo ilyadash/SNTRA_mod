@@ -59,7 +59,7 @@ class CoupleOfExperiments {//базовый класс пары комплиме
 	void GenerateCommonNJPList();//метод заполняет vector<StateParameters> SP данного объекта, генерирует список совпадающих состояний в экспериментах срыва подхвата
 	void CalcSPE_and_OCC();
 	void ClearCalcResults();
-	virtual string ResultsInTextForm(char verbose_level=0);
+	string ResultsInTextForm(char verbose_level=0);
 	void DrawResultsInTextForm(string str);
 };
 
@@ -86,5 +86,4 @@ class NormalisedCoupleOfExperiments: public CoupleOfExperiments
 	void InduceNormalisation();//функция, которая нормализует данную пару экспериментов, обновляя значения аргументов
 	void ReCalcSPE_and_OCC();//функция дял перерасчёта величин одночастичных энергий, заселённостей после нормализации
 	string FitResultsInTextForm(char verbose_level=0);
-	virtual string ResultsInTextForm(char verbose_level=0);
 };
