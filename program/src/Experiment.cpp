@@ -477,7 +477,7 @@ void Experiment::ReadInputFile(string filename) {//просто чтение т�
 					States[States.size()-1].JP0=JP0;
 				}
 			}
-			else if((line_tmp[1]>='0')&&(line_tmp[1]<='9')&&((line_tmp[0]=='*')))
+			else if((line_tmp[1]>='0')&&(line_tmp[1]<='9')&&((line_tmp[0]=='*'))){
 				line_tmp.erase(0,1);
 				State s_tmp(line);
 				s_tmp.UseFlag=0;

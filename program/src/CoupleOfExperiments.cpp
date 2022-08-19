@@ -230,9 +230,9 @@ string CoupleOfExperiments::ResultsInTextForm(char verbose_level) {
 		s<<Stripping.ChangesLog<<"\n";
 	}
 	
-	s<<"E^{BCS}_{F}: "<<TString::Format("%.2f",Ef)<<" #pm "<<TString::Format("%.2f",Ef_error)<<
-	" MeV; #Delta^{BCS}: "<<TString::Format("%.2f",Delta)<<" #pm "<<TString::Format("%.2f",Delta_error)<<" MeV\n";
-	s<<"E^{EXP}_{F}: "<<TString::Format("%.2f",Ef)<<"\n";
+	s<<"E^{BCS}_{F}: "<<TString::Format("%.2f",abs(Ef))<<" #pm "<<TString::Format("%.2f",Ef_error)<<
+	" MeV; #Delta^{BCS}: "<<TString::Format("%.2f",abs(Delta))<<" #pm "<<TString::Format("%.2f",Delta_error)<<" MeV\n";
+	s<<"E^{EXP}_{F}: "<<TString::Format("%.2f",abs(Ef))<<" MeV\n";
 	s<<"penalty: "<<penalty<<"\n";
 	s<<"SPE, keV \t nlj \t OCC \t #frac{G^{+}+G^{-}}{2J+1}\n";
 	for(unsigned int i=0;i<SPE.size();i++){
