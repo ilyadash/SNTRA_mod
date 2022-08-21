@@ -30,8 +30,7 @@ vector<string> ListFiles(string mask) {
 	s=result;
 	fclose (fp);
 	stringstream ss(s);
-	while(ss)
-	{
+	while(ss) {
 		s.resize(0);
 		ss>>s;
 		FileNames.push_back(s);
@@ -53,7 +52,7 @@ vector<string> ListFiles(string dirname, string ext) {//функция ... , в�
 		while((file=(TSystemFile*)next())) {
 			//cout<<"ListFiles("<<dirname<<", "<<ext<<") moving in candidates iteration\n";
 			fname = file->GetName(); 
-			//cout<<"ListFiles("<<dirname<<", "<<ext<<") chacking file "<<file->GetName()<<" extension\n";
+			//cout<<"ListFiles("<<dirname<<", "<<ext<<") checking file "<<file->GetName()<<" extension\n";
 			if(!file->IsDirectory() && fname.EndsWith(ext.c_str())) { 
 				result.push_back(dirname+(string)fname); 
 				//cout<<"ListFiles("<<dirname<<", "<<ext<<") found file "<<(string)fname<<"\n";
@@ -110,11 +109,13 @@ string particle, int ListFilesFlag=0) {
 		if(ParticleType==1) {
 			E.BA1=GetSeparationEnergy(Z+1, A+1, 1,1)*1000;
 			E.BA=GetSeparationEnergy(Z, A, 1,1)*1000;
+			E.EF_exp = GetFermiEnergy(Z,A, 1, 1)*1000;
 			E.particle="proton";
 		}
 		else {
 			E.BA1=GetSeparationEnergy(Z, A+1, 0,1)*1000;
 			E.BA=GetSeparationEnergy(Z, A, 0,1)*1000;
+			E.EF_exp = GetFermiEnergy(Z,A, 0, 1)*1000;
 			E.particle="neutron";
 		}
 		E.ProcessExperimentalData();

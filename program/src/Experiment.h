@@ -72,7 +72,7 @@ class Experiment
 	int E_iterator, n_iterator,  L_iterator, JP_iterator, SF_iterator;
 	double BA;//Энергия отделения нуклона от ядра А
 	double BA1;//Энергия отделения нуклона от ядра А+1
-	
+	double EF_exp;//Энергия отделения нуклона от ядра А+1
 	string ChangesLog;
 	int GetColor(int L, float JP);
 	Experiment();

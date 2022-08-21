@@ -177,10 +177,12 @@ void CoupleOfExperiments::CalcSPE_and_OCC() {//функция рассчитыв
 	occupancies.SetMarkerSize(2);
 	occupancies.Fit(&BCS,"M");//профитируем функцией в приближении БКШ
 	
-	Ef=BCS.GetParameter(0);
-	Ef_error=BCS.GetParError(0);
-	Delta=BCS.GetParameter(1);
-	Delta_error=BCS.GetParError(1);
+	Ef = BCS.GetParameter(0);
+	//Ef_exp_pick = (BA + BA1)/2;
+	//Ef_exp_strp = (BA + BA1)/2;
+	Ef_error = BCS.GetParError(0);
+	Delta = BCS.GetParameter(1);
+	Delta_error = BCS.GetParError(1);
 	
 	for(int i=0;i<SP.size();i++){//цикл for; для каждой подоболочки:
 		Gp_c.push_back(Stripping.GetSumSF(SP[i]));//формируем вектор из сумм СС срыва для каждой подоболочки
@@ -230,9 +232,9 @@ string CoupleOfExperiments::ResultsInTextForm(char verbose_level) {
 		s<<Stripping.ChangesLog<<"\n";
 	}
 	
-	s<<"E^{BCS}_{F}: "<<TString::Format("%.2f",abs(Ef))<<" #pm "<<TString::Format("%.2f",Ef_error)<<
+	s<<"E^{BCS}_{F}: "<<TString::Format("%.2f",-1*abs(Ef))<<" #pm "<<TString::Format("%.2f",Ef_error)<<
 	" MeV; #Delta^{BCS}: "<<TString::Format("%.2f",abs(Delta))<<" #pm "<<TString::Format("%.2f",Delta_error)<<" MeV\n";
-	s<<"E^{EXP}_{F}: "<<TString::Format("%.2f",abs(Ef))<<" MeV\n";
+	s<<"E^{EXP}_{F}: "<<TString::Format("%.2f",-1*Pickup.EF_exp/1000)<<" MeV; "<<"#Delta^{EXP}_{3}: "<<TString::Format("%.2f",0/1000)<<" MeV\n";
 	s<<"penalty: "<<penalty<<"\n";
 	s<<"SPE, keV \t nlj \t OCC \t #frac{G^{+}+G^{-}}{2J+1}\n";
 	for(unsigned int i=0;i<SPE.size();i++){

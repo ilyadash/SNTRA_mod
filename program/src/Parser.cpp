@@ -115,47 +115,35 @@ vector<int> StringLToInt(string L_string) {
 void GetAZ(string nucleus, int &Z, int &A) {
 	string mass;
 	string name;
-	if(nucleus.size()==0)
-	{
+	if(nucleus.size()==0){
 		cout<<"Fatal error: nucleus is not defined!\n";
 		return ;
 	}
-	
-	if(nucleus=="p")
-	{
+	if(nucleus=="p"){
 		Z=1;A=1; return;
 	}
-	if(nucleus=="n")
-	{
+	if(nucleus=="n"){
 		Z=0;A=1; return;
 	}
-	if(nucleus=="d")
-	{
+	if(nucleus=="d"){
 		Z=1;A=2; return;
 	}
-	if(nucleus=="t")
-	{
+	if(nucleus=="t"){
 		Z=1;A=3; return;
 	}
-	if(nucleus=="a")
-	{
+	if(nucleus=="a"){
 		Z=2;A=4; return;
 	}
-	for(unsigned int i=0;i<nucleus.size();i++)
-	{
-		if((nucleus[i]>='A')&&(nucleus[i]<='z'))
-		{
+	for(unsigned int i=0;i<nucleus.size();i++){
+		if((nucleus[i]>='A')&&(nucleus[i]<='z')){
 			name+=nucleus[i];
 		}
-		if((nucleus[i]>='0')&&(nucleus[i]<='9'))
-		{
+		if((nucleus[i]>='0')&&(nucleus[i]<='9')){
 			mass+=nucleus[i];
 		}
 	}
-	for(unsigned int i=0;i<111;i++)
-	{
-		if(Atomic_symbols[i]==name)
-		{
+	for(unsigned int i=0;i<111;i++){
+		if(Atomic_symbols[i]==name){
 			Z=Z_number[i];
 			A=atoi(mass.c_str());
 			return ;
@@ -163,33 +151,17 @@ void GetAZ(string nucleus, int &Z, int &A) {
 	}
 }
 
-double GetNuclearMass(string nucleus) {
-	int A,Z;
-	GetAZ(nucleus,Z,A);
+double GetNuclearMass(int Z, int A) {//to do: исправить реалзацию и использование, сейчас возвращает атомную массу, название ошибочное (сделать отдельно Atiomic, если хочется)
+	///if((Z==0)&&(A==1)) return Mn;//нельзя делать так, так как где-то из этой массы вычислеятся ядерная для протона и нейтрона
+	///if((Z==1)&&(A==1)) return Mp;
 	ifstream MassFile(sprintf("audi/z%03d",Z).c_str());
-	string str;
-	while(getline(MassFile,str))
-	{
-		int a=atoi(GetField(str,2).c_str());;
-		if(a==A)
-		{
-			return atof(GetField(str,3).c_str())*u;
-		}
-	}
-}
-
-double GetNuclearMass(int Z, int A) {
-	ifstream MassFile(sprintf("audi/z%03d",Z).c_str());
-	if(!MassFile)
-	{
+	if(!MassFile){
 		cout<<"Error:file \""+sprintf("audi/z%03d",Z)+"\" not found \n"; 
 	}
 	string str;
-	while(getline(MassFile,str))
-	{
+	while(getline(MassFile,str)){
 		int a=atoi(GetField(str,2).c_str());;
-		if(a==A)
-		{
+		if(a==A){
 			return atof(GetField(str,3).c_str())*u;
 		}
 	}
@@ -197,40 +169,10 @@ double GetNuclearMass(int Z, int A) {
 	return 0;
 }
 
-double GetSeparationEnergy(string nucleus, string particle="n") {
-	double nucleus_mass, particle_mass, product_mass;
-	
-	cout<<"1"<<nucleus<<"\n";
-	
-	int nucleus_A, nucleus_Z, product_A, product_Z, particle_A, particle_Z;
-	if(particle=="n")
-	{
-		particle_mass=Mn;
-		particle_A=1;
-		particle_Z=0;
-	}
-	if(particle=="p")
-	{
-		particle_mass=Mp;
-		particle_A=1;
-		particle_Z=1;
-	}
-	if((particle!="p")&&(particle!="n"))
-	{
-		GetAZ(particle, particle_Z, particle_A);
-		particle_mass=GetNuclearMass(particle_Z, particle_A)-particle_Z*Me;
-	}
-	GetAZ(nucleus, nucleus_Z, nucleus_A);
-	nucleus_mass=GetNuclearMass(nucleus_Z, nucleus_A)-nucleus_Z*Me;
-	product_Z=nucleus_Z-particle_Z;
-	product_A=nucleus_A-particle_A;
-	if((product_Z<0)||(product_A<0))
-	{
-		cout<<"Error: product characteristics are not physical: product_Z="<<product_Z<<" product_A="<<product_A<<"\n";
-		return 0;
-	}
-	product_mass=GetNuclearMass(product_Z, product_A)-product_Z*Me;
-	return product_mass-nucleus_mass+particle_mass;
+double GetNuclearMass(string nucleus) {//to do: исправить реалзацию и использование, сейчас возвращает атомную массу, название ошибочное (сделать отдельно Atiomic, если хочется)
+	int A,Z;
+	GetAZ(nucleus,Z,A);
+	return GetNuclearMass(Z, A);
 }
 
 double GetSeparationEnergy(int nucleus_Z, int nucleus_A, int particle_Z, int particle_A) {
@@ -240,8 +182,7 @@ double GetSeparationEnergy(int nucleus_Z, int nucleus_A, int particle_Z, int par
 	nucleus_mass=GetNuclearMass(nucleus_Z, nucleus_A)-nucleus_Z*Me;
 	product_Z=nucleus_Z-particle_Z;
 	product_A=nucleus_A-particle_A;
-	if((product_Z<0)||(product_A<0))
-	{
+	if((product_Z<0)||(product_A<0)){
 		cout<<"Error: product characteristics are not physical: product_Z="<<product_Z<<" product_A="<<product_A<<"\n";
 		return 0;
 	}
@@ -249,22 +190,39 @@ double GetSeparationEnergy(int nucleus_Z, int nucleus_A, int particle_Z, int par
 	return product_mass-nucleus_mass+particle_mass;
 }
 
+double GetSeparationEnergy(string nucleus, string particle="n") {
+	double nucleus_mass, particle_mass, product_mass;
+	cout<<"1"<<nucleus<<"\n";
+	int nucleus_A, nucleus_Z, product_A, product_Z, particle_A, particle_Z;
+	GetAZ(particle, particle_Z, particle_A);
+	GetAZ(nucleus, nucleus_Z, nucleus_A);
+	return GetSeparationEnergy(nucleus_Z, nucleus_A, particle_Z, particle_A);
+}
+
+double GetFermiEnergy(int nucleus_Z, int nucleus_A, int particle_Z, int particle_A) {
+	if ((particle_Z > 1)||(particle_A > 1)) return 0; 
+	return (GetSeparationEnergy(nucleus_Z, nucleus_A, particle_Z, particle_A)
+	+ GetSeparationEnergy(nucleus_Z+particle_Z, nucleus_A+particle_A, particle_Z, particle_A))/2;
+}
+
+double GetFermiEnergy(string nucleus, string particle="n") {
+	int nucleus_A, nucleus_Z, particle_A, particle_Z;
+	GetAZ(particle, particle_Z, particle_A);
+	GetAZ(nucleus, nucleus_Z, nucleus_A);
+	return GetFermiEnergy(nucleus_Z, nucleus_A, particle_Z, particle_A);
+}
+
 void ParceReaction(string reaction, string &type, int &ParticleType) {
 	string particles[2];
 	int iterator=0;
-	for(int i=0;i<reaction.size();i++)
-	{
-		if(((reaction[i]>='0')&&(reaction[i]<='9'))||((reaction[i]>='A')&&(reaction[i]<='z')))
-		{
+	for(int i=0;i<reaction.size();i++){
+		if(((reaction[i]>='0')&&(reaction[i]<='9'))||((reaction[i]>='A')&&(reaction[i]<='z'))){
 			particles[iterator]+=reaction[i];
 		}
-		else
-		{
-			if((reaction[i]=='.')||(reaction[i]==','))
-			{
+		else{
+			if((reaction[i]=='.')||(reaction[i]==',')){
 				iterator++;
-				if(iterator>1)
-				{
+				if(iterator>1){
 					return;
 				}
 			}
@@ -273,20 +231,16 @@ void ParceReaction(string reaction, string &type, int &ParticleType) {
 	int Z_projectile,A_projectile,Z_product, A_product;
 	GetAZ(particles[0],Z_projectile,A_projectile);
 	GetAZ(particles[1],Z_product,A_product);
-	if(A_projectile-A_product>0)
-	{
+	if(A_projectile-A_product>0){
 		type="stripping";
 	}
-	else
-	{
+	else{
 		type="pickup";
 	}
-	if(Z_projectile-Z_product!=0)
-	{
+	if(Z_projectile-Z_product!=0){
 		ParticleType=1;
 	}
-	else
-	{
+	else{
 		ParticleType=0;
 	}
 }
